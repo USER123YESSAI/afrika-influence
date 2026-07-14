@@ -1,10 +1,14 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { Utilisateur, Entreprise, Createur } from '../models/index.js';
 import { generateToken } from '../middlewares/auth.js';
 import { creerLog } from './logService.js';
+import { sendPasswordResetEmail } from './emailService.js';
 
 const SALT_ROUNDS = 12;
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
+const hashToken = (raw) => crypto.createHash('sha256').update(raw).digest('hex');
 
 export async function inscrire({ nom, email, password, role }) {
   console.log('[authService.inscrire] START', { nom, email, role });
@@ -88,13 +92,53 @@ export async function getProfil(utilisateurId) {
   return utilisateur;
 }
 
-export async function reinitialiserMotDePasse(email, nouveauMotDePasse) {
+// ─── ÉTAPE 1 : demande de réinitialisation ─────────────────────────────────
+// Génère un token à usage unique, le stocke haché en base, envoie le lien par email.
+// Réponse volontairement générique dans tous les cas pour ne pas révéler
+// si un email existe en base (protection contre l'énumération de comptes).
+export async function demanderReinitialisation(email) {
+  const reponseGenerique = {
+    message: 'Si un compte existe avec cet email, un lien de réinitialisation vient d\'être envoyé.',
+  };
+
   const utilisateur = await Utilisateur.findOne({ where: { email } });
-  if (!utilisateur)
-    throw { status: 404, message: 'Aucun compte associé à cet email.' };
+  if (!utilisateur) return reponseGenerique;
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  await utilisateur.update({
+    resetPasswordTokenHash: hashToken(rawToken),
+    resetPasswordExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+  });
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const resetLink = `${frontendUrl}/reinitialiser-mdp/confirmer?token=${rawToken}&email=${encodeURIComponent(email)}`;
+  await sendPasswordResetEmail(email, resetLink);
+
+  await creerLog(utilisateur.id, 'DEMANDE_RESET_MDP', 'Utilisateur', utilisateur.id);
+  return reponseGenerique;
+}
+
+// ─── ÉTAPE 2 : confirmation avec le token reçu par email ───────────────────
+export async function confirmerReinitialisation(email, token, nouveauMotDePasse) {
+  const utilisateur = await Utilisateur.findOne({ where: { email } });
+
+  if (
+    !utilisateur ||
+    !utilisateur.resetPasswordTokenHash ||
+    !utilisateur.resetPasswordExpiresAt ||
+    utilisateur.resetPasswordExpiresAt < new Date() ||
+    utilisateur.resetPasswordTokenHash !== hashToken(token)
+  ) {
+    throw { status: 400, message: 'Lien de réinitialisation invalide ou expiré. Merci de refaire une demande.' };
+  }
 
   const hash = await bcrypt.hash(nouveauMotDePasse, SALT_ROUNDS);
-  await utilisateur.update({ motDePasse: hash });
+  await utilisateur.update({
+    motDePasse: hash,
+    resetPasswordTokenHash: null,
+    resetPasswordExpiresAt: null,
+  });
+
   await creerLog(utilisateur.id, 'RESET_MDP', 'Utilisateur', utilisateur.id);
-  return { message: 'Mot de passe réinitialisé avec succès.' };
+  return { message: 'Mot de passe réinitialisé avec succès. Vous pouvez vous connecter.' };
 }

@@ -153,7 +153,10 @@ export const authApi = {
     logout();
   },
 
-  reinitialiserMdp: (data: unknown) =>
+  demanderResetMdp: (data: { email: string }) =>
+    apiFetch('/api/auth/mot-de-passe-oublie', { method: 'POST', body: JSON.stringify(data) }),
+
+  confirmerResetMdp: (data: { email: string; token: string; nouveauMotDePasse: string }) =>
     apiFetch('/api/auth/reinitialiser-mdp', { method: 'POST', body: JSON.stringify(data) }),
 
   profil: () => request('/auth/profil'),

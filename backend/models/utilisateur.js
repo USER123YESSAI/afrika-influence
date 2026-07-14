@@ -30,6 +30,16 @@ export default (sequelize) => {
       type: DataTypes.STRING(50),
       defaultValue: 'validated',
     },
+    resetPasswordTokenHash: {
+      // On ne stocke JAMAIS le token brut, seulement son hash SHA-256.
+      // Si la base fuite, un attaquant ne peut pas reconstituer le lien de reset.
+      type: DataTypes.STRING(64),
+      allowNull: true,
+    },
+    resetPasswordExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     tableName: 'utilisateurs',
     timestamps: true,

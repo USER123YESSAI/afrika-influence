@@ -33,11 +33,20 @@ export async function profil(req, res) {
   } catch (e) { err(res, e); }
 }
 
-// POST /api/auth/reinitialiser-mdp
-export async function reinitialiserMdp(req, res) {
+// POST /api/auth/mot-de-passe-oublie
+export async function demanderResetMdp(req, res) {
   try {
-    const { email, nouveauMotDePasse } = req.body;
-    const data = await authService.reinitialiserMotDePasse(email, nouveauMotDePasse);
+    const { email } = req.body;
+    const data = await authService.demanderReinitialisation(email);
+    ok(res, data);
+  } catch (e) { err(res, e); }
+}
+
+// POST /api/auth/reinitialiser-mdp
+export async function confirmerResetMdp(req, res) {
+  try {
+    const { email, token, nouveauMotDePasse } = req.body;
+    const data = await authService.confirmerReinitialisation(email, token, nouveauMotDePasse);
     ok(res, data);
   } catch (e) { err(res, e); }
 }

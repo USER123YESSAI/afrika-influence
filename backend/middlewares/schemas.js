@@ -32,9 +32,14 @@ export const schemas = {
     password: Joi.string().required(),
   }),
 
-  resetMdp: Joi.object({
+  demandeResetMdp: Joi.object({
     email: Joi.string().email().required(),
-    nouveauMotDePasse: Joi.string().min(6).required(),
+  }),
+
+  confirmerResetMdp: Joi.object({
+    email: Joi.string().email().required(),
+    token: Joi.string().hex().length(64).required(),
+    nouveauMotDePasse: Joi.string().min(8).required(),
   }),
 
   // ─── CRÉATEUR ─────────────────────────────────────────────────────────────
