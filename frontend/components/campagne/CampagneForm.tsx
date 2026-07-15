@@ -52,6 +52,7 @@ export default function CampagneForm({ initialData = {}, onSubmit, isLoading, su
         type={type}
         value={(form[key] as string | number | undefined) ?? ''}
         onChange={e => set(key, type === 'number' ? (e.target.value ? Number(e.target.value) : undefined) : e.target.value)}
+        onWheel={type === 'number' ? (e => (e.target as HTMLInputElement).blur()) : undefined}
         required={required}
         min={type === 'date' ? new Date().toISOString().split('T')[0] : undefined}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"

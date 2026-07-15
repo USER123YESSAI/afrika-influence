@@ -201,6 +201,7 @@ export default function ProfilCreateurPage() {
                       onChange={e => setProfil((p: any) => ({
                         ...p, reseaux: { ...p.reseaux, [reseau]: { ...val, audience: parseInt(e.target.value) || 0 } }
                       }))}
+                      onWheel={e => (e.target as HTMLInputElement).blur()}
                       className="w-28 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                       placeholder="Audience" min={0} />
                   </div>

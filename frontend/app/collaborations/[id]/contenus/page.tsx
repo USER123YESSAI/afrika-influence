@@ -156,6 +156,7 @@ export default function ContenusPage() {
                     type="number"
                     value={quantite}
                     onChange={e => setQuantite(Math.max(1, parseInt(e.target.value) || 1))}
+                    onWheel={e => (e.target as HTMLInputElement).blur()}
                     min={1}
                     max={50}
                     className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
