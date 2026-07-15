@@ -198,8 +198,8 @@ export async function listerCollaborations(utilisateurId, role, filtres = {}) {
 // ─── DETAIL ────────────────────────────────────────────────────────────────────
 // Détail d'une collaboration, avec totalRemuneration calculé pour P2 (paiement)
 
-export async function getCollaboration(collaborationId) {
-  const { Campagne } = models;
+export async function getCollaboration(collaborationId, utilisateurId, role) {
+  const { Campagne, Entreprise } = models;
 
   const collab = await Collaboration.findByPk(collaborationId, {
     include: [
@@ -213,11 +213,35 @@ export async function getCollaboration(collaborationId) {
   });
   if (!collab) throw { status: 404, message: 'Collaboration introuvable.' };
 
+  // ─── Contrôle d'accès (IDOR) ────────────────────────────────────────────
+  // Sans ce contrôle, n'importe quel compte connecté peut consulter le
+  // détail (contenu, rémunération, directives) de n'importe quelle
+  // collaboration en devinant/énumérant un UUID.
+  await verifierAccesCollaboration(collab, utilisateurId, role);
+
   // totalRemuneration exposé pour P2 (déclenchement paiement)
   const totalRemuneration = collab.contenus
     .reduce((sum, c) => sum + parseFloat(c.sousTotal || 0), 0);
 
   return { ...collab.toJSON(), totalRemuneration };
+}
+
+// ─── HELPER : contrôle d'accès partagé (détail + contenus) ────────────────────
+async function verifierAccesCollaboration(collab, utilisateurId, role) {
+  const { Entreprise } = models;
+
+  if (role === 'ADMINISTRATEUR' || role === 'MODERATEUR') return;
+
+  if (role === 'CREATEUR') {
+    if (collab.createur?.utilisateurId === utilisateurId) return;
+  }
+
+  if (role === 'ENTREPRISE') {
+    const entreprise = await Entreprise?.findOne({ where: { utilisateurId } });
+    if (entreprise && collab.campagne?.entrepriseId === entreprise.id) return;
+  }
+
+  throw { status: 403, message: 'Vous n\'avez pas accès à cette collaboration.' };
 }
 
 // ─── ACCEPTER ──────────────────────────────────────────────────────────────────
@@ -304,7 +328,16 @@ export async function validerContenu(collaborationId, utilisateurId) {
 
 // ─── LISTER CONTENUS ───────────────────────────────────────────────────────────
 
-export async function listerContenus(collaborationId) {
+export async function listerContenus(collaborationId, utilisateurId, role) {
+  const { Campagne } = models;
+
+  const collab = await Collaboration.findByPk(collaborationId, {
+    include: [{ model: Campagne, as: 'campagne' }, { model: Createur, as: 'createur' }],
+  });
+  if (!collab) throw { status: 404, message: 'Collaboration introuvable.' };
+
+  await verifierAccesCollaboration(collab, utilisateurId, role);
+
   return CollaborationContenu.findAll({
     where: { collaborationId },
     include: [{ model: Offre, as: 'offre' }],

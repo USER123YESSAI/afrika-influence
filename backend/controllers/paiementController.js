@@ -18,9 +18,18 @@ export const initierPaiement = async (req, res) => {
 
     // Calculer le montant depuis les contenus de la collaboration
     const collab = await Collaboration.findByPk(collaborationId, {
-      include: [{ association: 'contenus' }],
+      include: [{ association: 'contenus' }, { association: 'campagne' }],
     });
     if (!collab) return res.status(404).json({ success: false, message: 'Collaboration non trouvée.' });
+
+    // ─── Contrôle d'accès (IDOR) ────────────────────────────────────────────
+    // Sans ce contrôle, n'importe quelle entreprise connectée peut initier un
+    // paiement pour une collaboration qui ne lui appartient pas — en changeant
+    // simplement le collaborationId dans le body de la requête, elle paierait
+    // (ou déclencherait des notifications/emails) pour une campagne tierce.
+    if (!collab.campagne || collab.campagne.entrepriseId !== entreprise.id) {
+      return res.status(403).json({ success: false, message: 'Cette collaboration ne vous appartient pas.' });
+    }
 
     const montant = collab.totalRemuneration ||
       (collab.contenus || []).reduce((s, c) => s + (Number(c.sousTotal) || 0), 0);
