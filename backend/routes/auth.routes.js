@@ -4,6 +4,8 @@ import * as ctrl from '../controllers/authController.js';
 import { verifyToken } from '../middlewares/auth.js';
 import { validate }    from '../middlewares/validate.js';
 import { schemas } from '../middlewares/schemas.js';
+import { connexionSlowDown, connexionLimiter, publicFormLimiter } from '../middlewares/antiBot.js';
+import { honeypot } from '../middlewares/honeypot.js';
 
 const router = Router();
 
@@ -17,8 +19,11 @@ const resetLimiter = rateLimit({
   message: { success: false, message: 'Trop de tentatives. Réessayez dans quelques minutes.' },
 });
 
-router.post('/inscription',        validate(schemas.inscription),       ctrl.inscription);
-router.post('/connexion',          validate(schemas.connexion),         ctrl.connexion);
+
+
+
+router.post('/inscription', publicFormLimiter, honeypot, validate(schemas.inscription), ctrl.inscription);
+router.post('/connexion', connexionLimiter, connexionSlowDown, honeypot, validate(schemas.connexion), ctrl.connexion);
 router.post('/deconnexion',        verifyToken,                         ctrl.deconnexion);
 router.post('/mot-de-passe-oublie', resetLimiter, validate(schemas.demandeResetMdp),  ctrl.demanderResetMdp);
 router.post('/reinitialiser-mdp',  resetLimiter, validate(schemas.confirmerResetMdp), ctrl.confirmerResetMdp);

@@ -1,7 +1,7 @@
 // backend/controllers/paiementController.js
 import PDFDocument from 'pdfkit';
 import { Paiement, Entreprise, Collaboration, Createur } from '../models/index.js';
-import { initierPaytech, genererNumeroFacture, genererNumeroRecu } from '../services/paiementService.js';
+import { initierPaytech, genererNumeroFacture, genererNumeroRecu, verifierIPN } from '../services/paiementService.js';
 import { creerNotification } from '../services/notificationService.js';
 import { creerLog } from '../services/logService.js';
 
@@ -54,15 +54,42 @@ export const initierPaiement = async (req, res) => {
   } catch (e) { return err(res, e); }
 };
 
-// Webhook PayTech — pas d'auth JWT
+// Webhook PayTech — pas d'auth JWT (PayTech ne peut pas nous fournir de Bearer
+// token), mais authentifié via signature HMAC/SHA256 — voir verifierIPN().
 export const confirmerPaiement = async (req, res) => {
   try {
-    const { ref_command, type_event } = req.body;
+    // ─── Étape 1 : authenticité de la notification ─────────────────────────
+    // Sans ce contrôle, n'importe qui peut forger cette requête et confirmer
+    // un paiement jamais effectué (fraude directe).
+    if (!verifierIPN(req.body)) {
+      console.warn('[confirmerPaiement] IPN PayTech rejetée : signature invalide.', {
+        ip: req.ip,
+        ref_command: req.body?.ref_command,
+      });
+      return res.status(403).json({ success: false, message: 'Notification non authentifiée.' });
+    }
+
+    const { ref_command, type_event, item_price, final_item_price } = req.body;
     if (type_event !== 'sale_complete') return res.status(200).json({ success: true, message: 'Événement ignoré.' });
 
     const paiement = await Paiement.findByPk(ref_command);
     if (!paiement) return res.status(404).json({ success: false, message: 'Paiement non trouvé.' });
     if (paiement.statut === 'CONFIRME') return res.status(200).json({ success: true, message: 'Déjà confirmé.' });
+
+    // ─── Étape 2 : cohérence du montant (défense en profondeur) ────────────
+    // La signature prouve que la notification vient bien de PayTech, mais on
+    // vérifie en plus que le montant annoncé correspond à celui qu'on attend
+    // pour ce paiement précis — évite qu'une notif authentique mais relative
+    // à un autre montant ne vienne confirmer ce paiement.
+    // En mode test PayTech débite un montant aléatoire (100-150 CFA), donc on
+    // ne bloque cette vérification qu'en environnement de production.
+    const montantRecu = Number(final_item_price ?? item_price);
+    if (process.env.PAYTECH_ENV === 'prod' && montantRecu !== Number(paiement.montant)) {
+      console.warn('[confirmerPaiement] Montant IPN incohérent avec le paiement attendu.', {
+        paiementId: paiement.id, attendu: paiement.montant, recu: montantRecu,
+      });
+      return res.status(400).json({ success: false, message: 'Montant incohérent.' });
+    }
 
     const numeroFacture = await genererNumeroFacture(Paiement);
     const numeroRecu    = await genererNumeroRecu(Paiement);
