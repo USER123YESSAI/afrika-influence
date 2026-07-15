@@ -3,7 +3,7 @@ import * as ctrl from '../controllers/messageController.js';
 import { validate } from '../middlewares/validate.js';
 
 import { schemas } from '../middlewares/schemas.js';
-import { uploadFichier, handleUploadError } from '../middlewares/upload.js';
+import { uploadFichier, handleUploadError, verifierSignatureFichier } from '../middlewares/upload.js';
 import { verifyToken } from '../middlewares/auth.js';
 
 const router = Router();
@@ -22,6 +22,7 @@ router.post(
   verifyToken,
   (req, res, next) =>
     uploadFichier(req, res, (err) => (err ? handleUploadError(err, req, res, next) : next())),
+  verifierSignatureFichier,
   ctrl.envoyerFichier
 );
 

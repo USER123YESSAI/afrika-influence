@@ -31,7 +31,31 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(cors());
+// ─── CORS ──────────────────────────────────────────────────────────────────
+// SECURITE : cors() sans option reflète Access-Control-Allow-Origin: * pour
+// TOUTE origine — n'importe quel site tiers peut alors faire des requêtes
+// cross-origin vers cette API depuis le navigateur d'un utilisateur. On
+// restreint donc aux origines de confiance (notre frontend), configurables
+// via la variable d'env CORS_ORIGINS (liste séparée par des virgules).
+// Le JWT étant transmis en header Authorization (pas en cookie), le risque
+// principal ici n'est pas le CSRF classique, mais l'abus de l'API depuis un
+// site tiers avec le token d'un utilisateur (XSS ailleurs, extension malveillante,
+// etc.) — verrouiller les origines réduit cette surface.
+const origines = (process.env.CORS_ORIGINS || process.env.APP_BASE_URL || 'http://localhost:3001')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Pas d'en-tête Origin = appel serveur-à-serveur / outil (curl, Postman, webhook)
+    // → autorisé, car ce n'est de toute façon pas ce que CORS protège (CORS régule
+    // les requêtes émises par un navigateur, pas les clients HTTP directs).
+    if (!origin || origines.includes(origin)) return callback(null, true);
+    console.warn(`[CORS] Origine refusée : ${origin}`);
+    return callback(new Error('Origine non autorisée par CORS.'));
+  },
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Rate limit global : désactivé en développement pour éviter les blocages

@@ -85,6 +85,21 @@ export const getCampagne = async (req, res) => {
       ],
     });
     if (!campagne) return res.status(404).json({ success: false, message: 'Campagne non trouvée.' });
+
+    // ─── Contrôle d'accès (IDOR) ────────────────────────────────────────────
+    // Une campagne BROUILLON (budget, consignes internes non finalisées) ne
+    // doit être visible que par son entreprise propriétaire ou un modérateur/
+    // admin — pas par n'importe qui devinant l'UUID. Les campagnes PUBLIEE,
+    // EN_COURS, TERMINEE ou ANNULEE restent publiques, comme prévu.
+    if (campagne.statut === 'BROUILLON') {
+      const role = req.user?.role;
+      const estOwner = req.user && (await checkOwnership(campagne, req.user.id));
+      const estModerateur = role === 'ADMINISTRATEUR' || role === 'MODERATEUR';
+      if (!estOwner && !estModerateur) {
+        return res.status(404).json({ success: false, message: 'Campagne non trouvée.' });
+      }
+    }
+
     return ok(res, campagne);
   } catch (e) { return err(res, e); }
 };

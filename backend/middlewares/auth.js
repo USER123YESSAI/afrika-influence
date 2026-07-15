@@ -37,6 +37,40 @@ export function verifyToken(req, res, next) {
   }
 }
 
+// ─── optionalAuth ─────────────────────────────────────────────────────────────
+// Pour les routes publiques dont le comportement varie selon que l'appelant
+// est identifié ou non (ex: GET /campagnes/:id, visible par tous une fois
+// publiée, mais réservée au propriétaire tant qu'elle est en BROUILLON).
+// Ne bloque jamais la requête : req.user reste null si pas de token / token
+// invalide, la route décide ensuite quoi faire.
+
+export function optionalAuth(req, res, next) {
+  const header = req.headers['authorization'];
+  if (!header || !header.startsWith('Bearer ')) {
+    req.user = null;
+    return next();
+  }
+
+  const token = header.split(' ')[1];
+
+  if (process.env.NODE_ENV === 'development' && token === 'MOCK_TOKEN_DEV') {
+    req.user = {
+      id: req.headers['x-mock-user-id'] || 'aaa00000-0000-0000-0000-000000000001',
+      role: req.headers['x-mock-user-role'] || 'CREATEUR',
+      email: 'dev@baobab.sn',
+    };
+    return next();
+  }
+
+  try {
+    const payload = jwt.verify(token, SECRET);
+    req.user = { id: payload.id, role: payload.role, email: payload.email };
+  } catch (err) {
+    req.user = null; // token présent mais invalide/expiré → traité comme anonyme
+  }
+  next();
+}
+
 // ─── requireRole ──────────────────────────────────────────────────────────────
 // Vérifie que req.user.role correspond au(x) rôle(s) autorisé(s)
 // Utilisation : requireRole('CREATEUR') ou requireRole('CREATEUR', 'ENTREPRISE')
@@ -71,4 +105,3 @@ export function generateToken(utilisateur) {
     { expiresIn: '24h' }
   );
 }
-

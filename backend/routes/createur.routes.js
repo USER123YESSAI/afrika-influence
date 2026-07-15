@@ -3,7 +3,7 @@ import * as ctrl from '../controllers/createurController.js';
 import { validate } from '../middlewares/validate.js';
 
 import { schemas } from '../middlewares/schemas.js';
-import { uploadPhoto, handleUploadError } from '../middlewares/upload.js';
+import { uploadPhoto, handleUploadError, verifierSignatureFichier } from '../middlewares/upload.js';
 import { verifyToken, requireRole } from '../middlewares/auth.js';
 
 
@@ -30,6 +30,7 @@ router.post(
   verifyToken,
   requireRole('CREATEUR'),
   (req, res, next) => uploadPhoto(req, res, (err) => err ? handleUploadError(err, req, res, next) : next()),
+  verifierSignatureFichier,
   ctrl.uploadPhoto
 );
 
