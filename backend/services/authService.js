@@ -10,28 +10,26 @@ const SALT_ROUNDS = 12;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
 const hashToken = (raw) => crypto.createHash('sha256').update(raw).digest('hex');
 
-export async function inscrire({ nom, email, password, role }) {
-  console.log('[authService.inscrire] START', { nom, email, role });
+// ─── SECURITE : verrouillage de compte anti brute-force ───────────────────
+// Seuil aligné sur le rate-limit de connexion (middlewares/antiBot.js) pour
+// une cohérence de message côté utilisateur, mais ce verrou est indépendant
+// de l'IP (persisté en base) donc résiste à un attaquant qui change d'IP.
+const MAX_TENTATIVES_CONNEXION = 5;
+const DUREE_VERROUILLAGE_MS = 15 * 60 * 1000; // 15 minutes
 
+export async function inscrire({ nom, email, password, role }) {
   const existant = await Utilisateur.findOne({ where: { email } });
   if (existant) throw { status: 409, message: 'Un compte existe déjà avec cet email.' };
 
-  console.log('[authService.inscrire] Hashing password...');
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  console.log('[authService.inscrire] Creating utilisateur...');
   const utilisateur = await Utilisateur.create({
     nom, email, motDePasse: hash, role, statut: 'validated',
   });
-  console.log('[authService.inscrire] Utilisateur created:', utilisateur.id);
 
   if (role === 'ENTREPRISE' || role === 'PARTICULIER') {
-    console.log('[authService.inscrire] Creating entreprise profile...');
     await Entreprise.create({ utilisateurId: utilisateur.id, nom });
-    console.log('[authService.inscrire] Entreprise profile created.');
   } else if (role === 'CREATEUR') {
-    console.log('[authService.inscrire] Generating handle...');
-
     const base = '@' + (nom || 'createur')
       .toLowerCase()
       .normalize('NFD')
@@ -39,26 +37,17 @@ export async function inscrire({ nom, email, password, role }) {
       .replace(/[^a-z0-9]/g, '')
       .slice(0, 20) || 'createur';
 
-    console.log('[authService.inscrire] Base handle:', base);
-    console.log('[authService.inscrire] Counting existing handles with Op.like...');
-
     const count = await Createur.count({
       where: { handle: { [Op.like]: `${base}%` } },
     });
 
-    console.log('[authService.inscrire] Handle count:', count);
     const handle = count > 0 ? `${base}${count + 1}` : base;
-    console.log('[authService.inscrire] Final handle:', handle);
 
-    console.log('[authService.inscrire] Creating createur profile...');
     await Createur.create({ utilisateurId: utilisateur.id, nom, handle });
-    console.log('[authService.inscrire] Createur profile created.');
   }
 
-  console.log('[authService.inscrire] Creating log...');
   await creerLog(utilisateur.id, 'INSCRIPTION', 'Utilisateur', utilisateur.id);
 
-  console.log('[authService.inscrire] DONE.');
   const { motDePasse: _, ...data } = utilisateur.toJSON();
   return data;
 }
@@ -68,14 +57,46 @@ export async function connecter({ email, password }, ipAdresse) {
   if (!utilisateur)
     throw { status: 401, message: 'Email ou mot de passe incorrect.' };
 
+  // ─── Verrou actif ? ──────────────────────────────────────────────────────
+  if (utilisateur.verrouilleJusqua && new Date(utilisateur.verrouilleJusqua) > new Date()) {
+    const minutesRestantes = Math.ceil((new Date(utilisateur.verrouilleJusqua) - new Date()) / 60000);
+    throw {
+      status: 423,
+      message: `Compte temporairement verrouillé suite à trop de tentatives échouées. Réessayez dans ${minutesRestantes} minute(s).`,
+    };
+  }
+
   if (utilisateur.statut === 'rejected')
     throw { status: 403, message: 'Votre compte a été rejeté. Contactez l\'administration.' };
   if (utilisateur.statut === 'suspended')
     throw { status: 403, message: 'Votre compte a été suspendu. Contactez l\'administration.' };
+  // SECURITE : 'banned' n'était pas vérifié auparavant — un compte banni
+  // pouvait donc toujours se connecter normalement.
+  if (utilisateur.statut === 'banned')
+    throw { status: 403, message: 'Votre compte a été banni. Contactez l\'administration.' };
 
   const valide = await bcrypt.compare(password, utilisateur.motDePasse);
-  if (!valide)
+
+  if (!valide) {
+    const tentatives = (utilisateur.tentativesEchouees || 0) + 1;
+    const misAJour = { tentativesEchouees: tentatives };
+
+    if (tentatives >= MAX_TENTATIVES_CONNEXION) {
+      misAJour.verrouilleJusqua = new Date(Date.now() + DUREE_VERROUILLAGE_MS);
+      console.warn(`[SECURITE] Compte verrouillé après ${tentatives} échecs : ${email} (IP: ${ipAdresse})`);
+      await creerLog(utilisateur.id, 'COMPTE_VERROUILLE', 'Utilisateur', utilisateur.id, { tentatives }, ipAdresse);
+    }
+
+    await utilisateur.update(misAJour);
+    await creerLog(utilisateur.id, 'CONNEXION_ECHOUEE', 'Utilisateur', utilisateur.id, { tentatives }, ipAdresse);
+
     throw { status: 401, message: 'Email ou mot de passe incorrect.' };
+  }
+
+  // ─── Connexion réussie : réinitialiser le compteur d'échecs ─────────────
+  if (utilisateur.tentativesEchouees > 0 || utilisateur.verrouilleJusqua) {
+    await utilisateur.update({ tentativesEchouees: 0, verrouilleJusqua: null });
+  }
 
   const token = generateToken(utilisateur);
   await creerLog(utilisateur.id, 'CONNEXION', 'Utilisateur', utilisateur.id, null, ipAdresse);
@@ -133,10 +154,14 @@ export async function confirmerReinitialisation(email, token, nouveauMotDePasse)
   }
 
   const hash = await bcrypt.hash(nouveauMotDePasse, SALT_ROUNDS);
+  // On réinitialise aussi le verrou : un reset de mot de passe légitime
+  // (preuve de possession de l'email) doit débloquer le compte.
   await utilisateur.update({
     motDePasse: hash,
     resetPasswordTokenHash: null,
     resetPasswordExpiresAt: null,
+    tentativesEchouees: 0,
+    verrouilleJusqua: null,
   });
 
   await creerLog(utilisateur.id, 'RESET_MDP', 'Utilisateur', utilisateur.id);
