@@ -43,13 +43,6 @@ export const schemas = {
   }),
 
   // ─── ADMIN ───────────────────────────────────────────────────────────────
-  // SECURITE : ces filtres arrivent en query string (req.query) et sont passés
-  // à Sequelize côté service. L'ORM protège déjà contre l'injection SQL, mais
-  // sans validation, une valeur malformée (ex: dateDebut=azerty, page=-5,
-  // limit=999999) atteint quand même le service et peut provoquer une erreur
-  // non maîtrisée (Invalid Date, pagination aberrante, requête très coûteuse
-  // avec un limit énorme). On verrouille donc le format, les bornes, et les
-  // valeurs autorisées, comme pour toutes les autres routes du projet.
 
   // GET /api/admin/utilisateurs
   filtreUtilisateurs: Joi.object({
@@ -105,8 +98,16 @@ export const schemas = {
       }),
     bio: Joi.string().max(500).allow('', null).trim()
       .messages({ 'string.max': 'La bio ne peut pas dépasser 500 caractères.' }),
-    portfolioUrl: Joi.string().uri().allow('', null)
-      .messages({ 'string.uri': 'L\'URL du portfolio est invalide.' }),
+    // SECURITE (XSS) : on restreint le schéma d'URL à http/https. Sans ça,
+    // "javascript:alert(document.cookie)" est une URI valide pour Joi et
+    // serait acceptée — si ce champ est un jour rendu comme <a href={...}>
+    // côté frontend (cas typique d'un lien "portfolio"), cliquer dessus
+    // exécuterait le script dans le contexte de la page (XSS stocké).
+    portfolioUrl: Joi.string().uri({ scheme: ['http', 'https'] }).allow('', null)
+      .messages({
+        'string.uri': 'L\'URL du portfolio est invalide.',
+        'string.uriCustomScheme': 'L\'URL du portfolio doit commencer par http:// ou https://.',
+      }),
     tarifsDescription: Joi.string().max(1000).allow('', null),
     reseaux: Joi.object().pattern(
       Joi.string().valid(...RESEAUX),
@@ -234,9 +235,13 @@ export const schemas = {
 
   // PATCH /api/collaborations/:id/soumettre
   soumettre: Joi.object({
-    contenuUrl: Joi.string().uri().required()
+    // SECURITE (XSS) : même raisonnement que portfolioUrl — un contenu
+    // soumis type "javascript:..." pourrait être rendu cliquable côté
+    // entreprise lors de la validation du contenu.
+    contenuUrl: Joi.string().uri({ scheme: ['http', 'https'] }).required()
       .messages({
         'string.uri': 'L\'URL du contenu soumis est invalide.',
+        'string.uriCustomScheme': 'L\'URL du contenu doit commencer par http:// ou https://.',
         'any.required': 'L\'URL du contenu est obligatoire.',
       }),
   }),

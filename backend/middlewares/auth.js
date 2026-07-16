@@ -62,7 +62,7 @@ function buildMockUser(req) {
 // Vérifie le JWT dans le header Authorization: Bearer <token>
 // Injecte req.user = { id, role, email } si valide
 
-export function verifyToken(req, res, next) {
+export async function verifyToken(req, res, next) {
   const header = req.headers['authorization'];
   if (!header || !header.startsWith('Bearer '))
     return res.status(401).json({ success: false, message: 'Token manquant. Veuillez vous connecter.' });
@@ -76,7 +76,15 @@ export function verifyToken(req, res, next) {
 
   try {
     const payload = jwt.verify(token, SECRET);
+
+    // SECURITE : token révoqué au logout ? (voir revokeToken ci-dessus)
+    const revoque = await TokenRevoque.findByPk(payload.jti);
+    if (revoque) {
+      return res.status(401).json({ success: false, message: 'Session terminée. Veuillez vous reconnecter.' });
+    }
+
     req.user = { id: payload.id, role: payload.role, email: payload.email };
+    req.tokenPayload = payload; // utile pour la révocation dans le controller de déconnexion
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError')
@@ -166,35 +174,4 @@ export async function revokeToken(payload) {
 
 export function decodeSansVerifier(token) {
   try { return jwt.decode(token); } catch { return null; }
-}
-
-export async function verifyToken(req, res, next) {
-  const header = req.headers['authorization'];
-  if (!header || !header.startsWith('Bearer '))
-    return res.status(401).json({ success: false, message: 'Token manquant. Veuillez vous connecter.' });
-
-  const token = header.split(' ')[1];
-
-  if (MOCK_AUTH_ENABLED && token === 'MOCK_TOKEN_DEV') {
-    req.user = buildMockUser(req);
-    return next();
-  }
-
-  try {
-    const payload = jwt.verify(token, SECRET);
-
-    // SECURITE : token révoqué au logout ? (voir revokeToken ci-dessus)
-    const revoque = await TokenRevoque.findByPk(payload.jti);
-    if (revoque) {
-      return res.status(401).json({ success: false, message: 'Session terminée. Veuillez vous reconnecter.' });
-    }
-
-    req.user = { id: payload.id, role: payload.role, email: payload.email };
-    req.tokenPayload = payload; // utile pour la révocation dans le controller de déconnexion
-    next();
-  } catch (err) {
-    if (err.name === 'TokenExpiredError')
-      return res.status(401).json({ success: false, message: 'Session expirée. Veuillez vous reconnecter.' });
-    return res.status(401).json({ success: false, message: 'Token invalide.' });
-  }
 }
