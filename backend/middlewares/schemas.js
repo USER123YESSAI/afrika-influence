@@ -42,6 +42,52 @@ export const schemas = {
     nouveauMotDePasse: Joi.string().min(8).required(),
   }),
 
+  // ─── ADMIN ───────────────────────────────────────────────────────────────
+  // SECURITE : ces filtres arrivent en query string (req.query) et sont passés
+  // à Sequelize côté service. L'ORM protège déjà contre l'injection SQL, mais
+  // sans validation, une valeur malformée (ex: dateDebut=azerty, page=-5,
+  // limit=999999) atteint quand même le service et peut provoquer une erreur
+  // non maîtrisée (Invalid Date, pagination aberrante, requête très coûteuse
+  // avec un limit énorme). On verrouille donc le format, les bornes, et les
+  // valeurs autorisées, comme pour toutes les autres routes du projet.
+
+  // GET /api/admin/utilisateurs
+  filtreUtilisateurs: Joi.object({
+    role: Joi.string().valid('CREATEUR', 'ENTREPRISE', 'PARTICULIER', 'ADMINISTRATEUR', 'MODERATEUR')
+      .messages({ 'any.only': 'Rôle invalide.' }),
+    statut: Joi.string().valid('validated', 'rejected', 'suspended', 'pending', 'banned')
+      .messages({ 'any.only': 'Statut invalide.' }),
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(200).default(20)
+      .messages({ 'number.max': 'La limite ne peut pas dépasser 200 éléments par page.' }),
+  }),
+
+  // GET /api/admin/logs
+  filtreLogs: Joi.object({
+    typeAction: Joi.string().max(60).trim(),
+    acteurId: Joi.string().uuid()
+      .messages({ 'string.uuid': 'L\'identifiant de l\'acteur doit être un UUID valide.' }),
+    dateDebut: Joi.date().iso()
+      .messages({ 'date.format': 'La date de début doit être au format ISO (ex: 2026-07-01).' }),
+    dateFin: Joi.date().iso().min(Joi.ref('dateDebut'))
+      .messages({
+        'date.format': 'La date de fin doit être au format ISO (ex: 2026-07-16).',
+        'date.min': 'La date de fin doit être postérieure à la date de début.',
+      }),
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(200).default(50)
+      .messages({ 'number.max': 'La limite ne peut pas dépasser 200 éléments par page.' }),
+  }),
+
+  // GET /api/admin/signalements
+  filtreSignalements: Joi.object({
+    statut: Joi.string().valid('EN_ATTENTE', 'EN_COURS', 'TRAITE', 'REJETE')
+      .messages({ 'any.only': 'Statut de signalement invalide.' }),
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(200).default(20)
+      .messages({ 'number.max': 'La limite ne peut pas dépasser 200 éléments par page.' }),
+  }),
+
   // ─── CRÉATEUR ─────────────────────────────────────────────────────────────
 
   // PUT /api/createurs/:id

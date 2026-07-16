@@ -16,11 +16,12 @@ import { verifyToken, requireRole, optionalAuth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { schemas } from '../middlewares/schemas.js';
 import { mediaUpload, verifierSignatureFichier } from '../middlewares/upload.js';
+import { publicListLimiter } from '../middlewares/antiBot.js';
 
 const router = Router();
 
 // ─── PUBLIC (pour créateurs) ───────────────────────────────────────────────────
-router.get('/publiques', getCampagnesPubliques); // Campagnes publiées accessibles aux créateurs
+router.get('/publiques', publicListLimiter, getCampagnesPubliques); // Campagnes publiées accessibles aux créateurs
 router.get('/:id', optionalAuth, getCampagne); // Détails d'une campagne — BROUILLON restreinte au propriétaire (voir contrôleur)
 
 // ─── PROTÉGÉ : ENTREPRISE ─────────────────────────────────────────────────────

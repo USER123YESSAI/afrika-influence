@@ -33,3 +33,12 @@ export const publicFormLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: 'Trop de requêtes. Réessayez plus tard.' },
 });
+
+// ─── Limiteur générique pour tout endpoint public exposé aux bots ──────────
+export const publicListLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 60, // 60 requêtes/5min/IP — large pour un humain, contraignant pour un scraper
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Trop de requêtes sur cette ressource. Réessayez plus tard.' },
+});

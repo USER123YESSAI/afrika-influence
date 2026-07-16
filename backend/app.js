@@ -30,6 +30,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// ─── trust proxy ────────────────────────────────────────────────────────────
+// SECURITE : en production, l'app tourne généralement derrière un reverse-proxy
+// (nginx, load balancer). Sans "trust proxy", req.ip renvoie l'IP du proxy pour
+// TOUTES les requêtes — ça rend inefficaces le rate-limit et le honeypot par IP
+// (déjà en place sur /connexion et /inscription), et fausse les logs d'audit
+// (toutes les actions semblent provenir de la même IP). "1" = on fait confiance
+// au premier hop uniquement (le reverse-proxy immédiat), pas à toute la chaîne.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 // ─── CORS ──────────────────────────────────────────────────────────────────
 // SECURITE : cors() sans option reflète Access-Control-Allow-Origin: * pour

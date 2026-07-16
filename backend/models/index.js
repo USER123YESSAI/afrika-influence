@@ -2,6 +2,8 @@
 // Point d'entrée unique — UNE SEULE instance Sequelize pour tous les modèles.
 
 import sequelize from '../config/database.js';
+import TokenRevoqueModel from './tokenRevoque.js';
+
 
 // ─── Imports (tous en factory functions maintenant) ───────────────────────────
 import utilisateurModel        from './utilisateur.js';
@@ -44,6 +46,8 @@ const Offre                = offreModel(sequelize);
 const Collaboration        = collaborationModel(sequelize);
 const CollaborationContenu = collaborationContenuModel(sequelize);
 const Message              = messageModel(sequelize);
+
+const TokenRevoque = TokenRevoqueModel(sequelize);
 
 // ─── Dictionnaire complet ─────────────────────────────────────────────────────
 const allModels = {

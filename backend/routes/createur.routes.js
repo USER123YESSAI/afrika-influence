@@ -5,15 +5,15 @@ import { validate } from '../middlewares/validate.js';
 import { schemas } from '../middlewares/schemas.js';
 import { uploadPhoto, handleUploadError, verifierSignatureFichier } from '../middlewares/upload.js';
 import { verifyToken, requireRole } from '../middlewares/auth.js';
-
+import { publicListLimiter } from '../middlewares/antiBot.js';
 
 
 const router = Router();
 
 // ─── PUBLIC (pour entreprises) ───────────────────────────────────────────────────
 router.get('/mon-profil', verifyToken, requireRole('CREATEUR'), ctrl.getMonProfil);
-router.get('/', ctrl.listerCreateurs); // Liste tous les créateurs avec filtres
-router.get('/:id', ctrl.getProfil); // Profil détaillé d'un créateur
+router.get('/', publicListLimiter, ctrl.listerCreateurs); // Liste tous les créateurs avec filtres
+router.get('/:id', publicListLimiter, ctrl.getProfil); // Profil détaillé d'un créateur
 router.get('/:id/offres', ctrl.getOffresCreateur); // Offres d'un créateur
 
 // ─── PROTÉGÉ : CRÉATEUR ───────────────────────────────────────────────────────

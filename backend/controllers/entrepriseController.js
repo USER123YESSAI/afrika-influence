@@ -25,7 +25,7 @@ export const getEntreprisesPubliques = async (req, res) => {
     const where = {};
     if (secteur) where.secteur = secteur;
     if (pays) where.pays = pays;
-    if (recherche) where.nom = { [Op.iLike]: `%${recherche}%` };
+    if (recherche) where.nom = { [Op.Like]: `%${recherche}%` };
 
     const entreprises = await Entreprise.findAll({
       where,
