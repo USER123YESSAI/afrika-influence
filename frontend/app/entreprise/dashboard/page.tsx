@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { getMesCampagnes, type Campagne, type StatutCampagne } from '@/lib/api';
+import { getMesCampagnes, getMonProfilEntreprise, type Campagne, type StatutCampagne } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 const STATUTS: StatutCampagne[] = ['BROUILLON', 'PUBLIEE', 'EN_COURS', 'EN_ATTENTE_VALIDATION', 'TERMINEE', 'ANNULEE'];
@@ -21,12 +21,13 @@ const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' CFA';
 
 export default function DashboardPage() {
   const [campagnes, setCampagnes] = useState<Campagne[]>([]);
+  const [solde, setSolde] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getMesCampagnes()
-      .then(setCampagnes)
+    Promise.all([getMesCampagnes(), getMonProfilEntreprise()])
+      .then(([c, e]) => { setCampagnes(c); setSolde(Number(e.solde ?? 0)); })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -56,21 +57,27 @@ export default function DashboardPage() {
           )}
 
           {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             {[
+              { label: 'Solde disponible', value: solde !== null ? fmt(solde) : '—', color: 'text-emerald', href: '/entreprise/solde' },
               { label: 'Campagnes totales', value: campagnes.length, color: 'text-emerald' },
               { label: 'En cours', value: countByStatut('EN_COURS'), color: 'text-emerald' },
               { label: 'Budget total', value: fmt(budgetTotal), color: 'text-mist' },
               { label: 'Budget dépensé', value: fmt(budgetDepense), color: 'text-amber-400' },
-            ].map((kpi) => (
-              <div
-                key={kpi.label}
-                className="rounded-2xl border border-hairline bg-surface p-5 hover-lift transition-all"
-              >
-                <p className="text-xs text-fog mb-1">{kpi.label}</p>
-                <p className={`font-display text-2xl font-semibold ${kpi.color}`}>{kpi.value}</p>
-              </div>
-            ))}
+            ].map((kpi) => {
+              const content = (
+                <>
+                  <p className="text-xs text-fog mb-1">{kpi.label}</p>
+                  <p className={`font-display text-2xl font-semibold ${kpi.color}`}>{kpi.value}</p>
+                </>
+              );
+              const className = "rounded-2xl border border-hairline bg-surface p-5 hover-lift transition-all block";
+              return kpi.href ? (
+                <Link key={kpi.label} href={kpi.href} className={className}>{content}</Link>
+              ) : (
+                <div key={kpi.label} className={className}>{content}</div>
+              );
+            })}
           </div>
 
           {/* Par statut */}
@@ -110,7 +117,7 @@ export default function DashboardPage() {
                     >
                       {c.titre}
                     </Link>
-                    <span className="text-xs text-fog ml-4 shrink-0">{fmt(c.budget)}</span>
+                    <span className="text-xs text-fog ml-4 shrink-0">{fmt(c.budget ?? 0)}</span>
                   </div>
                 ))}
               </div>

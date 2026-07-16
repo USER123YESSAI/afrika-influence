@@ -10,9 +10,10 @@ import {
   annulerCampagne,
   terminerCampagne,
   addMedia,
+  getProgressionCampagne,
 } from '../controllers/campagneController.js';
 import { getRecommandations } from '../controllers/recommandationController.js';
-import { verifyToken, requireRole } from '../middlewares/auth.js';
+import { verifyToken, requireRole, optionalAuth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { schemas } from '../middlewares/schemas.js';
 import { mediaUpload } from '../middlewares/upload.js';
@@ -20,8 +21,8 @@ import { mediaUpload } from '../middlewares/upload.js';
 const router = Router();
 
 // ─── PUBLIC (pour créateurs) ───────────────────────────────────────────────────
-router.get('/publiques', getCampagnesPubliques); // Campagnes publiées accessibles aux créateurs
-router.get('/:id', getCampagne); // Détails d'une campagne spécifique
+router.get('/publiques', optionalAuth, getCampagnesPubliques); // Campagnes publiées accessibles aux créateurs
+router.get('/:id', optionalAuth, getCampagne); // Détails d'une campagne spécifique
 
 // ─── PROTÉGÉ : ENTREPRISE ─────────────────────────────────────────────────────
 router.post('/', verifyToken, requireRole('ENTREPRISE'), validate(schemas.creerCampagne), createCampagne);
@@ -33,5 +34,6 @@ router.patch('/:id/annuler', verifyToken, requireRole('ENTREPRISE'), annulerCamp
 router.patch('/:id/terminer', verifyToken, requireRole('ENTREPRISE'), terminerCampagne);
 router.post('/:id/medias', verifyToken, requireRole('ENTREPRISE'), mediaUpload.single('media'), addMedia);
 router.get('/:id/recommandations', verifyToken, requireRole('ENTREPRISE'), getRecommandations);
+router.get('/:id/progression', verifyToken, requireRole('ENTREPRISE'), getProgressionCampagne);
 
 export default router;

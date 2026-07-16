@@ -18,7 +18,7 @@ interface Props {
 
 export default function CampagneForm({ initialData = {}, onSubmit, isLoading, submitLabel = 'Enregistrer' }: Props) {
   const [form, setForm] = useState<FormData>({
-    titre: '', description: '', budget: undefined, objectifPrincipal: '',
+    titre: '', description: '', budget: undefined, budgetVisible: true, objectifPrincipal: '',
     consignesContenu: '', contraintesContenu: '', exempleContenu: '',
     nombreCreateursVoulus: undefined, nombrePostsParCreateur: undefined,
     dateDebut: '', dateFin: '',
@@ -81,6 +81,15 @@ export default function CampagneForm({ initialData = {}, onSubmit, isLoading, su
         {field('Titre de la campagne', 'titre', 'text', true)}
         {textarea('Description', 'description')}
         {field('Budget (XOF)', 'budget', 'number', true)}
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.budgetVisible !== false}
+            onChange={e => set('budgetVisible', e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          Afficher le budget aux créateurs (sinon masqué, campagne quand même visible)
+        </label>
         {textarea('Objectif principal', 'objectifPrincipal')}
       </section>
 

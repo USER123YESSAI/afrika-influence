@@ -6,7 +6,7 @@ import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { collabApi, messageApi, formatFCFA, getUser } from '@/lib/api';
+import { collabApi, messageApi, formatFCFA, getUser, type LigneContenu } from '@/lib/api';
 
 
 interface Message {
@@ -23,11 +23,13 @@ export default function CollabDetailPage() {
   const [collab, setCollab] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMsg, setNewMsg] = useState('');
-  const [contenuUrl, setContenuUrl] = useState('');
-  const [showSoumettre, setShowSoumettre] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [toast, setToast] = useState('');
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [submitUrl, setSubmitUrl] = useState('');
+  const [refusingId, setRefusingId] = useState<string | null>(null);
+  const [refusRaison, setRefusRaison] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const currentUserId   = typeof window !== 'undefined' ? (getUser()?.id ?? '') : '';
   const currentUserRole = typeof window !== 'undefined' ? (getUser()?.role ?? '') : '';
@@ -81,7 +83,10 @@ export default function CollabDetailPage() {
   };
 
   const handleRefuser = async () => {
-    if (!confirm('Refuser cette collaboration ?')) return;
+    const message = collab.statut === 'INVITATION_ENVOYEE'
+      ? 'Refuser cette invitation ?'
+      : 'Refuser cette collaboration ? Le budget déjà réservé pour les lignes non livrées sera libéré.';
+    if (!confirm(message)) return;
     try {
       await collabApi.refuser(id);
       setCollab((c: any) => ({ ...c, statut: 'REFUSEE' }));
@@ -89,22 +94,35 @@ export default function CollabDetailPage() {
     } catch (e: any) { showToast('❌ ' + e.message); }
   };
 
-  const handleSoumettre = async () => {
-    if (!contenuUrl.trim()) return showToast('Entrez l\'URL de votre contenu.');
+  const rafraichirCollab = async () => {
+    try { setCollab(await collabApi.detail(id)); } catch (e) { console.error(e); }
+  };
+
+  const handleSoumettre = async (ligneId: string) => {
+    if (!submitUrl.trim()) return showToast('❌ Entrez un lien.');
     try {
-      await collabApi.soumettre(id, contenuUrl.trim());
-      setCollab((c: any) => ({ ...c, statut: 'CONTENU_SOUMIS', contenuUrl: contenuUrl.trim() }));
-      setShowSoumettre(false);
-      showToast('🎉 Contenu soumis ! En attente de validation.');
+      await collabApi.soumettreLigne(ligneId, submitUrl.trim());
+      setSubmittingId(null); setSubmitUrl('');
+      showToast('🎉 Contenu soumis !');
+      rafraichirCollab();
     } catch (e: any) { showToast('❌ ' + e.message); }
   };
 
-  const handleValider = async () => {
-    if (!confirm('Valider le contenu soumis par le créateur ?')) return;
+  const handleValider = async (soumissionId: string) => {
+    if (!confirm('Valider ce contenu ?')) return;
     try {
-      await collabApi.valider(id);
-      setCollab((c: any) => ({ ...c, statut: 'CONTENU_VALIDE' }));
+      await collabApi.validerSoumission(soumissionId);
       showToast('✅ Contenu validé !');
+      rafraichirCollab();
+    } catch (e: any) { showToast('❌ ' + e.message); }
+  };
+
+  const handleRefuserSoumission = async (soumissionId: string) => {
+    try {
+      await collabApi.refuserSoumission(soumissionId, refusRaison.trim() || undefined);
+      setRefusingId(null); setRefusRaison('');
+      showToast('Contenu refusé — le créateur peut soumettre une nouvelle version.');
+      rafraichirCollab();
     } catch (e: any) { showToast('❌ ' + e.message); }
   };
 
@@ -171,7 +189,8 @@ export default function CollabDetailPage() {
 
           {/* Actions selon statut */}
           <div className="flex gap-2">
-            {collab.statut === 'INVITATION_ENVOYEE' && currentUserRole === 'CREATEUR' && (
+            {((collab.statut === 'INVITATION_ENVOYEE' && currentUserRole === 'CREATEUR') ||
+              (collab.statut === 'CANDIDATURE_ENVOYEE' && (currentUserRole === 'ENTREPRISE' || currentUserRole === 'PARTICULIER'))) && (
               <>
                 <button onClick={handleRefuser}
                   className="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-2xl hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
@@ -183,28 +202,22 @@ export default function CollabDetailPage() {
                 </button>
               </>
             )}
-            {collab.statut === 'TRAVAIL_EN_COURS' && currentUserRole === 'CREATEUR' && (
+            {collab.statut === 'TRAVAIL_EN_COURS' && (
               <>
+                <button onClick={handleRefuser}
+                  className="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-2xl hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
+                  Refuser la collaboration
+                </button>
                 <Link href={`/collaborations/${id}/contenus`}
                   className="px-4 py-2 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-2xl hover:bg-emerald-50 transition-all">
-                  + Ajouter contenus
+                  {currentUserRole === 'CREATEUR' ? 'Négocier mes tarifs' : 'Examiner les propositions'}
                 </Link>
-                <button onClick={() => setShowSoumettre(true)}
-                  className="px-4 py-2 bg-gradient-emerald text-white text-sm font-semibold rounded-2xl hover:opacity-90 transition-all shadow-bento hover-lift">
-                  Soumettre le contenu
-                </button>
               </>
             )}
-            {collab.statut === 'CONTENU_SOUMIS' && (currentUserRole === 'ENTREPRISE' || currentUserRole === 'PARTICULIER') && (
-              <button onClick={handleValider}
-                className="px-4 py-2 bg-gradient-emerald text-white text-sm font-semibold rounded-2xl hover:opacity-90 transition-all shadow-bento hover-lift">
-                Valider le contenu ✓
-              </button>
-            )}
-            {collab.statut === 'CONTENU_VALIDE' && (currentUserRole === 'ENTREPRISE' || currentUserRole === 'PARTICULIER') && (
-              <Link href={`/collaborations/${id}/paiement`}
-                className="px-4 py-2 bg-gradient-emerald text-white text-sm font-semibold rounded-2xl hover:opacity-90 transition-all shadow-bento hover-lift">
-                Payer le créateur 💳
+            {collab.statut === 'TERMINEE' && (
+              <Link href="/paiements"
+                className="px-4 py-2 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-2xl hover:bg-emerald-50 transition-all">
+                {(currentUserRole === 'ENTREPRISE' || currentUserRole === 'PARTICULIER') ? '✓ Payé automatiquement — voir le reçu' : '✓ Payé — voir mes revenus'}
               </Link>
             )}
           </div>
@@ -250,16 +263,123 @@ export default function CollabDetailPage() {
               </div>
             </div>
 
-            {/* Contenu soumis */}
-            {collab.contenuUrl && (
-              <div className="bg-white rounded-3xl border border-emerald-100 shadow-bento p-5">
-                <h2 className="font-semibold text-gray-900 mb-2">Contenu soumis</h2>
-                <a href={collab.contenuUrl} target="_blank" rel="noreferrer"
-                  className="text-sm text-emerald-600 hover:underline break-all">
-                  🔗 {collab.contenuUrl}
-                </a>
-              </div>
-            )}
+            {/* Livraison des lignes acceptées — l'action se fait ici, pas besoin de retourner négocier */}
+            {(() => {
+              const contenus: LigneContenu[] = collab.contenus || [];
+              const lignesAcceptees = contenus.filter(l => l.statut === 'ACCEPTEE');
+              const enNegociation = contenus.filter(l => l.statut === 'PROPOSEE' || l.statut === 'REFUSEE').length;
+              if (contenus.length === 0) return null;
+
+              return (
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-semibold text-gray-900">Contenus à livrer</h2>
+                    <span className="text-xs text-gray-400">
+                      {formatFCFA(collab.totalValide || 0)} validé / {formatFCFA(totalRemuneration)} engagé
+                    </span>
+                  </div>
+
+                  {lignesAcceptees.length === 0 ? (
+                    <p className="text-sm text-gray-400">Aucune ligne acceptée pour l'instant.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {lignesAcceptees.map((ligne) => {
+                        const soumissions = ligne.soumissions ?? [];
+                        const validees = soumissions.filter(s => s.statut === 'VALIDEE').length;
+                        const actives = soumissions.filter(s => s.statut !== 'REFUSEE');
+                        const encoreASoumettre = ligne.quantite - actives.length;
+                        return (
+                          <div key={ligne.id} className="p-3 bg-gray-50 rounded-2xl">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-gray-900">{ligne.typeContenu}</span>
+                              <span className="text-xs text-gray-500">{validees}/{ligne.quantite} livrée(s)</span>
+                            </div>
+
+                            {soumissions.map((s, i) => (
+                              <div key={s.id} className="py-1.5 border-t border-gray-100 first:border-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <a href={s.contenuUrl} target="_blank" rel="noreferrer"
+                                    className={`text-xs hover:underline truncate flex-1 ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-emerald-600'}`}>
+                                    🔗 Unité {i + 1} — {s.contenuUrl}
+                                  </a>
+                                  {s.statut === 'VALIDEE' && (
+                                    <span className="text-xs text-emerald-600 font-medium shrink-0">✓ Validée</span>
+                                  )}
+                                  {s.statut === 'REFUSEE' && (
+                                    <span className="text-xs text-red-600 font-medium shrink-0">✗ Refusée</span>
+                                  )}
+                                  {s.statut === 'EN_ATTENTE' && currentUserRole === 'CREATEUR' && (
+                                    <span className="text-xs text-amber-600 shrink-0">En attente</span>
+                                  )}
+                                  {s.statut === 'EN_ATTENTE' && currentUserRole !== 'CREATEUR' && refusingId !== s.id && (
+                                    <div className="flex gap-1.5 shrink-0">
+                                      <button onClick={() => setRefusingId(s.id)}
+                                        className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-red-50 hover:border-red-200 hover:text-red-600">
+                                        Refuser
+                                      </button>
+                                      <button onClick={() => handleValider(s.id)}
+                                        className="text-xs px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
+                                        Valider
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                                {s.statut === 'REFUSEE' && s.raisonRefus && (
+                                  <p className="text-xs text-red-500 mt-1">Motif : {s.raisonRefus}</p>
+                                )}
+                                {s.statut === 'EN_ATTENTE' && currentUserRole !== 'CREATEUR' && refusingId === s.id && (
+                                  <div className="flex gap-2 mt-1.5">
+                                    <input value={refusRaison} onChange={e => setRefusRaison(e.target.value)}
+                                      placeholder="Motif du refus (optionnel)" autoFocus
+                                      className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                                    <button onClick={() => setRefusingId(null)}
+                                      className="px-2.5 py-1.5 text-xs text-gray-500 hover:text-gray-700">Annuler</button>
+                                    <button onClick={() => handleRefuserSoumission(s.id)}
+                                      className="px-2.5 py-1.5 text-xs font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                      Confirmer le refus
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+
+                            {encoreASoumettre > 0 && currentUserRole === 'CREATEUR' && (
+                              submittingId === ligne.id ? (
+                                <div className="flex gap-2 mt-2">
+                                  <input value={submitUrl} onChange={e => setSubmitUrl(e.target.value)}
+                                    placeholder="https://instagram.com/p/..." autoFocus
+                                    className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                                  <button onClick={() => handleSoumettre(ligne.id)}
+                                    className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                    Envoyer
+                                  </button>
+                                </div>
+                              ) : (
+                                <button onClick={() => setSubmittingId(ligne.id)}
+                                  className="w-full mt-2 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                                  Soumettre {actives.length > 0 ? `l'unité ${actives.length + 1}/${ligne.quantite}` : 'mon contenu'}
+                                </button>
+                              )
+                            )}
+                            {encoreASoumettre > 0 && currentUserRole !== 'CREATEUR' && (
+                              <p className="text-xs text-gray-400 mt-2">En attente de {encoreASoumettre} livraison(s) du créateur.</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {enNegociation > 0 && (
+                    <Link href={`/collaborations/${id}/contenus`}
+                      className="mt-3 flex items-center justify-between text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 hover:bg-amber-100 transition-colors">
+                      <span>{enNegociation} ligne(s) en négociation</span>
+                      <span className="font-medium">Voir →</span>
+                    </Link>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Messagerie */}
             <div className="bg-white rounded-3xl border border-gray-100 shadow-bento overflow-hidden">
@@ -380,36 +500,6 @@ export default function CollabDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* Modal soumettre contenu */}
-      {showSoumettre && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-soft w-full max-w-md p-6">
-            <h2 className="font-display text-lg font-bold text-emerald-600 mb-4">
-              Soumettre mon contenu
-            </h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Partagez le lien vers votre contenu publié (Instagram, TikTok, YouTube, Drive…)
-            </p>
-            <input
-              value={contenuUrl}
-              onChange={e => setContenuUrl(e.target.value)}
-              placeholder="https://www.instagram.com/p/..."
-              className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 mb-4"
-            />
-            <div className="flex gap-3">
-              <button onClick={() => setShowSoumettre(false)}
-                className="flex-1 py-3 border border-gray-200 text-gray-600 font-medium rounded-2xl hover:bg-gray-50">
-                Annuler
-              </button>
-              <button onClick={handleSoumettre}
-                className="flex-1 py-3 bg-gradient-emerald text-white font-semibold rounded-2xl hover:opacity-90 transition-all hover-lift">
-                Soumettre
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </Shell>
   );
 }

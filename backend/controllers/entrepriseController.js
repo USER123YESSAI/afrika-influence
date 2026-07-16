@@ -3,6 +3,7 @@ import Joi from 'joi';
 import { Entreprise, Campagne } from '../models/index.js';
 import { Op } from 'sequelize';
 import { creerLog } from '../services/logService.js';
+import { crediterSolde, getHistorique } from '../services/soldeService.js';
 
 const ok  = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const err = (res, e, status = 500) =>
@@ -95,5 +96,30 @@ export const uploadLogo = async (req, res) => {
     await entreprise.update({ logoUrl });
     await creerLog(req.user.id, 'UPLOAD_LOGO', 'Entreprise', entreprise.id, null, req.ip);
     return ok(res, { logoUrl });
+  } catch (e) { return err(res, e); }
+};
+
+// POST /api/entreprises/solde/recharger — recharge simulée (aucun vrai paiement)
+export const rechargerSolde = async (req, res) => {
+  try {
+    const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
+    if (!entreprise) return res.status(404).json({ success: false, message: 'Profil entreprise non trouvé.' });
+
+    const { montant } = req.body;
+    const { solde } = await crediterSolde(entreprise.id, montant);
+    await creerLog(req.user.id, 'RECHARGE_SOLDE', 'Entreprise', entreprise.id, { montant }, req.ip);
+    return ok(res, { solde });
+  } catch (e) { return err(res, e); }
+};
+
+// GET /api/entreprises/solde/historique
+export const getHistoriqueSolde = async (req, res) => {
+  try {
+    const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
+    if (!entreprise) return res.status(404).json({ success: false, message: 'Profil entreprise non trouvé.' });
+
+    const { page, limit } = req.query;
+    const data = await getHistorique(entreprise.id, { page: +page || 1, limit: +limit || 20 });
+    return ok(res, data);
   } catch (e) { return err(res, e); }
 };

@@ -1,6 +1,7 @@
 import * as adminService  from '../services/adminService.js';
 import * as logService    from '../services/logService.js';
 import * as notifService  from '../services/notificationService.js';
+import * as soldeService  from '../services/soldeService.js';
 
 const ok  = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const err = (res, e) => res.status(e.status || 500).json({ success: false, message: e.message || 'Erreur serveur.' });
@@ -19,6 +20,15 @@ export async function changerStatut(req, res) {
   try {
     const { statut } = req.body;
     const data = await adminService.changerStatutUtilisateur(req.params.id, statut, req.user.id);
+    ok(res, data);
+  } catch (e) { err(res, e); }
+}
+
+// GET /api/admin/transactions
+export async function getTransactions(req, res) {
+  try {
+    const { type, entrepriseId, page, limit } = req.query;
+    const data = await soldeService.getToutesLesTransactions({ type, entrepriseId, page: +page || 1, limit: +limit || 50 });
     ok(res, data);
   } catch (e) { err(res, e); }
 }

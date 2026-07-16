@@ -80,6 +80,21 @@ export interface Entreprise {
   pays?: string;
   siteWeb?: string;
   telephone?: string;
+  solde?: number;
+}
+
+export type TypeTransaction = 'RECHARGE' | 'DEBIT_CAMPAGNE' | 'REMBOURSEMENT' | 'PAIEMENT_CREATEUR';
+
+export interface Transaction {
+  id: string;
+  entrepriseId: string;
+  campagneId?: string;
+  type: TypeTransaction;
+  montant: number;
+  soldeApres: number;
+  description?: string;
+  dateTransaction: string;
+  entreprise?: { id: string; nom: string };
 }
 
 export interface Campagne {
@@ -87,8 +102,9 @@ export interface Campagne {
   entrepriseId: string;
   titre: string;
   description?: string;
-  budget: number;
-  budgetDepense: number;
+  budget: number | null;
+  budgetDepense: number | null;
+  budgetVisible?: boolean;
   objectifPrincipal?: string;
   consignesContenu?: string;
   contraintesContenu?: string;
@@ -177,6 +193,10 @@ export const adminApi = {
   },
   traiterSignalement: (id: string, data: unknown) =>
     request(`/admin/signalements/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getTransactions: (params?: Record<string, string>) => {
+    const q = params && Object.keys(params).filter(k => params[k]).length ? '?' + new URLSearchParams(params) : '';
+    return request<{ transactions: Transaction[]; total: number; page: number; pages: number }>(`/admin/transactions${q}`);
+  },
 };
 
 // ─── NOTIFICATIONS (P1) ───────────────────────────────────────────────────────
@@ -194,6 +214,16 @@ export const getEntreprise      = (id: string)                         => reques
 export const getMonProfilEntreprise = ()                               => request<Entreprise>('/entreprises/mon-profil');
 export const updateEntreprise   = (id: string, data: Partial<Entreprise>) =>
   request<Entreprise>(`/entreprises/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
+// ─── SOLDE (portefeuille entreprise) ──────────────────────────────────────────
+export const soldeApi = {
+  recharger: (montant: number) =>
+    request<{ solde: number }>('/entreprises/solde/recharger', { method: 'POST', body: JSON.stringify({ montant }) }),
+  historique: (page = 1, limit = 20) =>
+    request<{ transactions: Transaction[]; total: number; page: number; pages: number }>(
+      `/entreprises/solde/historique?page=${page}&limit=${limit}`
+    ),
+};
 
 // ─── CAMPAGNES (P2) ───────────────────────────────────────────────────────────
 export const getMesCampagnes = (statut?: string) =>
@@ -227,6 +257,25 @@ export const terminerCampagne = (id: string) =>
 
 export const getRecommandations = (id: string) =>
   request<Recommandation[]>(`/campagnes/${id}/recommandations`);
+
+export interface ProgressionCreateur {
+  collaborationId: string;
+  statutCollaboration: string;
+  createur: { id: string; nom: string; handle?: string; photoProfilUrl?: string };
+  quantitePrevue: number;
+  quantiteLivree: number;
+  montantEngage: number;
+  montantValide: number;
+}
+
+export interface ProgressionCampagne {
+  totalPrevu: number;
+  totalLivre: number;
+  parCreateur: ProgressionCreateur[];
+}
+
+export const getProgressionCampagne = (id: string) =>
+  request<ProgressionCampagne>(`/campagnes/${id}/progression`);
 
 export const addMedia = async (id: string, file: File): Promise<unknown> => {
   const form = new FormData();
@@ -302,22 +351,69 @@ export const offreApi = {
 };
 
 // ─── COLLABORATIONS (P3) ──────────────────────────────────────────────────────
+export type StatutLigne = 'PROPOSEE' | 'ACCEPTEE' | 'REFUSEE';
+
+export type StatutSoumission = 'EN_ATTENTE' | 'VALIDEE' | 'REFUSEE';
+
+export interface Soumission {
+  id: string;
+  ligneId: string;
+  contenuUrl: string;
+  dateSoumission: string;
+  dateValidation?: string;
+  statut: StatutSoumission;
+  raisonRefus?: string;
+  dateTraitement?: string;
+}
+
+export interface LigneContenu {
+  id: string;
+  collaborationId: string;
+  offreId: string;
+  typeContenu: string;
+  quantite: number;
+  prixUnitaire: number;
+  sousTotal: number;
+  statut: StatutLigne;
+  dateProposition: string;
+  dateTraitement?: string;
+  offre?: { id: string; reseau: string; typeContenu: string; prix: number; delaiLivraison: number };
+  soumissions?: Soumission[];
+}
+
 export const collabApi = {
   lister:  (statut?: string) => request(`/collaborations${statut ? `?statut=${statut}` : ''}`),
   detail:  (id: string) => request(`/collaborations/${id}`),
   inviter: (data: unknown) =>
     request('/collaborations/inviter', { method: 'POST', body: JSON.stringify(data) }),
+  postuler: (campagneId: string) =>
+    request('/collaborations/postuler', { method: 'POST', body: JSON.stringify({ campagneId }) }),
   accepter: (id: string) =>
     request(`/collaborations/${id}/accepter`, { method: 'PATCH' }),
   refuser:  (id: string) =>
     request(`/collaborations/${id}/refuser`, { method: 'PATCH' }),
-  soumettre: (id: string, contenuUrl: string) =>
-    request(`/collaborations/${id}/soumettre`, { method: 'PATCH', body: JSON.stringify({ contenuUrl }) }),
-  valider:   (id: string) =>
-    request(`/collaborations/${id}/valider`, { method: 'PATCH' }),
-  ajouterContenu: (id: string, data: unknown) =>
-    request(`/collaborations/${id}/contenus`, { method: 'POST', body: JSON.stringify(data) }),
-  listerContenus: (id: string) => request(`/collaborations/${id}/contenus`),
+
+  // Négociation ligne par ligne
+  proposerLigne: (id: string, data: { offreId: string; quantite: number; prixUnitaire: number }) =>
+    request<LigneContenu>(`/collaborations/${id}/lignes`, { method: 'POST', body: JSON.stringify(data) }),
+  listerLignes: (id: string) => request<LigneContenu[]>(`/collaborations/${id}/lignes`),
+  modifierLigne: (ligneId: string, data: { quantite?: number; prixUnitaire?: number }) =>
+    request<LigneContenu>(`/collaborations/lignes/${ligneId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  supprimerLigne: (ligneId: string) =>
+    request<void>(`/collaborations/lignes/${ligneId}`, { method: 'DELETE' }),
+  traiterLigne: (ligneId: string, action: 'ACCEPTER' | 'REFUSER') =>
+    request<LigneContenu>(`/collaborations/lignes/${ligneId}/traiter`, { method: 'PATCH', body: JSON.stringify({ action }) }),
+
+  // Soumissions — une ligne acceptée de quantite N attend N soumissions distinctes
+  soumettreLigne: (ligneId: string, contenuUrl: string) =>
+    request<Soumission>(`/collaborations/lignes/${ligneId}/soumettre`, { method: 'PATCH', body: JSON.stringify({ contenuUrl }) }),
+  validerSoumission: (soumissionId: string) =>
+    request<Soumission>(`/collaborations/soumissions/${soumissionId}/valider`, { method: 'PATCH' }),
+  refuserSoumission: (soumissionId: string, raison?: string) =>
+    request<Soumission>(`/collaborations/soumissions/${soumissionId}/refuser`, { method: 'PATCH', body: JSON.stringify({ raison }) }),
+
+  // Alias rétrocompatible (même route que listerLignes)
+  listerContenus: (id: string) => request<LigneContenu[]>(`/collaborations/${id}/contenus`),
 };
 
 // ─── MESSAGES (P3) ────────────────────────────────────────────────────────────
@@ -346,6 +442,13 @@ export const messageApi = {
   marquerLu: (id: string) => request(`/messages/${id}/lue`, { method: 'PATCH' }),
 };
 
+
+// ─── FAVORIS (créateur) ────────────────────────────────────────────────────────
+export const favoriApi = {
+  lister:  () => request<Campagne[]>('/favoris'),
+  ajouter: (campagneId: string) => request('/favoris', { method: 'POST', body: JSON.stringify({ campagneId }) }),
+  retirer: (campagneId: string) => request<void>(`/favoris/${campagneId}`, { method: 'DELETE' }),
+};
 
 // ─── MODÉRATEUR ───────────────────────────────────────────────────────────────
 export const moderateurApi = {
@@ -382,6 +485,7 @@ export function formatFCFA(montant: number): string {
 
 export const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   INVITATION_ENVOYEE: { label: 'Invitation envoyée', color: 'bg-amber-100 text-amber-800' },
+  CANDIDATURE_ENVOYEE:{ label: 'Candidature envoyée', color: 'bg-amber-100 text-amber-800' },
   TRAVAIL_EN_COURS:   { label: 'En cours',           color: 'bg-blue-100 text-blue-800' },
   CONTENU_SOUMIS:     { label: 'Contenu soumis',     color: 'bg-purple-100 text-purple-800' },
   CONTENU_VALIDE:     { label: 'Validé ✓',           color: 'bg-emerald-100 text-emerald-800' },

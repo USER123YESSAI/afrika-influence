@@ -37,6 +37,26 @@ export function verifyToken(req, res, next) {
   }
 }
 
+// ─── optionalAuth ─────────────────────────────────────────────────────────────
+// Comme verifyToken, mais ne bloque jamais la requête : si le token est absent
+// ou invalide, req.user reste simplement undefined. Utile pour les routes
+// publiques dont le comportement varie légèrement selon qui consulte (ex :
+// masquer le budget d'une campagne sauf pour l'entreprise propriétaire).
+
+export function optionalAuth(req, res, next) {
+  const header = req.headers['authorization'];
+  if (!header || !header.startsWith('Bearer ')) return next();
+
+  const token = header.split(' ')[1];
+  try {
+    const payload = jwt.verify(token, SECRET);
+    req.user = { id: payload.id, role: payload.role, email: payload.email };
+  } catch {
+    // Token présent mais invalide/expiré — on continue en visiteur anonyme.
+  }
+  next();
+}
+
 // ─── requireRole ──────────────────────────────────────────────────────────────
 // Vérifie que req.user.role correspond au(x) rôle(s) autorisé(s)
 // Utilisation : requireRole('CREATEUR') ou requireRole('CREATEUR', 'ENTREPRISE')
