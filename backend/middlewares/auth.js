@@ -1,4 +1,3 @@
-// backend/middlewares/auth.js
 // Export : { verifyToken, requireRole, generateToken }
 
 import jwt from 'jsonwebtoken';
