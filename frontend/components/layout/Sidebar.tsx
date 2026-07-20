@@ -64,7 +64,7 @@ export default function Sidebar() {
   const { nav, roleLabel, roleColor } = getSidebarConfig(user.role || '');
 
   return (
-    <aside className="w-64 bg-gradient-sidebar flex flex-col fixed h-full z-20 shadow-soft">
+    <aside className="w-64 bg-gradient-brand-sidebar flex flex-col fixed h-full z-20 shadow-soft">
       {/* Logo */}
       <div className="px-5 py-6 border-b border-white/10">
         <Link href="/" className="flex items-center gap-3 mb-3 hover:opacity-80 transition-opacity">
@@ -90,7 +90,7 @@ export default function Sidebar() {
               className={`sidebar-link ${active ? 'active' : ''}`}>
               <span className="w-5 h-5 flex items-center justify-center flex-shrink-0">{item.icon}</span>
               <span>{item.label}</span>
-              {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+              {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-400" />}
             </Link>
           );
         })}

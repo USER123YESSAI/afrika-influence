@@ -149,7 +149,7 @@ export default function CreateursEntreprisePage() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold text-emerald-600">Créateurs collaborateurs</h1>
+            <h1 className="font-display text-3xl font-bold text-brand-600">Créateurs collaborateurs</h1>
             <p className="text-gray-600 mt-1">Consultez les profils des créateurs ayant déjà participé à des collaborations</p>
           </div>
 
@@ -161,7 +161,7 @@ export default function CreateursEntreprisePage() {
                 placeholder="Rechercher par nom ou handle..."
                 value={recherche}
                 onChange={e => setRecherche(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
 
               <label className="sr-only" htmlFor="pays-select">Pays</label>
@@ -169,7 +169,7 @@ export default function CreateursEntreprisePage() {
                 id="pays-select"
                 value={pays}
                 onChange={e => setPays(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">Tous les pays</option>
                 {PAYS_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -180,7 +180,7 @@ export default function CreateursEntreprisePage() {
                 id="niche-select"
                 value={niche}
                 onChange={e => setNiche(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">Toutes les catégories</option>
                 {NICHES_DISPONIBLES.map(n => <option key={n} value={n}>{n}</option>)}
@@ -191,7 +191,7 @@ export default function CreateursEntreprisePage() {
                 id="reseau-select"
                 value={reseau}
                 onChange={e => setReseau(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">Tous les réseaux</option>
                 {RESEAUX.map(r => <option key={r} value={r}>{r}</option>)}
@@ -202,7 +202,7 @@ export default function CreateursEntreprisePage() {
                 id="audience-select"
                 value={audienceRange}
                 onChange={e => setAudienceRange(Number(e.target.value))}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 {AUDIENCE_RANGES.map((r, i) => <option key={i} value={i}>{r.label}</option>)}
               </select>
@@ -212,7 +212,7 @@ export default function CreateursEntreprisePage() {
               <span className="text-sm text-gray-500">{createurs.length} créateur(s) trouvé(s)</span>
               <button
                 onClick={() => { setRecherche(''); setPays(''); setNiche(''); setReseau(''); setAudienceRange(0); }}
-                className="text-sm text-emerald-600 hover:underline"
+                className="text-sm text-brand-600 hover:underline"
               >
                 Réinitialiser les filtres
               </button>
@@ -256,7 +256,7 @@ export default function CreateursEntreprisePage() {
                       <tr key={createur.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => setSelectedCreateur(createur)}>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <div className="w-10 h-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {createur.photoProfilUrl && !imgError[createur.id] ? (
                                 <img 
                                   src={createur.photoProfilUrl.startsWith('http') ? createur.photoProfilUrl : `http://localhost:3001${createur.photoProfilUrl}`}
@@ -265,20 +265,20 @@ export default function CreateursEntreprisePage() {
                                   onError={() => setImgError(prev => ({ ...prev, [createur.id]: true }))}
                                 />
                               ) : (
-                                <span className="text-emerald-600 font-bold">{createur.nom[0]}</span>
+                                <span className="text-brand-600 font-bold">{createur.nom[0]}</span>
                               )}
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <span className="font-semibold text-gray-900">{createur.nom}</span>
-                                {createur.verifie && <span className="text-emerald-500 text-xs" title="Vérifié">✓</span>}
+                                {createur.verifie && <span className="text-brand-500 text-xs" title="Vérifié">✓</span>}
                               </div>
                               <div className="text-xs text-gray-400">{createur.handle}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="font-medium text-emerald-600">{formatAudience(totalAudience(createur))}</span>
+                          <span className="font-medium text-brand-600">{formatAudience(totalAudience(createur))}</span>
                         </td>
                         <td className="px-6 py-4 text-gray-500">
                           {createur.offres?.length || 0}
@@ -286,7 +286,7 @@ export default function CreateursEntreprisePage() {
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1">
                             {createur.niches?.slice(0, 2).map((n) => (
-                              <span key={n.niche} className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
+                              <span key={n.niche} className="text-[10px] px-2 py-0.5 bg-brand-100 text-brand-700 rounded-full">
                                 {n.niche}
                               </span>
                             ))}
@@ -309,7 +309,7 @@ export default function CreateursEntreprisePage() {
                         <td className="px-6 py-4 text-right">
                           <button 
                             onClick={(e) => { e.stopPropagation(); setSelectedCreateur(createur); }}
-                            className="text-xs px-4 py-1.5 bg-gradient-emerald text-white rounded-xl font-medium hover:opacity-90 transition-all"
+                            className="text-xs px-4 py-1.5 bg-gradient-brand text-white rounded-xl font-medium hover:opacity-90 transition-all"
                           >
                             Voir profil
                           </button>
@@ -329,7 +329,7 @@ export default function CreateursEntreprisePage() {
                 {/* Header modal */}
                 <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 border-b border-gray-100 px-8 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {selectedCreateur.photoProfilUrl && !imgError[selectedCreateur.id] ? (
                         <img 
                           src={selectedCreateur.photoProfilUrl.startsWith('http') ? selectedCreateur.photoProfilUrl : `http://localhost:3001${selectedCreateur.photoProfilUrl}`}
@@ -338,14 +338,14 @@ export default function CreateursEntreprisePage() {
                           onError={() => setImgError(prev => ({ ...prev, [selectedCreateur.id]: true }))}
                         />
                       ) : (
-                        <span className="text-lg font-bold text-emerald-600">{selectedCreateur.nom[0]}</span>
+                        <span className="text-lg font-bold text-brand-600">{selectedCreateur.nom[0]}</span>
                       )}
                     </div>
                     <div>
                       <h2 className="font-display text-lg font-bold text-gray-900 flex items-center gap-2">
                         {selectedCreateur.nom}
                         {selectedCreateur.verifie && (
-                          <span className="text-emerald-500 text-sm" title="Profil vérifié">✓</span>
+                          <span className="text-brand-500 text-sm" title="Profil vérifié">✓</span>
                         )}
                       </h2>
                       <p className="text-sm text-gray-500">{selectedCreateur.handle}</p>
@@ -361,28 +361,28 @@ export default function CreateursEntreprisePage() {
 
                 <div className="p-8">
                   {/* Inviter directement */}
-                  <div className="mb-8 p-5 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                  <div className="mb-8 p-5 bg-brand-50 border border-brand-100 rounded-2xl">
                     <h4 className="text-sm font-bold text-gray-900 mb-3">Inviter sur une campagne</h4>
                     {campagnesActives.length === 0 ? (
                       <p className="text-sm text-gray-500">
                         Aucune campagne publiée pour l'instant.{' '}
-                        <a href="/campagnes/nouvelle" className="text-emerald-600 hover:underline font-medium">Créer une campagne</a>
+                        <a href="/campagnes/nouvelle" className="text-brand-600 hover:underline font-medium">Créer une campagne</a>
                       </p>
                     ) : invitedFor.has(`${selectedCreateur.id}:${campagneChoisie}`) ? (
-                      <p className="text-sm text-emerald-700 font-medium">✓ Invitation envoyée pour cette campagne.</p>
+                      <p className="text-sm text-brand-700 font-medium">✓ Invitation envoyée pour cette campagne.</p>
                     ) : (
                       <div className="flex gap-3">
                         <select
                           value={campagneChoisie}
                           onChange={(e) => setCampagneChoisie(e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                          className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                         >
                           {campagnesActives.map((c) => <option key={c.id} value={c.id}>{c.titre}</option>)}
                         </select>
                         <button
                           onClick={handleInviter}
                           disabled={inviting}
-                          className="px-5 py-2.5 bg-gradient-emerald text-white rounded-xl font-semibold text-sm hover:opacity-90 disabled:opacity-50 transition-all"
+                          className="px-5 py-2.5 bg-gradient-brand text-white rounded-xl font-semibold text-sm hover:opacity-90 disabled:opacity-50 transition-all"
                         >
                           {inviting ? 'Envoi…' : 'Inviter'}
                         </button>
@@ -445,7 +445,7 @@ export default function CreateursEntreprisePage() {
                       <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Centres d'intérêt</h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedCreateur.niches?.map((n) => (
-                          <span key={n.niche} className="px-4 py-2 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:border-emerald-200 hover:bg-emerald-50 transition-colors">
+                          <span key={n.niche} className="px-4 py-2 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:border-brand-200 hover:bg-brand-50 transition-colors">
                             {n.niche}
                           </span>
                         ))}
@@ -459,7 +459,7 @@ export default function CreateursEntreprisePage() {
                       <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Offres et prestations</h4>
                       <button
                         onClick={() => setShowOffres(!showOffres)}
-                        className="text-sm text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
+                        className="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors"
                       >
                         {showOffres ? 'Masquer' : 'Voir toutes'}
                       </button>
@@ -477,7 +477,7 @@ export default function CreateursEntreprisePage() {
                             <div className="flex items-start justify-between mb-3">
                               <div>
                                 <div className="font-semibold text-gray-900">{offre.typeContenu}</div>
-                                <div className="text-sm font-medium text-emerald-600 mt-0.5">{offre.reseau}</div>
+                                <div className="text-sm font-medium text-brand-600 mt-0.5">{offre.reseau}</div>
                               </div>
                               <div className="font-bold text-gray-900 text-lg">{formatFCFA(offre.prix)}</div>
                             </div>

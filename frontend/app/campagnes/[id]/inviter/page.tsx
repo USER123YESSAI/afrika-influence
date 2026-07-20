@@ -61,7 +61,7 @@ export default function InviterPage() {
           </p>
         </div>
         <div className="mt-6">
-          <Link href={`/campagnes/${id}`} className="text-sm text-gray-400 hover:text-emerald-600">
+          <Link href={`/campagnes/${id}`} className="text-sm text-gray-400 hover:text-brand-600">
             ← Retour à la campagne
           </Link>
         </div>
@@ -74,19 +74,19 @@ export default function InviterPage() {
       <div className="max-w-6xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/campagnes" className="hover:text-emerald-600">Campagnes</Link>
+          <Link href="/campagnes" className="hover:text-brand-600">Campagnes</Link>
           <span>›</span>
-          <Link href={`/campagnes/${id}`} className="hover:text-emerald-600">{campagne.titre}</Link>
+          <Link href={`/campagnes/${id}`} className="hover:text-brand-600">{campagne.titre}</Link>
           <span>›</span>
           <span className="text-gray-700">Inviter des créateurs</span>
         </div>
 
         {error   && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm">{error}</div>}
-        {success && <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-sm">{success}</div>}
+        {success && <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-2xl text-brand-700 text-sm">{success}</div>}
 
         {/* Campaign info */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-6 mb-6">
-          <h1 className="font-display text-2xl font-bold text-emerald-600 mb-2">Inviter des créateurs</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-600 mb-2">Inviter des créateurs</h1>
           <p className="text-gray-500 text-sm mb-4">Sélectionnez les créateurs recommandés ou recherchez par nom.</p>
           <div className="flex items-center gap-4 text-sm">
             <span className="text-gray-500">Campagne :</span>
@@ -103,7 +103,7 @@ export default function InviterPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900">Créateurs recommandés par l'IA</h2>
             <button onClick={chargerRecommandations} disabled={loadingReco}
-              className="text-sm px-4 py-2 bg-gradient-emerald text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift">
+              className="text-sm px-4 py-2 bg-gradient-brand text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift">
               {loadingReco ? 'Analyse en cours…' : recommandations.length > 0 ? '🔄 Actualiser' : '✨ Générer les recommandations'}
             </button>
           </div>
@@ -119,7 +119,7 @@ export default function InviterPage() {
                     <button 
                       onClick={() => handleInviter(r.createurId)}
                       disabled={inviting === r.createurId || invitedIds.has(r.createurId)}
-                      className="w-full py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-400 disabled:opacity-50 transition-colors"
+                      className="w-full py-2 bg-brand-500 text-white rounded-lg text-sm font-semibold hover:bg-brand-400 disabled:opacity-50 transition-colors"
                     >
                       {inviting === r.createurId ? 'Envoi…' : invitedIds.has(r.createurId) ? '✓ Invité' : 'Inviter'}
                     </button>
@@ -148,7 +148,7 @@ export default function InviterPage() {
         </div>
 
         <div className="mt-2">
-          <Link href={`/campagnes/${id}`} className="text-sm text-gray-400 hover:text-emerald-600">
+          <Link href={`/campagnes/${id}`} className="text-sm text-gray-400 hover:text-brand-600">
             ← Retour à la campagne
           </Link>
         </div>

@@ -5,8 +5,8 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { soldeApi, getMonProfilEntreprise, formatFCFA, type Transaction } from '@/lib/api';
 
 const TYPE_LABELS: Record<string, { label: string; color: string; signe: '+' | '-' }> = {
-  RECHARGE:           { label: 'Recharge',              color: 'text-emerald-600', signe: '+' },
-  REMBOURSEMENT:       { label: 'Remboursement',         color: 'text-emerald-600', signe: '+' },
+  RECHARGE:           { label: 'Recharge',              color: 'text-brand-600', signe: '+' },
+  REMBOURSEMENT:       { label: 'Remboursement',         color: 'text-brand-600', signe: '+' },
   DEBIT_CAMPAGNE:      { label: 'Publication campagne',  color: 'text-red-600',     signe: '-' },
   PAIEMENT_CREATEUR:   { label: 'Paiement créateur',     color: 'text-red-600',     signe: '-' },
 };
@@ -60,7 +60,7 @@ export default function SoldePage() {
         )}
 
         <div className="max-w-3xl mx-auto space-y-6">
-          <h1 className="font-display text-2xl font-bold text-emerald-600">Mon solde</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-600">Mon solde</h1>
 
           {/* Solde actuel */}
           <div className="bg-white rounded-3xl shadow-bento p-6">
@@ -84,12 +84,12 @@ export default function SoldePage() {
                 onChange={e => setMontant(e.target.value)}
                 onWheel={e => (e.target as HTMLInputElement).blur()}
                 placeholder="Montant en FCFA"
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <button
                 type="submit"
                 disabled={recharging}
-                className="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                className="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
               >
                 {recharging ? 'Rechargement…' : 'Recharger'}
               </button>

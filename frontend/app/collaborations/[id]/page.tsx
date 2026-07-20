@@ -210,7 +210,7 @@ export default function CollabDetailPage() {
       <div className="max-w-5xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/collaborations" className="hover:text-emerald-600">Collaborations</Link>
+          <Link href="/collaborations" className="hover:text-brand-600">Collaborations</Link>
           <span>›</span>
           <span className="text-gray-700">{campagne.titre}</span>
         </div>
@@ -218,13 +218,13 @@ export default function CollabDetailPage() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-emerald-600">
+            <h1 className="font-display text-2xl font-bold text-brand-600">
               {campagne.titre}
             </h1>
             <div className="flex items-center gap-3 mt-2">
               <StatusBadge statut={collab.statut} />
               {totalRemuneration > 0 && currentUserRole === 'CREATEUR' && (
-                <span className="text-sm font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                <span className="text-sm font-semibold text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
                   {formatFCFA(totalRemuneration)}
                 </span>
               )}
@@ -241,7 +241,7 @@ export default function CollabDetailPage() {
                   Refuser
                 </button>
                 <button onClick={handleAccepter}
-                  className="px-4 py-2 bg-gradient-emerald text-white text-sm font-semibold rounded-2xl hover:opacity-90 transition-all shadow-bento hover-lift">
+                  className="px-4 py-2 bg-gradient-brand text-white text-sm font-semibold rounded-2xl hover:opacity-90 transition-all shadow-bento hover-lift">
                   Accepter
                 </button>
               </>
@@ -253,14 +253,14 @@ export default function CollabDetailPage() {
                   Refuser la collaboration
                 </button>
                 <Link href={`/collaborations/${id}/contenus`}
-                  className="px-4 py-2 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-2xl hover:bg-emerald-50 transition-all">
+                  className="px-4 py-2 border border-brand-200 text-brand-700 text-sm font-medium rounded-2xl hover:bg-brand-50 transition-all">
                   {currentUserRole === 'CREATEUR' ? 'Négocier mes tarifs' : 'Examiner les propositions'}
                 </Link>
               </>
             )}
             {collab.statut === 'TERMINEE' && (
               <Link href="/paiements"
-                className="px-4 py-2 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-2xl hover:bg-emerald-50 transition-all">
+                className="px-4 py-2 border border-brand-200 text-brand-700 text-sm font-medium rounded-2xl hover:bg-brand-50 transition-all">
                 {(currentUserRole === 'ENTREPRISE' || currentUserRole === 'PARTICULIER') ? '✓ Payé automatiquement — voir le reçu' : '✓ Payé — voir mes revenus'}
               </Link>
             )}
@@ -343,11 +343,11 @@ export default function CollabDetailPage() {
                               <div key={s.id} className="py-1.5 border-t border-gray-100 first:border-0">
                                 <div className="flex items-center justify-between gap-2">
                                   <a href={contenuUrl(s.contenuUrl)} target="_blank" rel="noreferrer"
-                                    className={`text-xs hover:underline truncate flex-1 ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-emerald-600'}`}>
+                                    className={`text-xs hover:underline truncate flex-1 ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-brand-600'}`}>
                                     {s.contenuUrl.startsWith('/uploads') ? '📎' : '🔗'} Unité {i + 1} — {s.contenuUrl.startsWith('/uploads') ? 'fichier joint' : s.contenuUrl}
                                   </a>
                                   {s.statut === 'VALIDEE' && (
-                                    <span className="text-xs text-emerald-600 font-medium shrink-0">✓ Validée</span>
+                                    <span className="text-xs text-brand-600 font-medium shrink-0">✓ Validée</span>
                                   )}
                                   {s.statut === 'REFUSEE' && (
                                     <span className="text-xs text-red-600 font-medium shrink-0">✗ Refusée</span>
@@ -359,7 +359,7 @@ export default function CollabDetailPage() {
                                         setEditingSoumissionId(s.id);
                                         setEditSoumissionUrl(s.contenuUrl.startsWith('/uploads') ? '' : s.contenuUrl);
                                         setEditSoumissionFile(null);
-                                      }} className="text-xs text-gray-400 hover:text-emerald-600">Modifier</button>
+                                      }} className="text-xs text-gray-400 hover:text-brand-600">Modifier</button>
                                       <button onClick={() => handleSupprimerSoumission(s.id)}
                                         className="text-xs text-gray-400 hover:text-red-600">Supprimer</button>
                                     </div>
@@ -371,7 +371,7 @@ export default function CollabDetailPage() {
                                         Refuser
                                       </button>
                                       <button onClick={() => handleValider(s.id)}
-                                        className="text-xs px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
+                                        className="text-xs px-2.5 py-1 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700">
                                         Valider
                                       </button>
                                     </div>
@@ -399,7 +399,7 @@ export default function CollabDetailPage() {
                                         Annuler
                                       </button>
                                       <button onClick={() => handleModifierSoumission(s.id)}
-                                        className="flex-1 px-2.5 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                        className="flex-1 px-2.5 py-1.5 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">
                                         Enregistrer
                                       </button>
                                     </div>
@@ -436,13 +436,13 @@ export default function CollabDetailPage() {
                                     </label>
                                   </div>
                                   <button onClick={() => handleSoumettre(ligne.id)}
-                                    className="w-full py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                    className="w-full py-1.5 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">
                                     Envoyer
                                   </button>
                                 </div>
                               ) : (
                                 <button onClick={() => setSubmittingId(ligne.id)}
-                                  className="w-full mt-2 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                                  className="w-full mt-2 py-1.5 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">
                                   Soumettre {actives.length > 0 ? `l'unité ${actives.length + 1}/${ligne.quantite}` : 'mon contenu'}
                                 </button>
                               )
@@ -486,7 +486,7 @@ export default function CollabDetailPage() {
                       <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl text-sm ${
                           isMine
-                            ? 'bg-emerald-600 text-white rounded-br-md'
+                            ? 'bg-brand-600 text-white rounded-br-md'
                             : 'bg-gray-100 text-gray-800 rounded-bl-md'
                         }`}>
                           {!isMine && (
@@ -519,12 +519,12 @@ export default function CollabDetailPage() {
                   onChange={e => setNewMsg(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMsg()}
                   placeholder="Votre message…"
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
                 <button
                   onClick={handleSendMsg}
                   disabled={sendingMsg || !newMsg.trim()}
-                  className="px-4 py-2.5 bg-gradient-emerald text-white text-sm font-semibold rounded-2xl hover:opacity-90 disabled:opacity-40 transition-all hover-lift"
+                  className="px-4 py-2.5 bg-gradient-brand text-white text-sm font-semibold rounded-2xl hover:opacity-90 disabled:opacity-40 transition-all hover-lift"
                 >
                   {sendingMsg ? '…' : '↑'}
                 </button>
@@ -546,7 +546,7 @@ export default function CollabDetailPage() {
                 {totalRemuneration > 0 && currentUserRole === 'CREATEUR' && (
                   <div className="flex justify-between text-sm pt-2 border-t border-gray-50">
                     <span className="text-gray-700 font-medium">Votre rémunération</span>
-                    <span className="font-bold text-emerald-700">{formatFCFA(totalRemuneration)}</span>
+                    <span className="font-bold text-brand-700">{formatFCFA(totalRemuneration)}</span>
                   </div>
                 )}
                 {campagne.dateFin && (
@@ -593,7 +593,7 @@ export default function CollabDetailPage() {
                   <h3 className="font-semibold text-gray-900 mb-1">Signaler un problème</h3>
                   <p className="text-xs text-gray-400 mb-3">Envoyé directement à l'équipe de modération.</p>
                   {signalementEnvoye ? (
-                    <p className="text-sm text-emerald-600">✅ Signalement envoyé.</p>
+                    <p className="text-sm text-brand-600">✅ Signalement envoyé.</p>
                   ) : !signalementOpen ? (
                     <button onClick={() => setSignalementOpen(true)}
                       className="w-full py-2 text-sm font-medium border border-gray-200 text-gray-600 rounded-xl hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors">

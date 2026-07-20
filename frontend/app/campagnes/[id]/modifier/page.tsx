@@ -51,8 +51,8 @@ export default function ModifierCampagnePage({ params }: { params: { id: string 
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
 
-        <Link href={`/campagnes/${id}`} className="text-sm text-gray-400 hover:text-emerald-600">← Retour</Link>
-        <h1 className="font-display text-2xl font-bold text-emerald-600">Modifier la campagne</h1>
+        <Link href={`/campagnes/${id}`} className="text-sm text-gray-400 hover:text-brand-600">← Retour</Link>
+        <h1 className="font-display text-2xl font-bold text-brand-600">Modifier la campagne</h1>
       </div>
 
       {error && <p className="mb-4 text-red-700 bg-red-50 px-4 py-3 rounded-2xl text-sm">{error}</p>}
