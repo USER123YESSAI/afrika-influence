@@ -130,7 +130,6 @@ export default function Accueil() {
 
         {/* Bandeau défilant : aperçu créateurs — cartes agrandies, photo en fond */}
         <div className="relative border-t border-hairline bg-surface/60 py-8">
-        <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">Créateurs</h2>
           <div className="flex overflow-hidden">
             <div className="marquee-track flex shrink-0 gap-5 pr-5">
               {displayCreateurs.map((c, i) => (
@@ -178,9 +177,55 @@ export default function Accueil() {
         </div>
       </section>
 
-    
       {/* ANNUAIRE PUBLIC — CRÉATEURS (aperçu verrouillé) */}
-     
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <div className="flex items-end justify-between">
+          <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">Créateurs</h2>
+          <Link href="/connexion" className="text-sm text-cyan hover:underline">
+            Voir l&apos;annuaire complet →
+          </Link>
+        </div>
+
+        <div className="mt-6 overflow-hidden rounded-2xl border border-hairline">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-surface-2 font-mono text-xs uppercase tracking-wider text-fog">
+              <tr>
+                <th className="px-5 py-3">Créateur</th>
+                <th className="px-5 py-3">Niche</th>
+                <th className="px-5 py-3">Réseaux sociaux</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayCreateurs.slice(0, 5).map((c, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-surface" : "bg-surface/60"}>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={c.isStatic ? avatarUrl(c.seed) : (c.photoProfilUrl ? getImageUrl(c.photoProfilUrl) : avatarUrl(c.nom || c.id))}
+                        alt={`Photo de profil de ${c.nom}`}
+                        className="h-11 w-11 shrink-0 rounded-full border border-hairline object-cover"
+                      />
+                      <span className="text-mist line-clamp-1">{c.nom}</span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-fog line-clamp-1">
+                    {c.isStatic ? c.niche : (c.niches && c.niches.length > 0 ? c.niches[0].niche : "-")}
+                  </td>
+                  <td className="px-5 py-3 text-fog">
+                    {c.isStatic ? c.plateforme.split(' · ')[0] : getReseaux(c)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="border-t border-hairline bg-gradient-to-b from-transparent to-ink px-5 py-6 text-center">
+            <p className="text-sm text-fog">
+              Connectez-vous pour voir les profils complets, les tarifs et contacter les créateurs.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* ANNUAIRE PUBLIC — ENTREPRISES (aperçu) */}
       <section className="mx-auto max-w-6xl px-5 py-16">

@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { getMonProfilEntreprise, updateEntreprise, getToken, type Entreprise } from '@/lib/api';
+import { getMonProfilEntreprise, updateEntreprise, getToken, getImageUrl, type Entreprise } from '@/lib/api';
+import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SECTEURS = ['MODE', 'BEAUTE', 'TECH', 'AGROALIMENTAIRE', 'SANTE', 'FINANCE', 'EDUCATION', 'TOURISME', 'AUTRE'];
 const PAYS     = ['SENEGAL', 'COTE_DIVOIRE', 'CAMEROUN', 'MALI', 'BURKINA_FASO', 'GUINEE', 'TOGO', 'BENIN', 'NIGER', 'RDC', 'AUTRE'];
@@ -23,12 +25,7 @@ export default function ProfilEntreprisePage() {
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const getImageUrl = (url: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${BASE}${url}`;
-  };
+  const { refreshUser } = useAuth();
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 3000); };
   const set = (k: keyof Entreprise, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -60,6 +57,7 @@ export default function ProfilEntreprisePage() {
       }
 
       await updateEntreprise(entrepriseId, form);
+      await refreshUser();
       showToast('✅ Profil mis à jour avec succès');
     } catch (e: any) { showToast('❌ ' + e.message); }
     finally { setSaving(false); }
@@ -148,6 +146,8 @@ export default function ProfilEntreprisePage() {
               {saving ? 'Enregistrement…' : 'Sauvegarder'}
             </button>
           </form>
+
+          <ChangePasswordForm />
         </div>
       )}
     </DashboardEntreprise>

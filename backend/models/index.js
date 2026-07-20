@@ -2,7 +2,6 @@
 // Point d'entrée unique — UNE SEULE instance Sequelize pour tous les modèles.
 
 import sequelize from '../config/database.js';
-import TokenRevoqueModel from './tokenRevoque.js';
 
 // ─── Imports (tous en factory functions maintenant) ───────────────────────────
 import utilisateurModel        from './utilisateur.js';
@@ -52,18 +51,11 @@ const Soumission            = soumissionModel(sequelize);
 const Favori                = favoriModel(sequelize);
 const Message              = messageModel(sequelize);
 
-// SECURITE : table de révocation des JWT (utilisée par verifyToken/revokeToken
-// dans middlewares/auth.js). Sans son ajout à allModels ET à l'export nommé
-// ci-dessous, l'import `{ TokenRevoque }` dans auth.js résout `undefined` et
-// fait planter en 500 la moindre requête authentifiée (findByPk sur undefined).
-const TokenRevoque = TokenRevoqueModel(sequelize);
-
 // ─── Dictionnaire complet ─────────────────────────────────────────────────────
 const allModels = {
   Utilisateur, Notification, Log, Signalement,
   Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis, Transaction,
   Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Soumission, Favori, Message,
-  TokenRevoque,
 };
 
 // ─── Associations (toutes en une seule passe) ─────────────────────────────────
@@ -77,6 +69,5 @@ export {
   Utilisateur, Notification, Log, Signalement,
   Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis, Transaction,
   Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Soumission, Favori, Message,
-  TokenRevoque,
 };
 export default allModels;

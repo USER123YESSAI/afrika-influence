@@ -32,65 +32,29 @@ export const schemas = {
     password: Joi.string().required(),
   }),
 
-  demandeResetMdp: Joi.object({
+  resetMdp: Joi.object({
     email: Joi.string().email().required(),
+    nouveauMotDePasse: Joi.string().min(6).required(),
   }),
 
-  confirmerResetMdp: Joi.object({
-    email: Joi.string().email().required(),
-    token: Joi.string().hex().length(64).required(),
-    nouveauMotDePasse: Joi.string().min(8).required(),
-  }),
-
-  // ─── ADMIN ───────────────────────────────────────────────────────────────
-
-  // GET /api/admin/utilisateurs
-  filtreUtilisateurs: Joi.object({
-    role: Joi.string().valid('CREATEUR', 'ENTREPRISE', 'PARTICULIER', 'ADMINISTRATEUR', 'MODERATEUR')
-      .messages({ 'any.only': 'Rôle invalide.' }),
-    statut: Joi.string().valid('validated', 'rejected', 'suspended', 'pending', 'banned')
-      .messages({ 'any.only': 'Statut invalide.' }),
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(200).default(20)
-      .messages({ 'number.max': 'La limite ne peut pas dépasser 200 éléments par page.' }),
-  }),
-
-  // GET /api/admin/logs
-  filtreLogs: Joi.object({
-    typeAction: Joi.string().max(60).trim(),
-    acteurId: Joi.string().uuid()
-      .messages({ 'string.uuid': 'L\'identifiant de l\'acteur doit être un UUID valide.' }),
-    dateDebut: Joi.date().iso()
-      .messages({ 'date.format': 'La date de début doit être au format ISO (ex: 2026-07-01).' }),
-    dateFin: Joi.date().iso().min(Joi.ref('dateDebut'))
+  changerMdp: Joi.object({
+    ancienMotDePasse: Joi.string().required(),
+    nouveauMotDePasse: Joi.string().min(6).required()
       .messages({
-        'date.format': 'La date de fin doit être au format ISO (ex: 2026-07-16).',
-        'date.min': 'La date de fin doit être postérieure à la date de début.',
+        'string.min': 'Le nouveau mot de passe doit contenir au moins 6 caractères.'
       }),
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(200).default(50)
-      .messages({ 'number.max': 'La limite ne peut pas dépasser 200 éléments par page.' }),
-  }),
-
-  // GET /api/admin/signalements
-  filtreSignalements: Joi.object({
-    statut: Joi.string().valid('EN_ATTENTE', 'EN_COURS', 'TRAITE', 'REJETE')
-      .messages({ 'any.only': 'Statut de signalement invalide.' }),
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(200).default(20)
-      .messages({ 'number.max': 'La limite ne peut pas dépasser 200 éléments par page.' }),
   }),
 
   // ─── CRÉATEUR ─────────────────────────────────────────────────────────────
 
   // PUT /api/createurs/:id
   updateProfil: Joi.object({
-    nom: Joi.string().min(2).max(100).trim()
+    nom: Joi.string().min(2).max(100).trim().allow('', null)
       .messages({
         'string.min': 'Le nom doit contenir au moins 2 caractères.',
         'string.max': 'Le nom ne peut pas dépasser 100 caractères.',
       }),
-    handle: Joi.string().min(2).max(60).trim()
+    handle: Joi.string().min(2).max(60).trim().allow('', null)
       .pattern(/^@?[\w.]+$/)
       .messages({
         'string.pattern.base': 'Le handle ne peut contenir que des lettres, chiffres, points et underscores.',
@@ -98,16 +62,8 @@ export const schemas = {
       }),
     bio: Joi.string().max(500).allow('', null).trim()
       .messages({ 'string.max': 'La bio ne peut pas dépasser 500 caractères.' }),
-    // SECURITE (XSS) : on restreint le schéma d'URL à http/https. Sans ça,
-    // "javascript:alert(document.cookie)" est une URI valide pour Joi et
-    // serait acceptée — si ce champ est un jour rendu comme <a href={...}>
-    // côté frontend (cas typique d'un lien "portfolio"), cliquer dessus
-    // exécuterait le script dans le contexte de la page (XSS stocké).
-    portfolioUrl: Joi.string().uri({ scheme: ['http', 'https'] }).allow('', null)
-      .messages({
-        'string.uri': 'L\'URL du portfolio est invalide.',
-        'string.uriCustomScheme': 'L\'URL du portfolio doit commencer par http:// ou https://.',
-      }),
+    portfolioUrl: Joi.string().uri().allow('', null)
+      .messages({ 'string.uri': 'L\'URL du portfolio est invalide.' }),
     tarifsDescription: Joi.string().max(1000).allow('', null),
     reseaux: Joi.object().pattern(
       Joi.string().valid(...RESEAUX),
@@ -117,7 +73,7 @@ export const schemas = {
       })
     ).messages({ 'object.unknown': 'Réseau social non reconnu.' }),
     audience: Joi.number().integer().min(0),
-    pays: Joi.string().valid(...PAYS)
+    pays: Joi.string().valid(...PAYS).allow('', null)
       .messages({ 'any.only': `Le pays doit être l'un des suivants : ${PAYS.join(', ')}.` }),
     numeroOrangeMoney: Joi.string()
       .pattern(/^\+?[\d\s]{8,15}$/).allow('', null)
@@ -256,11 +212,9 @@ export const schemas = {
 
   // PATCH /api/collaborations/lignes/:ligneId/soumettre
   soumettreLigne: Joi.object({
-    // SECURITE (XSS) : un contenu soumis ne doit être accepté que via HTTP/S.
-    contenuUrl: Joi.string().uri({ scheme: ['http', 'https'] }).required()
+    contenuUrl: Joi.string().uri().required()
       .messages({
         'string.uri': 'L\'URL du contenu soumis est invalide.',
-        'string.uriCustomScheme': 'L\'URL du contenu doit commencer par http:// ou https://.',
         'any.required': 'L\'URL du contenu est obligatoire.',
       }),
   }),

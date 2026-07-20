@@ -20,6 +20,12 @@ export function logout(): void {
   window.location.href = '/connexion';
 }
 
+export function getImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 // ─── apiFetch interne ─────────────────────────────────────────────────────────
 // Toutes les routes backend retournent { success, data } ou { success, message }.
 // apiFetch lève une erreur si !success, et retourne data directement.
@@ -150,8 +156,16 @@ export interface Paiement {
 
 // ─── AUTH (P1) ────────────────────────────────────────────────────────────────
 export const authApi = {
-  inscription: (data: unknown) =>
-    apiFetch('/api/auth/inscription', { method: 'POST', body: JSON.stringify(data) }),
+  inscription: async (data: unknown) => {
+    const responseData: any = await apiFetch('/api/auth/inscription', {
+      method: 'POST', body: JSON.stringify(data),
+    });
+    const { token, utilisateur } = responseData;
+    if (!token || !utilisateur) throw new Error('Réponse serveur invalide.');
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('user', JSON.stringify(utilisateur));
+    return { token, utilisateur };
+  },
 
   connexion: async (data: unknown) => {
     const responseData: any = await apiFetch('/api/auth/connexion', {
@@ -164,15 +178,15 @@ export const authApi = {
     return { token, utilisateur };
   },
 
+  changerMdp: (data: any) =>
+    apiFetch('/api/auth/changer-mdp', { method: 'POST', body: JSON.stringify(data) }),
+
   deconnexion: async () => {
     await apiFetch('/api/auth/deconnexion', { method: 'POST' }).catch(() => {});
     logout();
   },
 
-  demanderResetMdp: (data: { email: string }) =>
-    apiFetch('/api/auth/mot-de-passe-oublie', { method: 'POST', body: JSON.stringify(data) }),
-
-  confirmerResetMdp: (data: { email: string; token: string; nouveauMotDePasse: string }) =>
+  reinitialiserMdp: (data: unknown) =>
     apiFetch('/api/auth/reinitialiser-mdp', { method: 'POST', body: JSON.stringify(data) }),
 
   profil: () => request('/auth/profil'),
