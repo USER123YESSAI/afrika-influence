@@ -115,7 +115,7 @@ export default function CampagnesPage() {
                         <CampagneStatut statut={c.statut} />
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-700">
-                        {fmt(c.budget)}
+                        {fmt(c.budget ?? 0)}
                       </td>
                       <td className="px-6 py-4 text-gray-500">
                         {fmtDate(c.dateDebut)} - {fmtDate(c.dateFin)}

@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 import { getCampagne, getRecommandations, collabApi, createurApi, type Campagne, type Recommandation } from '@/lib/api';
 import CreateurRecommande from '@/components/recommandation/CreateurRecommande';
+
+type SortKey = 'nom' | 'audience' | 'tarifMoyen' | 'noteMoyenne';
 
 export default function InviterPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,28 +19,19 @@ export default function InviterPage() {
   const [success, setSuccess]             = useState('');
   const [invitedIds, setInvitedIds]       = useState<Set<string>>(new Set());
 
-  // Manual invitation — searchable list
+  // Tableau des créateurs — recherche, tri, sélection multiple
   const [createurs, setCreateurs]         = useState<any[]>([]);
   const [search, setSearch]               = useState('');
-  const [selectedCreateur, setSelected]   = useState<any | null>(null);
-  const [showDropdown, setShowDropdown]   = useState(false);
-  const searchRef                         = useRef<HTMLDivElement>(null);
+  const [sortKey, setSortKey]             = useState<SortKey>('audience');
+  const [sortDir, setSortDir]             = useState<'asc' | 'desc'>('desc');
+  const [selectedIds, setSelectedIds]     = useState<Set<string>>(new Set());
+  const [invitingBulk, setInvitingBulk]   = useState(false);
 
   useEffect(() => {
     if (!id) return;
     getCampagne(id).then(setCampagne).catch((e: any) => setError(e.message));
-    // Load all creators for manual search
     createurApi.lister().then((data: any) => setCreateurs(Array.isArray(data) ? data : [])).catch(() => {});
   }, [id]);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowDropdown(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const chargerRecommandations = () => {
     if (!id) return;
@@ -56,16 +49,51 @@ export default function InviterPage() {
       await collabApi.inviter({ campagneId: id, createurId });
       setSuccess('✅ Invitation envoyée avec succès !');
       setInvitedIds(prev => new Set(prev).add(createurId));
-      setSelected(null); setSearch('');
     } catch (e: any) {
       setError(e.message || 'Erreur lors de l\'envoi de l\'invitation');
     } finally { setInviting(null); }
   };
 
-  const filtered = createurs.filter(c =>
-    c.nom?.toLowerCase().includes(search.toLowerCase()) ||
-    c.handle?.toLowerCase().includes(search.toLowerCase())
-  ).slice(0, 8);
+  const toggleSelection = (createurId: string) => {
+    setSelectedIds(prev => {
+      const s = new Set(prev);
+      if (s.has(createurId)) s.delete(createurId); else s.add(createurId);
+      return s;
+    });
+  };
+
+  const handleInviterSelection = async () => {
+    if (!id || selectedIds.size === 0) return;
+    setInvitingBulk(true); setError(''); setSuccess('');
+    const ids = Array.from(selectedIds).filter(cid => !invitedIds.has(cid));
+    const resultats = await Promise.allSettled(ids.map(cid => collabApi.inviter({ campagneId: id, createurId: cid })));
+    const reussies = ids.filter((_, i) => resultats[i].status === 'fulfilled');
+    if (reussies.length > 0) {
+      setInvitedIds(prev => new Set([...prev, ...reussies]));
+      setSelectedIds(new Set());
+    }
+    const echecs = resultats.filter(r => r.status === 'rejected').length;
+    if (echecs > 0) setError(`${echecs} invitation(s) ont échoué (déjà invité(e)s ?).`);
+    if (reussies.length > 0) setSuccess(`✅ ${reussies.length} invitation(s) envoyée(s) !`);
+    setInvitingBulk(false);
+  };
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('desc'); }
+  };
+
+  const filtered = createurs
+    .filter(c =>
+      c.nom?.toLowerCase().includes(search.toLowerCase()) ||
+      c.handle?.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      const va = a[sortKey] ?? -1;
+      const vb = b[sortKey] ?? -1;
+      const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
 
   if (!campagne) return (
     <DashboardEntreprise>
@@ -94,7 +122,7 @@ export default function InviterPage() {
 
   return (
     <DashboardEntreprise>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
           <Link href="/campagnes" className="hover:text-emerald-600">Campagnes</Link>
@@ -157,73 +185,94 @@ export default function InviterPage() {
           )}
         </div>
 
-        {/* Invitation manuelle par nom */}
+        {/* Tableau de tous les créateurs — recherche, tri, sélection multiple */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-1">Invitation manuelle</h2>
-          <p className="text-sm text-gray-500 mb-4">Recherchez un créateur par son nom ou handle et invitez-le directement.</p>
-
-          <div className="flex gap-3">
-            {/* Searchable dropdown */}
-            <div ref={searchRef} className="relative flex-1">
-              <input
-                type="text"
-                value={selectedCreateur ? `${selectedCreateur.nom} (${selectedCreateur.handle})` : search}
-                onChange={e => { setSearch(e.target.value); setSelected(null); setShowDropdown(true); }}
-                onFocus={() => setShowDropdown(true)}
-                placeholder="Rechercher un créateur par nom ou handle…"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-              {selectedCreateur && (
-                <button onClick={() => { setSelected(null); setSearch(''); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg">×</button>
-              )}
-
-              {showDropdown && !selectedCreateur && search.length > 0 && (
-                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-bento overflow-hidden">
-                  {filtered.length === 0 ? (
-                    <p className="text-xs text-gray-400 text-center py-4">Aucun créateur trouvé</p>
-                  ) : filtered.map((c: any) => (
-                    <button key={c.id}
-                      onClick={() => { setSelected(c); setSearch(''); setShowDropdown(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700 flex-shrink-0">
-                        {c.nom?.[0] ?? '?'}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{c.nom}</p>
-                        <p className="text-xs text-gray-400 truncate">{c.handle}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-semibold text-gray-900">Tous les créateurs</h2>
+            {selectedIds.size > 0 && (
+              <button onClick={handleInviterSelection} disabled={invitingBulk}
+                className="text-sm px-4 py-2 bg-gradient-emerald text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift">
+                {invitingBulk ? 'Envoi…' : `Inviter la sélection (${selectedIds.size})`}
+              </button>
+            )}
           </div>
+          <p className="text-sm text-gray-500 mb-4">Recherchez, comparez et sélectionnez plusieurs créateurs à inviter en une fois.</p>
 
-          {selectedCreateur && (
-            <div className="mt-6 max-w-[280px]">
-              <CreateurRecommande 
-                recommandation={{
-                  id: 'manual',
-                  createurId: selectedCreateur.id,
-                  scoreCompatibilite: 100,
-                  raisonnement: 'Sélection manuelle du créateur',
-                  estConsultee: true,
-                  createur: selectedCreateur
-                } as any}
-                rank={1}
-                actionButton={
-                  <button 
-                    onClick={() => handleInviter(selectedCreateur.id)}
-                    disabled={inviting === selectedCreateur.id || invitedIds.has(selectedCreateur.id)}
-                    className="w-full py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-400 disabled:opacity-50 transition-colors"
-                  >
-                    {inviting === selectedCreateur.id ? 'Envoi…' : invitedIds.has(selectedCreateur.id) ? '✓ Invité' : 'Inviter'}
-                  </button>
-                }
-              />
-            </div>
-          )}
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher un créateur par nom ou handle…"
+            className="w-full mb-4 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          />
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-gray-50/50 text-gray-500 font-medium">
+                <tr>
+                  <th className="px-3 py-3 w-10"></th>
+                  <th className="px-3 py-3 font-medium cursor-pointer hover:text-gray-800" onClick={() => toggleSort('nom')}>
+                    Créateur {sortKey === 'nom' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-3 py-3 font-medium cursor-pointer hover:text-gray-800" onClick={() => toggleSort('audience')}>
+                    Audience {sortKey === 'audience' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-3 py-3 font-medium">Niches</th>
+                  <th className="px-3 py-3 font-medium">Réseaux</th>
+                  <th className="px-3 py-3 font-medium cursor-pointer hover:text-gray-800" onClick={() => toggleSort('tarifMoyen')}>
+                    Tarif moyen {sortKey === 'tarifMoyen' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-3 py-3 font-medium cursor-pointer hover:text-gray-800" onClick={() => toggleSort('noteMoyenne')}>
+                    Note {sortKey === 'noteMoyenne' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-3 py-3 font-medium text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={8} className="px-3 py-10 text-center text-gray-400">Aucun créateur trouvé.</td></tr>
+                ) : filtered.map((c: any) => (
+                  <tr key={c.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.has(c.id) ? 'bg-emerald-50/50' : ''}`}>
+                    <td className="px-3 py-3">
+                      <input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleSelection(c.id)}
+                        disabled={invitedIds.has(c.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700 flex-shrink-0">
+                          {c.nom?.[0] ?? '?'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{c.nom}</p>
+                          <p className="text-xs text-gray-400 truncate">{c.handle}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-gray-700">{c.audience?.toLocaleString('fr-FR') ?? '—'}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-wrap gap-1 max-w-[160px]">
+                        {(c.niches || []).slice(0, 2).map((n: any) => (
+                          <span key={n.niche} className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">{n.niche}</span>
+                        ))}
+                        {(c.niches?.length || 0) === 0 && <span className="text-gray-300">—</span>}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-gray-500">{Object.keys(c.reseaux || {}).join(', ') || '—'}</td>
+                    <td className="px-3 py-3 text-gray-700">{c.tarifMoyen ? `${c.tarifMoyen.toLocaleString('fr-FR')} FCFA` : '—'}</td>
+                    <td className="px-3 py-3 text-gray-700">{c.noteMoyenne ? `★ ${c.noteMoyenne}` : '—'}</td>
+                    <td className="px-3 py-3 text-right">
+                      <button onClick={() => handleInviter(c.id)}
+                        disabled={inviting === c.id || invitedIds.has(c.id)}
+                        className="text-xs px-3 py-1.5 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-400 disabled:opacity-50 transition-colors">
+                        {inviting === c.id ? '…' : invitedIds.has(c.id) ? '✓ Invité' : 'Inviter'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="mt-2">

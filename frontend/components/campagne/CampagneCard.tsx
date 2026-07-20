@@ -33,7 +33,7 @@ export default function CampagneCard({ campagne, onRefresh }: Props) {
       </div>
 
       <div className="text-sm text-gray-500 grid grid-cols-2 gap-1">
-        <span>Budget</span>         <span className="font-medium text-gray-800">{fmt(campagne.budget)}</span>
+        <span>Budget</span>         <span className="font-medium text-gray-800">{fmt(campagne.budget ?? 0)}</span>
         <span>Créateurs voulus</span><span className="font-medium text-gray-800">{campagne.nombreCreateursVoulus ?? '—'}</span>
         <span>Début</span>          <span className="font-medium text-gray-800">{fmtDate(campagne.dateDebut)}</span>
         <span>Fin</span>            <span className="font-medium text-gray-800">{fmtDate(campagne.dateFin)}</span>

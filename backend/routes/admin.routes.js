@@ -11,6 +11,9 @@ const adminOnly = [verifyToken, requireRole('ADMINISTRATEUR', 'MODERATEUR')];
 router.get('/utilisateurs',              ...adminOnly, validate(schemas.filtreUtilisateurs, 'query'), ctrl.getUtilisateurs);
 router.patch('/utilisateurs/:id/statut', ...adminOnly, ctrl.changerStatut);
 
+// Transactions (solde entreprises)
+router.get('/transactions', ...adminOnly, ctrl.getTransactions);
+
 // Logs
 router.get('/logs', ...adminOnly, validate(schemas.filtreLogs, 'query'), ctrl.getLogs);
 

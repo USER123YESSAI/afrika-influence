@@ -191,6 +191,7 @@ export default function OffresPage() {
                     type="number"
                     value={form.prix}
                     onChange={e => setF('prix', e.target.value)}
+                    onWheel={e => (e.target as HTMLInputElement).blur()}
                     className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="50000"
                     min="0"
@@ -202,6 +203,7 @@ export default function OffresPage() {
                     type="number"
                     value={form.delaiLivraison}
                     onChange={e => setF('delaiLivraison', e.target.value)}
+                    onWheel={e => (e.target as HTMLInputElement).blur()}
                     className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="5"
                     min="1"

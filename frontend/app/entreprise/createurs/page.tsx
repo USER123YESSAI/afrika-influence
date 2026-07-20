@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { createurApi, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from '@/lib/api';
+import { createurApi, collabApi, getMesCampagnes, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { showToast } from '@/components/ui/Toast';
 
 const PAYS_OPTIONS = [
   { value: 'SN', label: '🇸🇳 Sénégal' }, { value: 'CI', label: '🇨🇮 Côte d\'Ivoire' },
@@ -48,6 +49,34 @@ export default function CreateursEntreprisePage() {
   const [selectedCreateur, setSelectedCreateur] = useState<Createur | null>(null);
   const [showOffres, setShowOffres] = useState(false);
   const [imgError, setImgError] = useState<Record<string, boolean>>({});
+
+  // Invitation directe depuis la fiche créateur
+  const [campagnesActives, setCampagnesActives] = useState<{ id: string; titre: string }[]>([]);
+  const [campagneChoisie, setCampagneChoisie] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [invitedFor, setInvitedFor] = useState<Set<string>>(new Set()); // "createurId:campagneId"
+
+  useEffect(() => {
+    getMesCampagnes().then((camps: any) => {
+      const actives = (Array.isArray(camps) ? camps : []).filter((c: any) => ['PUBLIEE', 'EN_COURS'].includes(c.statut));
+      setCampagnesActives(actives);
+      if (actives.length > 0) setCampagneChoisie(actives[0].id);
+    }).catch(() => {});
+  }, []);
+
+  const handleInviter = async () => {
+    if (!selectedCreateur || !campagneChoisie) return;
+    setInviting(true);
+    try {
+      await collabApi.inviter({ campagneId: campagneChoisie, createurId: selectedCreateur.id });
+      setInvitedFor((prev) => new Set(prev).add(`${selectedCreateur.id}:${campagneChoisie}`));
+      showToast('✅ Invitation envoyée !', 'success');
+    } catch (e: any) {
+      showToast('❌ ' + e.message, 'error');
+    } finally {
+      setInviting(false);
+    }
+  };
 
   // Filtres
   const [recherche, setRecherche] = useState('');
@@ -331,6 +360,36 @@ export default function CreateursEntreprisePage() {
                 </div>
 
                 <div className="p-8">
+                  {/* Inviter directement */}
+                  <div className="mb-8 p-5 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                    <h4 className="text-sm font-bold text-gray-900 mb-3">Inviter sur une campagne</h4>
+                    {campagnesActives.length === 0 ? (
+                      <p className="text-sm text-gray-500">
+                        Aucune campagne publiée pour l'instant.{' '}
+                        <a href="/campagnes/nouvelle" className="text-emerald-600 hover:underline font-medium">Créer une campagne</a>
+                      </p>
+                    ) : invitedFor.has(`${selectedCreateur.id}:${campagneChoisie}`) ? (
+                      <p className="text-sm text-emerald-700 font-medium">✓ Invitation envoyée pour cette campagne.</p>
+                    ) : (
+                      <div className="flex gap-3">
+                        <select
+                          value={campagneChoisie}
+                          onChange={(e) => setCampagneChoisie(e.target.value)}
+                          className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                        >
+                          {campagnesActives.map((c) => <option key={c.id} value={c.id}>{c.titre}</option>)}
+                        </select>
+                        <button
+                          onClick={handleInviter}
+                          disabled={inviting}
+                          className="px-5 py-2.5 bg-gradient-emerald text-white rounded-xl font-semibold text-sm hover:opacity-90 disabled:opacity-50 transition-all"
+                        >
+                          {inviting ? 'Envoi…' : 'Inviter'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Bio */}
                   {selectedCreateur.bio && (
                     <div className="mb-8 max-w-2xl">

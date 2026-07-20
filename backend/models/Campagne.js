@@ -24,6 +24,10 @@ export default (sequelize) => {
       type: DataTypes.DECIMAL(15, 2),
       defaultValue: 0,
     },
+    budgetVisible: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
     objectifPrincipal:    { type: DataTypes.TEXT, allowNull: true },
     consignesContenu:     { type: DataTypes.TEXT, allowNull: true },
     contraintesContenu:   { type: DataTypes.TEXT, allowNull: true },
@@ -43,13 +47,6 @@ export default (sequelize) => {
   });
 
   // Instance methods
-  Campagne.prototype.publier = async function () {
-    if (this.statut !== 'BROUILLON')
-      throw { status: 400, message: 'Seules les campagnes BROUILLON peuvent être publiées.' };
-    this.statut = 'PUBLIEE';
-    await this.save();
-  };
-  Campagne.prototype.annuler = async function () { this.statut = 'ANNULEE'; await this.save(); };
   Campagne.prototype.terminer = async function () { this.statut = 'TERMINEE'; await this.save(); };
 
   Campagne.associate = (models) => {

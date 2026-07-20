@@ -18,7 +18,7 @@ interface Props {
 
 export default function CampagneForm({ initialData = {}, onSubmit, isLoading, submitLabel = 'Enregistrer' }: Props) {
   const [form, setForm] = useState<FormData>({
-    titre: '', description: '', budget: undefined, objectifPrincipal: '',
+    titre: '', description: '', budget: undefined, budgetVisible: true, objectifPrincipal: '',
     consignesContenu: '', contraintesContenu: '', exempleContenu: '',
     nombreCreateursVoulus: undefined, nombrePostsParCreateur: undefined,
     dateDebut: '', dateFin: '',
@@ -52,6 +52,7 @@ export default function CampagneForm({ initialData = {}, onSubmit, isLoading, su
         type={type}
         value={(form[key] as string | number | undefined) ?? ''}
         onChange={e => set(key, type === 'number' ? (e.target.value ? Number(e.target.value) : undefined) : e.target.value)}
+        onWheel={type === 'number' ? (e => (e.target as HTMLInputElement).blur()) : undefined}
         required={required}
         min={type === 'date' ? new Date().toISOString().split('T')[0] : undefined}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -80,6 +81,15 @@ export default function CampagneForm({ initialData = {}, onSubmit, isLoading, su
         {field('Titre de la campagne', 'titre', 'text', true)}
         {textarea('Description', 'description')}
         {field('Budget (XOF)', 'budget', 'number', true)}
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.budgetVisible !== false}
+            onChange={e => set('budgetVisible', e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          Afficher le budget aux créateurs (sinon masqué, campagne quand même visible)
+        </label>
         {textarea('Objectif principal', 'objectifPrincipal')}
       </section>
 

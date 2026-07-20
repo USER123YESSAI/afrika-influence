@@ -26,6 +26,7 @@ import createurRoutes from './routes/createur.routes.js';
 import offreRoutes from './routes/offre.routes.js';
 import collaborationRoutes from './routes/collaboration.routes.js';
 import messageRoutes from './routes/message.routes.js';
+import favoriRoutes from './routes/favori.routes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -104,6 +105,7 @@ app.use('/api/createurs', createurRoutes);
 app.use('/api/offres', offreRoutes);
 app.use('/api/collaborations', collaborationRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/favoris', favoriRoutes);
 
 app.get('/', (_req, res) => {
   res.json({ message: 'Afrika Influence API is running' });

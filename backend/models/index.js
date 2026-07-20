@@ -17,12 +17,15 @@ import campagneMediaModel      from './CampagneMedia.js';
 import recommandationModel     from './Recommandation.js';
 import paiementModel           from './Paiement.js';
 import avisModel               from './Avis.js';
+import transactionModel        from './Transaction.js';
 
 import createurModel             from './Createur.js';
 import createurNicheModel        from './CreateurNiche.js';
 import offreModel                from './Offre.js';
 import collaborationModel        from './Collaboration.js';
 import collaborationContenuModel from './CollaborationContenu.js';
+import soumissionModel           from './Soumission.js';
+import favoriModel               from './Favori.js';
 import messageModel              from './Message.js';
 
 // ─── Initialisation sur la même instance ─────────────────────────────────────
@@ -38,12 +41,15 @@ const CampagneMedia      = campagneMediaModel(sequelize);
 const Recommandation     = recommandationModel(sequelize);
 const Paiement           = paiementModel(sequelize);
 const Avis               = avisModel(sequelize);
+const Transaction        = transactionModel(sequelize);
 
 const Createur             = createurModel(sequelize);
 const CreateurNiche        = createurNicheModel(sequelize);
 const Offre                = offreModel(sequelize);
 const Collaboration        = collaborationModel(sequelize);
 const CollaborationContenu = collaborationContenuModel(sequelize);
+const Soumission            = soumissionModel(sequelize);
+const Favori                = favoriModel(sequelize);
 const Message              = messageModel(sequelize);
 
 // SECURITE : table de révocation des JWT (utilisée par verifyToken/revokeToken
@@ -55,8 +61,8 @@ const TokenRevoque = TokenRevoqueModel(sequelize);
 // ─── Dictionnaire complet ─────────────────────────────────────────────────────
 const allModels = {
   Utilisateur, Notification, Log, Signalement,
-  Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis,
-  Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Message,
+  Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis, Transaction,
+  Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Soumission, Favori, Message,
   TokenRevoque,
 };
 
@@ -69,8 +75,8 @@ Object.values(allModels).forEach((m) => {
 export {
   sequelize,
   Utilisateur, Notification, Log, Signalement,
-  Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis,
-  Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Message,
+  Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis, Transaction,
+  Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Soumission, Favori, Message,
   TokenRevoque,
 };
 export default allModels;

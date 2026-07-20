@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
-import { getCampagnesPubliques, getCampagne, formatFCFA } from '@/lib/api';
-import AuthGuard from '@/components/auth/AuthGuard';
+import { getCampagnesPubliques, formatFCFA, favoriApi } from '@/lib/api';
+import { showToast } from '@/components/ui/Toast';
 
 const SECTEURS = ['MODE', 'BEAUTE', 'TECH', 'AGROALIMENTAIRE', 'SANTE', 'FINANCE', 'EDUCATION', 'TOURISME', 'AUTRE'];
 const PAYS_OPTIONS = [
@@ -16,8 +17,8 @@ interface Campagne {
   id: string;
   titre: string;
   description?: string;
-  budget: number;
-  budgetDepense?: number;
+  budget: number | null;
+  budgetDepense?: number | null;
   objectifPrincipal?: string;
   consignesContenu?: string;
   contraintesContenu?: string;
@@ -42,8 +43,8 @@ interface Campagne {
 export default function CampagnesCreateurPage() {
   const [campagnes, setCampagnes] = useState<Campagne[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCampagne, setSelectedCampagne] = useState<Campagne | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [favoriIds, setFavoriIds] = useState<Set<string>>(new Set());
+  const [togglingFavori, setTogglingFavori] = useState(false);
 
   // Filtres
   const [recherche, setRecherche] = useState('');
@@ -53,6 +54,12 @@ export default function CampagnesCreateurPage() {
   useEffect(() => {
     loadCampagnes();
   }, [recherche, pays, secteur]);
+
+  useEffect(() => {
+    favoriApi.lister()
+      .then((favs: any) => setFavoriIds(new Set(favs.map((c: any) => c.id))))
+      .catch(() => {});
+  }, []);
 
   const loadCampagnes = async () => {
     setLoading(true);
@@ -71,20 +78,23 @@ export default function CampagnesCreateurPage() {
     }
   };
 
-  const loadCampagneDetail = async (id: string) => {
-    setLoadingDetail(true);
+  const handleToggleFavori = async (campagneId: string) => {
+    setTogglingFavori(true);
     try {
-      const data: any = await getCampagne(id);
-      setSelectedCampagne(data);
-    } catch (error) {
-      console.error('Erreur chargement détail campagne:', error);
+      if (favoriIds.has(campagneId)) {
+        await favoriApi.retirer(campagneId);
+        setFavoriIds((prev) => { const s = new Set(prev); s.delete(campagneId); return s; });
+        showToast('Retiré des favoris.', 'info');
+      } else {
+        await favoriApi.ajouter(campagneId);
+        setFavoriIds((prev) => new Set(prev).add(campagneId));
+        showToast('⭐ Ajouté aux favoris !', 'success');
+      }
+    } catch (e: any) {
+      showToast('❌ ' + e.message, 'error');
     } finally {
-      setLoadingDetail(false);
+      setTogglingFavori(false);
     }
-  };
-
-  const handleCardClick = (campagne: Campagne) => {
-    setSelectedCampagne(campagne);
   };
 
   const formatDate = (dateStr?: string) => {
@@ -187,11 +197,20 @@ export default function CampagnesCreateurPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {campagnes.map((campagne) => (
-                <div
+                <Link
+                  href={`/createur/campagnes/${campagne.id}`}
                   key={campagne.id}
-                  className="bg-white rounded-3xl shadow-bento p-6 hover-lift transition-all cursor-pointer border border-transparent hover:border-emerald-200"
-                  onClick={() => handleCardClick(campagne)}
+                  className="relative bg-white rounded-3xl shadow-bento p-6 hover-lift transition-all cursor-pointer border border-transparent hover:border-emerald-200 block"
                 >
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavori(campagne.id); }}
+                    disabled={togglingFavori}
+                    title={favoriIds.has(campagne.id) ? 'Retirer des favoris' : 'Enregistrer'}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-lg hover:scale-110 transition-transform z-10"
+                  >
+                    {favoriIds.has(campagne.id) ? '⭐' : '☆'}
+                  </button>
+
                   {/* Header carte */}
                   <div className="flex items-start gap-4 mb-4">
                     <div className="w-16 h-16 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -218,7 +237,9 @@ export default function CampagnesCreateurPage() {
                   {/* Statistiques */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="bg-emerald-50 rounded-xl p-3 text-center">
-                      <div className="font-display font-bold text-emerald-600">{formatFCFA(campagne.budget)}</div>
+                      <div className="font-display font-bold text-emerald-600">
+                        {campagne.budget !== null ? formatFCFA(campagne.budget) : 'Confidentiel'}
+                      </div>
                       <div className="text-xs text-gray-500">Budget</div>
                     </div>
                     <div className="bg-blue-50 rounded-xl p-3 text-center">
@@ -247,154 +268,11 @@ export default function CampagnesCreateurPage() {
                   </div>
 
                   {/* Bouton */}
-                  <button className="w-full mt-4 py-2.5 bg-gradient-emerald text-white rounded-2xl font-semibold hover:opacity-90 transition-all text-sm">
+                  <div className="w-full mt-4 py-2.5 bg-gradient-emerald text-white rounded-2xl font-semibold hover:opacity-90 transition-all text-sm text-center">
                     Voir les détails
-                  </button>
-                </div>
+                  </div>
+                </Link>
               ))}
-            </div>
-          )}
-
-          {/* Modal détails campagne */}
-          {selectedCampagne && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedCampagne(null)}>
-              <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                {/* Header modal */}
-                <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-center justify-between">
-                  <h2 className="font-display text-2xl font-bold text-emerald-600">Détails de la campagne</h2>
-                  <button
-                    onClick={() => setSelectedCampagne(null)}
-                    className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="p-6">
-                  {/* Info entreprise */}
-                  <div className="flex items-start gap-6 mb-8 p-4 bg-gray-50 rounded-2xl">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 border-2 border-emerald-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {selectedCampagne.entreprise?.logoUrl ? (
-                        <img src={selectedCampagne.entreprise.logoUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
-                      ) : (
-                        <span className="text-3xl font-bold text-emerald-600">{selectedCampagne.entreprise?.nom[0] || 'E'}</span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-display text-xl font-bold text-gray-900">{selectedCampagne.entreprise?.nom}</h3>
-                      <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                        {selectedCampagne.entreprise?.secteur && (
-                          <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full">{selectedCampagne.entreprise.secteur}</span>
-                        )}
-                        {selectedCampagne.entreprise?.pays && (
-                          <span>📍 {selectedCampagne.entreprise.pays.replace('_', ' ')}</span>
-                        )}
-                      </div>
-                      {selectedCampagne.entreprise?.description && (
-                        <p className="text-sm text-gray-600 mt-2">{selectedCampagne.entreprise.description}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Titre et statut */}
-                  <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-display text-2xl font-bold text-gray-900">{selectedCampagne.titre}</h3>
-                      <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatutColor(selectedCampagne.statut)}`}>
-                        {getStatutLabel(selectedCampagne.statut)}
-                      </span>
-                    </div>
-                    {selectedCampagne.description && (
-                      <p className="text-gray-600">{selectedCampagne.description}</p>
-                    )}
-                  </div>
-
-                  {/* Statistiques */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-emerald-50 rounded-2xl p-4 text-center">
-                      <div className="font-display text-2xl font-bold text-emerald-600">{formatFCFA(selectedCampagne.budget)}</div>
-                      <div className="text-xs text-gray-500 mt-1">Budget total</div>
-                    </div>
-                    <div className="bg-blue-50 rounded-2xl p-4 text-center">
-                      <div className="font-display text-2xl font-bold text-blue-600">{selectedCampagne.nombreCreateursVoulus || '—'}</div>
-                      <div className="text-xs text-gray-500 mt-1">Créateurs recherchés</div>
-                    </div>
-                    <div className="bg-purple-50 rounded-2xl p-4 text-center">
-                      <div className="font-display text-2xl font-bold text-purple-600">{selectedCampagne.nombrePostsParCreateur || '—'}</div>
-                      <div className="text-xs text-gray-500 mt-1">Posts par créateur</div>
-                    </div>
-                    <div className="bg-amber-50 rounded-2xl p-4 text-center">
-                      <div className="font-display text-2xl font-bold text-amber-600">{selectedCampagne.plateformes?.length || 0}</div>
-                      <div className="text-xs text-gray-500 mt-1">Plateformes</div>
-                    </div>
-                  </div>
-
-                  {/* Dates */}
-                  <div className="mb-8">
-                    <h4 className="font-semibold text-gray-900 mb-3">Calendrier</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        <div className="text-sm text-gray-500">Date de début</div>
-                        <div className="font-medium text-gray-900">{formatDate(selectedCampagne.dateDebut)}</div>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        <div className="text-sm text-gray-500">Date de fin</div>
-                        <div className="font-medium text-gray-900">{formatDate(selectedCampagne.dateFin)}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Objectif */}
-                  {selectedCampagne.objectifPrincipal && (
-                    <div className="mb-8">
-                      <h4 className="font-semibold text-gray-900 mb-3">Objectif principal</h4>
-                      <p className="text-gray-600 bg-gray-50 rounded-xl p-4">{selectedCampagne.objectifPrincipal}</p>
-                    </div>
-                  )}
-
-                  {/* Consignes */}
-                  {selectedCampagne.consignesContenu && (
-                    <div className="mb-8">
-                      <h4 className="font-semibold text-gray-900 mb-3">Consignes de contenu</h4>
-                      <p className="text-gray-600 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">{selectedCampagne.consignesContenu}</p>
-                    </div>
-                  )}
-
-                  {/* Contraintes */}
-                  {selectedCampagne.contraintesContenu && (
-                    <div className="mb-8">
-                      <h4 className="font-semibold text-gray-900 mb-3">Contraintes et exigences</h4>
-                      <p className="text-gray-600 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">{selectedCampagne.contraintesContenu}</p>
-                    </div>
-                  )}
-
-                  {/* Exemple */}
-                  {selectedCampagne.exempleContenu && (
-                    <div className="mb-8">
-                      <h4 className="font-semibold text-gray-900 mb-3">Exemple de contenu attendu</h4>
-                      <p className="text-gray-600 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">{selectedCampagne.exempleContenu}</p>
-                    </div>
-                  )}
-
-                  {/* Plateformes */}
-                  <div className="mb-8">
-                    <h4 className="font-semibold text-gray-900 mb-3">Plateformes concernées</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCampagne.plateformes?.map((p) => (
-                        <span key={p.plateforme} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
-                          {p.plateforme}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="pt-6 border-t border-gray-100 bg-emerald-50 rounded-2xl p-4 text-sm text-emerald-800">
-                    <p className="font-medium mb-1">💡 Comment participer ?</p>
-                    <p className="text-emerald-700">L'entreprise sélectionne les créateurs en fonction de leur profil et de leurs niches. Assurez-vous que votre profil est complet et à jour pour maximiser vos chances d'être invité.</p>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
         </div>

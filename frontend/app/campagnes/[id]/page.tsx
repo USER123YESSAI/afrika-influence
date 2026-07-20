@@ -5,8 +5,12 @@ import Link from 'next/link';
 import {
   getCampagne,
   getRecommandations,
+  getProgressionCampagne,
+  formatFCFA,
+  collabApi,
   type Campagne,
   type Recommandation,
+  type ProgressionCampagne,
 } from '@/lib/api';
 import CampagneStatut from '@/components/campagne/CampagneStatut';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
@@ -19,13 +23,19 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
   const { id } = params;
   const [campagne, setCampagne] = useState<Campagne | null>(null);
   const [recommandations, setRecommandations] = useState<Recommandation[]>([]);
+  const [progression, setProgression] = useState<ProgressionCampagne | null>(null);
   const [loadingReco, setLoadingReco] = useState(false);
   const [error, setError] = useState('');
+  const [inviting, setInviting] = useState<string | null>(null);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     getCampagne(id)
       .then(setCampagne)
       .catch((e) => setError((e as Error).message));
+    getProgressionCampagne(id)
+      .then(setProgression)
+      .catch(() => {}); // non bloquant — une campagne encore BROUILLON n'a simplement rien à montrer
   }, [id]);
 
   const chargerRecommandations = () => {
@@ -34,6 +44,18 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
       .then(setRecommandations)
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoadingReco(false));
+  };
+
+  const handleInviter = async (createurId: string) => {
+    setInviting(createurId);
+    try {
+      await collabApi.inviter({ campagneId: id, createurId });
+      setInvitedIds((prev) => new Set(prev).add(createurId));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setInviting(null);
+    }
   };
 
 
@@ -85,7 +107,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
         {/* Infos principales */}
         <div className="bg-white rounded-3xl shadow-bento p-6 grid grid-cols-2 gap-4 text-sm">
           {[
-            ['Budget total', fmt(campagne.budget)],
+            ['Budget total', fmt(campagne.budget ?? 0)],
             ['Dépensé', fmt(campagne.budgetDepense ?? 0)],
             ['Créateurs voulus', (campagne.nombreCreateursVoulus ?? '—') as any],
             ['Posts / créateur', (campagne.nombrePostsParCreateur ?? '—') as any],
@@ -98,6 +120,48 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             </div>
           ))}
         </div>
+
+        {/* Progression des livrables */}
+        {progression && progression.totalPrevu > 0 && (
+          <div className="bg-white rounded-3xl shadow-bento p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-gray-900">Progression des livrables</h2>
+              <span className="text-sm font-bold text-gray-900">
+                {progression.totalLivre} / {progression.totalPrevu} posts livrés
+              </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden mb-5">
+              <div
+                className="h-3 rounded-full bg-emerald-500 transition-all"
+                style={{ width: `${progression.totalPrevu > 0 ? (progression.totalLivre / progression.totalPrevu) * 100 : 0}%` }}
+              />
+            </div>
+
+            <div className="space-y-3">
+              {progression.parCreateur.map((p) => (
+                <div key={p.collaborationId} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
+                    {p.createur?.nom?.[0] ?? '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-medium text-gray-800 truncate">{p.createur?.nom}</span>
+                      <span className="text-gray-500 text-xs shrink-0 ml-2">
+                        {p.quantiteLivree}/{p.quantitePrevue} · {formatFCFA(p.montantValide)} / {formatFCFA(p.montantEngage)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="h-1.5 rounded-full bg-emerald-400"
+                        style={{ width: `${p.quantitePrevue > 0 ? (p.quantiteLivree / p.quantitePrevue) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Plateformes */}
         {campagne.plateformes && campagne.plateformes.length > 0 && (
@@ -157,7 +221,20 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
           {recommandations.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {recommandations.map((r, i) => (
-                <CreateurRecommande key={r.id} recommandation={r} rank={i + 1} />
+                <CreateurRecommande
+                  key={r.id}
+                  recommandation={r}
+                  rank={i + 1}
+                  actionButton={
+                    <button
+                      onClick={() => handleInviter(r.createurId)}
+                      disabled={inviting === r.createurId || invitedIds.has(r.createurId)}
+                      className="w-full py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-400 disabled:opacity-50 transition-colors"
+                    >
+                      {inviting === r.createurId ? 'Envoi…' : invitedIds.has(r.createurId) ? '✓ Invité' : 'Inviter'}
+                    </button>
+                  }
+                />
               ))}
             </div>
           ) : (

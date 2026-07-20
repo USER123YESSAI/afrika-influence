@@ -176,6 +176,16 @@ export const schemas = {
     description: Joi.string().max(500).allow('', null).trim(),
   }).min(1).messages({ 'object.min': 'Au moins un champ est requis pour la modification.' }),
 
+  // ─── SOLDE ────────────────────────────────────────────────────────────────────
+
+  rechargerSolde: Joi.object({
+    montant: Joi.number().positive().precision(2).required()
+      .messages({
+        'number.positive': 'Le montant doit être supérieur à 0.',
+        'any.required': 'Le champ "montant" est obligatoire.',
+      }),
+  }),
+
   // ─── CAMPAGNES ────────────────────────────────────────────────────────────────
 
   creerCampagne: Joi.object({
@@ -191,6 +201,7 @@ export const schemas = {
         'number.positive': 'Le budget doit être supérieur à 0.',
         'any.required': 'Le champ "budget" est obligatoire.',
       }),
+    budgetVisible: Joi.boolean(),
     objectifPrincipal: Joi.string().allow('', null),
     consignesContenu: Joi.string().allow('', null),
     contraintesContenu: Joi.string().allow('', null),
@@ -205,6 +216,7 @@ export const schemas = {
     titre: Joi.string().min(3).max(200),
     description: Joi.string().allow('', null),
     budget: Joi.number().positive().precision(2),
+    budgetVisible: Joi.boolean(),
     objectifPrincipal: Joi.string().allow('', null),
     consignesContenu: Joi.string().allow('', null),
     contraintesContenu: Joi.string().allow('', null),
@@ -233,11 +245,18 @@ export const schemas = {
       .messages({ 'string.max': 'La directive spéciale ne peut pas dépasser 1000 caractères.' }),
   }),
 
-  // PATCH /api/collaborations/:id/soumettre
-  soumettre: Joi.object({
-    // SECURITE (XSS) : même raisonnement que portfolioUrl — un contenu
-    // soumis type "javascript:..." pourrait être rendu cliquable côté
-    // entreprise lors de la validation du contenu.
+  // POST /api/collaborations/postuler
+  postuler: Joi.object({
+    campagneId: Joi.string().uuid().required()
+      .messages({
+        'string.uuid': 'L\'identifiant de la campagne doit être un UUID valide.',
+        'any.required': 'Le champ "campagneId" est obligatoire.',
+      }),
+  }),
+
+  // PATCH /api/collaborations/lignes/:ligneId/soumettre
+  soumettreLigne: Joi.object({
+    // SECURITE (XSS) : un contenu soumis ne doit être accepté que via HTTP/S.
     contenuUrl: Joi.string().uri({ scheme: ['http', 'https'] }).required()
       .messages({
         'string.uri': 'L\'URL du contenu soumis est invalide.',
@@ -246,8 +265,14 @@ export const schemas = {
       }),
   }),
 
-  // POST /api/collaborations/:id/contenus
-  ajouterContenu: Joi.object({
+  // PATCH /api/collaborations/soumissions/:soumissionId/refuser
+  refuserSoumission: Joi.object({
+    raison: Joi.string().max(500).allow('', null).trim()
+      .messages({ 'string.max': 'Le motif ne peut pas dépasser 500 caractères.' }),
+  }),
+
+  // POST /api/collaborations/:id/lignes
+  proposerLigne: Joi.object({
     offreId: Joi.string().uuid().required()
       .messages({
         'string.uuid': 'L\'identifiant de l\'offre doit être un UUID valide.',
@@ -258,6 +283,26 @@ export const schemas = {
         'number.min': 'La quantité doit être d\'au moins 1.',
         'number.max': 'La quantité ne peut pas dépasser 100.',
         'any.required': 'Le champ "quantite" est obligatoire.',
+      }),
+    prixUnitaire: Joi.number().positive().precision(2).required()
+      .messages({
+        'number.positive': 'Le prix proposé doit être supérieur à 0.',
+        'any.required': 'Le champ "prixUnitaire" est obligatoire.',
+      }),
+  }),
+
+  // PUT /api/collaborations/lignes/:ligneId
+  modifierLigne: Joi.object({
+    quantite: Joi.number().integer().min(1).max(100),
+    prixUnitaire: Joi.number().positive().precision(2),
+  }).min(1).messages({ 'object.min': 'Au moins un champ est requis pour la modification.' }),
+
+  // PATCH /api/collaborations/lignes/:ligneId/traiter
+  traiterLigne: Joi.object({
+    action: Joi.string().valid('ACCEPTER', 'REFUSER').required()
+      .messages({
+        'any.only': 'action doit être ACCEPTER ou REFUSER.',
+        'any.required': 'Le champ "action" est obligatoire.',
       }),
   }),
 

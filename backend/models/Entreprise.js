@@ -48,6 +48,10 @@ export default (sequelize) => {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    solde: {
+      type: DataTypes.DECIMAL(15, 2),
+      defaultValue: 0,
+    },
   }, {
     tableName: 'entreprises',
     timestamps: false,
@@ -61,6 +65,7 @@ export default (sequelize) => {
   Entreprise.associate = (models) => {
     Entreprise.belongsTo(models.Utilisateur, { foreignKey: 'utilisateurId', as: 'utilisateur' });
     Entreprise.hasMany(models.Campagne, { foreignKey: 'entrepriseId', as: 'campagnes' });
+    Entreprise.hasMany(models.Transaction, { foreignKey: 'entrepriseId', as: 'transactions' });
   };
 
   return Entreprise;

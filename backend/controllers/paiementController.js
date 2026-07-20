@@ -31,8 +31,11 @@ export const initierPaiement = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Cette collaboration ne vous appartient pas.' });
     }
 
-    const montant = collab.totalRemuneration ||
-      (collab.contenus || []).reduce((s, c) => s + (Number(c.sousTotal) || 0), 0);
+    // Seules les lignes acceptées par l'entreprise entrent dans le montant à payer
+    // (une ligne encore en négociation ou refusée n'a jamais engagé de budget).
+    const montant = (collab.contenus || [])
+      .filter((c) => c.statut === 'ACCEPTEE')
+      .reduce((s, c) => s + (Number(c.sousTotal) || 0), 0);
 
     const paiement = await Paiement.create({
       collaborationId,
@@ -110,9 +113,11 @@ export const confirmerPaiement = async (req, res) => {
     await creerNotification(createurIdNotif, 'PAIEMENT_RECU', 'Paiement', paiement.id);
     
     if (createur && createur.utilisateur && createur.utilisateur.email) {
-      import('../services/emailService.js').then(({ sendPaymentNotificationEmail }) => {
-        sendPaymentNotificationEmail(createur.utilisateur.email, createur.nom, paiement.montant, numeroFacture || paiement.id).catch(console.error);
-      });
+      import('../services/emailService.js')
+        .then(({ sendPaymentNotificationEmail }) =>
+          sendPaymentNotificationEmail(createur.utilisateur.email, createur.nom, paiement.montant, numeroFacture || paiement.id)
+        )
+        .catch(console.error);
     }
 
     return res.status(200).json({ success: true, message: 'Paiement confirmé.' });
@@ -126,7 +131,8 @@ export const getFacture = async (req, res) => {
 
     const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
     const isEntreprise = entreprise && paiement.entrepriseId === entreprise.utilisateurId;
-    const isCreateur   = paiement.createurId === req.user.id;
+    const createur = await Createur.findOne({ where: { utilisateurId: req.user.id } });
+    const isCreateur = createur && paiement.createurId === createur.id;
     if (!isEntreprise && !isCreateur)
       return res.status(403).json({ success: false, message: 'Accès refusé.' });
     if (paiement.statut !== 'CONFIRME')
@@ -172,9 +178,15 @@ export const getFacture = async (req, res) => {
 export const getHistorique = async (req, res) => {
   try {
     const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
-    const where = entreprise
-      ? { entrepriseId: entreprise.utilisateurId }
-      : { createurId: req.user.id };
+    let where;
+    if (entreprise) {
+      where = { entrepriseId: entreprise.utilisateurId };
+    } else {
+      // Paiement.createurId référence Createur.id (PK), pas l'utilisateurId du JWT.
+      const createur = await Createur.findOne({ where: { utilisateurId: req.user.id } });
+      if (!createur) return res.status(404).json({ success: false, message: 'Profil créateur non trouvé.' });
+      where = { createurId: createur.id };
+    }
 
     const paiements = await Paiement.findAll({
       where,

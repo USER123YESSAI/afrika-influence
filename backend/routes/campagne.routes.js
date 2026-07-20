@@ -10,6 +10,7 @@ import {
   annulerCampagne,
   terminerCampagne,
   addMedia,
+  getProgressionCampagne,
 } from '../controllers/campagneController.js';
 import { getRecommandations } from '../controllers/recommandationController.js';
 import { verifyToken, requireRole, optionalAuth } from '../middlewares/auth.js';
@@ -21,7 +22,7 @@ import { publicListLimiter } from '../middlewares/antiBot.js';
 const router = Router();
 
 // ─── PUBLIC (pour créateurs) ───────────────────────────────────────────────────
-router.get('/publiques', publicListLimiter, getCampagnesPubliques); // Campagnes publiées accessibles aux créateurs
+router.get('/publiques', optionalAuth, getCampagnesPubliques); // Campagnes publiées accessibles aux créateurs
 router.get('/:id', optionalAuth, getCampagne); // Détails d'une campagne — BROUILLON restreinte au propriétaire (voir contrôleur)
 
 // ─── PROTÉGÉ : ENTREPRISE ─────────────────────────────────────────────────────
@@ -34,5 +35,6 @@ router.patch('/:id/annuler', verifyToken, requireRole('ENTREPRISE'), annulerCamp
 router.patch('/:id/terminer', verifyToken, requireRole('ENTREPRISE'), terminerCampagne);
 router.post('/:id/medias', verifyToken, requireRole('ENTREPRISE'), mediaUpload.single('media'), verifierSignatureFichier, addMedia);
 router.get('/:id/recommandations', verifyToken, requireRole('ENTREPRISE'), getRecommandations);
+router.get('/:id/progression', verifyToken, requireRole('ENTREPRISE'), getProgressionCampagne);
 
 export default router;

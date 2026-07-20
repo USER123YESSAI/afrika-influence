@@ -1,7 +1,11 @@
 import models, { sequelize } from '../models/index.js';
 import { creerNotification } from './notificationService.js';
+import { payerCreateurAutomatiquement } from './paiementService.js';
 
-const { Collaboration, CollaborationContenu, Createur, Offre } = models;
+const { Collaboration, CollaborationContenu, Soumission, Createur, Offre } = models;
+
+// Statuts de collaboration considérés comme "actifs" (avant décision finale)
+const STATUTS_REFUSABLES = ['INVITATION_ENVOYEE', 'CANDIDATURE_ENVOYEE', 'TRAVAIL_EN_COURS'];
 
 // ─── HELPER : charger une collaboration ou lever une 404 ──────────────────────
 async function findCollabOrFail(collaborationId, includes = []) {
@@ -10,58 +14,56 @@ async function findCollabOrFail(collaborationId, includes = []) {
   return collab;
 }
 
-// ─── HELPER : vérifier la transition de statut attendue ──────────────────────
-function assertStatut(collab, statutAttendu) {
-  if (collab.statut !== statutAttendu)
-    throw {
-      status: 400,
-      message: `Action impossible : statut actuel "${collab.statut}", attendu "${statutAttendu}".`,
-    };
+async function getEntrepriseByUser(utilisateurId, transaction) {
+  const { Entreprise } = models;
+  return Entreprise.findOne({ where: { utilisateurId }, transaction });
+}
+
+// ─── HELPER : notifier l'entreprise propriétaire d'une campagne ───────────────
+// Notification.destinataireId doit être un Utilisateur.id — jamais l'Entreprise.id
+// (campagne.entrepriseId référence Entreprise, pas Utilisateur).
+async function notifierEntreprise(entrepriseId, type, entiteCible, entiteCibleId, transaction) {
+  const { Entreprise } = models;
+  const entreprise = await Entreprise.findByPk(entrepriseId, { transaction });
+  if (entreprise) await creerNotification(entreprise.utilisateurId, type, entiteCible, entiteCibleId);
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// TRANSACTION 1 : inviterCreateur
+// INVITER (entreprise → créateur) / POSTULER (créateur → entreprise)
 // ════════════════════════════════════════════════════════════════════════════
 
-export async function inviterCreateur({ campagneId, createurId, directiveSpeciale }) {
+async function creerCollaboration({ campagneId, createurId, directiveSpeciale, statutInitial }) {
   const { Campagne } = models;
 
   const collaboration = await sequelize.transaction(async (t) => {
-
-    // 1. Vérifier que la campagne existe et est publiée
-    const campagne = await Campagne.findByPk(campagneId, {
-      transaction: t,
-      lock: t.LOCK.UPDATE,
-    });
-    if (!campagne)
-      throw { status: 404, message: 'Campagne introuvable.' };
+    const campagne = await Campagne.findByPk(campagneId, { transaction: t, lock: t.LOCK.UPDATE });
+    if (!campagne) throw { status: 404, message: 'Campagne introuvable.' };
     if (!['PUBLIEE', 'EN_COURS'].includes(campagne.statut))
-      throw { status: 400, message: 'La campagne doit être publiée pour inviter des créateurs.' };
+      throw { status: 400, message: 'La campagne doit être publiée.' };
 
-    // 2. Vérifier que le créateur existe
     const createur = await Createur.findByPk(createurId, { transaction: t });
-    if (!createur)
-      throw { status: 404, message: 'Créateur introuvable.' };
+    if (!createur) throw { status: 404, message: 'Créateur introuvable.' };
 
-    // 3. Vérifier l'absence de doublon dans la même transaction
-    //    La 2e requête simultanée attendra et trouvera la collab déjà créée → 409
-    const existante = await Collaboration.findOne({
-      where: { campagneId, createurId },
-      transaction: t,
-    });
+    const existante = await Collaboration.findOne({ where: { campagneId, createurId }, transaction: t });
     if (existante)
-      throw { status: 409, message: 'Ce créateur a déjà été invité pour cette campagne.' };
+      throw { status: 409, message: 'Une collaboration existe déjà entre ce créateur et cette campagne.' };
 
-    // 4. Créer la collaboration — seulement si tout est bon
     return Collaboration.create({
       campagneId,
       createurId,
       directiveSpeciale,
-      statut: 'INVITATION_ENVOYEE',
+      statut: statutInitial,
       dateInvitation: new Date(),
     }, { transaction: t });
+  });
 
-  }); 
+  return collaboration;
+}
+
+export async function inviterCreateur({ campagneId, createurId, directiveSpeciale }) {
+  const collaboration = await creerCollaboration({
+    campagneId, createurId, directiveSpeciale, statutInitial: 'INVITATION_ENVOYEE',
+  });
 
   // Notification hors transaction — son échec ne rollback pas la création
   const createur = await Createur.findByPk(createurId, { include: [{ model: models.Utilisateur, as: 'utilisateur' }] });
@@ -69,93 +71,30 @@ export async function inviterCreateur({ campagneId, createurId, directiveSpecial
     await creerNotification(createur.utilisateurId, 'NOUVELLE_INVITATION', 'Collaboration', collaboration.id);
     if (createur.utilisateur && createur.utilisateur.email) {
       const campagneInfo = await models.Campagne.findByPk(campagneId);
-      import('./emailService.js').then(({ sendNewInvitationEmail }) => {
-        sendNewInvitationEmail(createur.utilisateur.email, createur.nom, campagneInfo ? campagneInfo.titre : 'Nouvelle campagne').catch(console.error);
-      });
+      import('./emailService.js')
+        .then(({ sendNewInvitationEmail }) =>
+          sendNewInvitationEmail(createur.utilisateur.email, createur.nom, campagneInfo ? campagneInfo.titre : 'Nouvelle campagne')
+        )
+        .catch(console.error);
     }
   }
 
   return collaboration;
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// TRANSACTION 2 : ajouterContenu
-// ════════════════════════════════════════════════════════════════════════════
+export async function postulerCampagne({ campagneId, utilisateurId }) {
+  const createur = await Createur.findOne({ where: { utilisateurId } });
+  if (!createur) throw { status: 404, message: 'Profil créateur introuvable.' };
 
-export async function ajouterContenu(collaborationId, utilisateurId, { offreId, quantite }) {
-  const { Campagne } = models;
-
-  return sequelize.transaction(async (t) => {
-
-    // 1. Charger la collaboration avec verrou
-    //    Empêche deux requêtes simultanées de lire le même budget disponible
-    const collab = await Collaboration.findByPk(collaborationId, {
-      include: [
-        { model: Createur,             as: 'createur' },
-        { model: Campagne,             as: 'campagne' },
-        { model: CollaborationContenu, as: 'contenus' },
-      ],
-      transaction: t,
-      lock: t.LOCK.UPDATE,
-    });
-    if (!collab)
-      throw { status: 404, message: 'Collaboration introuvable.' };
-
-    // 2. Vérifications métier
-    if (collab.createur.utilisateurId !== utilisateurId)
-      throw { status: 403, message: 'Accès interdit.' };
-
-    if (!['TRAVAIL_EN_COURS', 'INVITATION_ACCEPTEE'].includes(collab.statut))
-      throw { status: 400, message: 'Impossible d\'ajouter des contenus dans ce statut.' };
-
-    // 3. Vérifier l'offre et son appartenance
-    const offre = await Offre.findByPk(offreId, { transaction: t });
-    if (!offre)
-      throw { status: 404, message: 'Offre introuvable.' };
-    if (offre.createurId !== collab.createurId)
-      throw { status: 400, message: 'Cette offre ne vous appartient pas.' };
-
-    // 4. Calculer le sous-total
-    const prixUnitaire = parseFloat(offre.prix);
-    const sousTotal    = parseFloat((prixUnitaire * quantite).toFixed(2));
-
-    // 5. Vérifier que le budget ne sera pas dépassé
-    const budgetMax     = parseFloat(collab.campagne.budget);
-    const budgetDepense = parseFloat(collab.campagne.budgetDepense || 0);
-    const totalActuel   = collab.contenus
-      .reduce((s, c) => s + parseFloat(c.sousTotal || 0), 0);
-
-    if (budgetDepense + totalActuel + sousTotal > budgetMax) {
-      const disponible = (budgetMax - budgetDepense - totalActuel).toFixed(0);
-      throw {
-        status: 400,
-        message: `Budget dépassé. Disponible : ${parseInt(disponible).toLocaleString('fr-FR')} FCFA.`,
-      };
-    }
-
-    // 6. Les deux écritures en parallèle — toutes les deux ou aucune
-    const [ligne] = await Promise.all([
-
-      // Écriture 1 : créer la ligne de contenu
-      CollaborationContenu.create({
-        collaborationId,
-        offreId,
-        typeContenu:  offre.typeContenu,
-        quantite,
-        prixUnitaire,
-        sousTotal,
-      }, { transaction: t }),
-
-      // Écriture 2 : mettre à jour budgetDepense sur la campagne
-      collab.campagne.update(
-        { budgetDepense: parseFloat((budgetDepense + sousTotal).toFixed(2)) },
-        { transaction: t }
-      ),
-
-    ]);
-
-    return ligne;
+  const collaboration = await creerCollaboration({
+    campagneId, createurId: createur.id, statutInitial: 'CANDIDATURE_ENVOYEE',
   });
+
+  const { Campagne } = models;
+  const campagne = await Campagne.findByPk(campagneId, { attributes: ['entrepriseId', 'titre'] });
+  await notifierEntreprise(campagne.entrepriseId, 'NOUVELLE_CANDIDATURE', 'Collaboration', collaboration.id);
+
+  return collaboration;
 }
 
 // ─── LISTER ────────────────────────────────────────────────────────────────────
@@ -180,14 +119,13 @@ export async function listerCollaborations(utilisateurId, role, filtres = {}) {
         attributes: ['id', 'titre', 'objectifPrincipal', 'budget', 'budgetDepense', 'entrepriseId', 'dateFin'],
       },
       { model: Createur, as: 'createur', attributes: ['id', 'nom', 'handle', 'photoProfilUrl'] },
-      { model: CollaborationContenu, as: 'contenus', attributes: ['sousTotal'] },
+      { model: CollaborationContenu, as: 'contenus', attributes: ['id', 'statut', 'quantite', 'sousTotal'] },
     ],
     order: [['dateInvitation', 'DESC']],
   });
 
   if (role === 'ENTREPRISE') {
-    const { Entreprise } = models;
-    const entreprise = await Entreprise?.findOne({ where: { utilisateurId } });
+    const entreprise = await getEntrepriseByUser(utilisateurId);
     if (!entreprise) throw { status: 404, message: 'Profil entreprise introuvable.' };
     return collaborations.filter((c) => c.campagne?.entrepriseId === entreprise.id);
   }
@@ -196,7 +134,8 @@ export async function listerCollaborations(utilisateurId, role, filtres = {}) {
 }
 
 // ─── DETAIL ────────────────────────────────────────────────────────────────────
-// Détail d'une collaboration, avec totalRemuneration calculé pour P2 (paiement)
+// Détail d'une collaboration, avec totalRemuneration/totalValide calculés
+// (lignes acceptées uniquement, validation comptée par soumission unitaire).
 
 export async function getCollaboration(collaborationId, utilisateurId, role) {
   const { Campagne, Entreprise } = models;
@@ -207,23 +146,21 @@ export async function getCollaboration(collaborationId, utilisateurId, role) {
       { model: Createur, as: 'createur', attributes: ['id', 'nom', 'handle', 'photoProfilUrl', 'utilisateurId'] },
       {
         model: CollaborationContenu, as: 'contenus',
-        include: [{ model: Offre, as: 'offre' }],
+        include: [{ model: Offre, as: 'offre' }, { model: Soumission, as: 'soumissions' }],
       },
     ],
+    order: [[{ model: CollaborationContenu, as: 'contenus' }, 'dateProposition', 'ASC']],
   });
   if (!collab) throw { status: 404, message: 'Collaboration introuvable.' };
 
-  // ─── Contrôle d'accès (IDOR) ────────────────────────────────────────────
-  // Sans ce contrôle, n'importe quel compte connecté peut consulter le
-  // détail (contenu, rémunération, directives) de n'importe quelle
-  // collaboration en devinant/énumérant un UUID.
-  await verifierAccesCollaboration(collab, utilisateurId, role);
+  const lignesAcceptees = collab.contenus.filter((c) => c.statut === 'ACCEPTEE');
+  const totalRemuneration = lignesAcceptees.reduce((sum, c) => sum + parseFloat(c.sousTotal || 0), 0);
+  const totalValide = lignesAcceptees.reduce((sum, c) => {
+    const validees = c.soumissions.filter((s) => s.dateValidation).length;
+    return sum + validees * parseFloat(c.prixUnitaire);
+  }, 0);
 
-  // totalRemuneration exposé pour P2 (déclenchement paiement)
-  const totalRemuneration = collab.contenus
-    .reduce((sum, c) => sum + parseFloat(c.sousTotal || 0), 0);
-
-  return { ...collab.toJSON(), totalRemuneration };
+  return { ...collab.toJSON(), totalRemuneration, totalValide };
 }
 
 // ─── HELPER : contrôle d'accès partagé (détail + contenus) ────────────────────
@@ -244,10 +181,11 @@ async function verifierAccesCollaboration(collab, utilisateurId, role) {
   throw { status: 403, message: 'Vous n\'avez pas accès à cette collaboration.' };
 }
 
-// ─── ACCEPTER ──────────────────────────────────────────────────────────────────
-// Pas de transaction — une seule table, risque de double-clic géré par l'UI
+// ─── ACCEPTER (invitation OU candidature) ──────────────────────────────────────
+// Invitation (entreprise → créateur) : seul le créateur invité peut accepter.
+// Candidature (créateur → entreprise) : seule l'entreprise propriétaire peut accepter.
 
-export async function accepterCollaboration(collaborationId, utilisateurId) {
+export async function accepterCollaboration(collaborationId, utilisateurId, role) {
   const { Campagne } = models;
 
   const collab = await findCollabOrFail(collaborationId, [
@@ -255,75 +193,339 @@ export async function accepterCollaboration(collaborationId, utilisateurId) {
     { model: Campagne, as: 'campagne', attributes: ['entrepriseId'] },
   ]);
 
-  if (collab.createur.utilisateurId !== utilisateurId)
-    throw { status: 403, message: 'Seul le créateur invité peut accepter cette collaboration.' };
+  if (collab.statut === 'INVITATION_ENVOYEE') {
+    if (collab.createur.utilisateurId !== utilisateurId)
+      throw { status: 403, message: 'Seul le créateur invité peut accepter cette invitation.' };
+  } else if (collab.statut === 'CANDIDATURE_ENVOYEE') {
+    const entreprise = await getEntrepriseByUser(utilisateurId);
+    if (!entreprise || collab.campagne.entrepriseId !== entreprise.id)
+      throw { status: 403, message: 'Seule la marque propriétaire de la campagne peut accepter cette candidature.' };
+  } else {
+    throw { status: 400, message: `Action impossible : statut actuel "${collab.statut}".` };
+  }
 
-  assertStatut(collab, 'INVITATION_ENVOYEE');
-
+  const statutOrigine = collab.statut;
   await collab.update({ statut: 'TRAVAIL_EN_COURS', dateAcceptation: new Date() });
-  await creerNotification(collab.campagne.entrepriseId, 'COLLABORATION_ACCEPTEE', 'Collaboration', collab.id);
+
+  if (statutOrigine === 'INVITATION_ENVOYEE') {
+    await notifierEntreprise(collab.campagne.entrepriseId, 'COLLABORATION_ACCEPTEE', 'Collaboration', collab.id);
+  } else {
+    await creerNotification(collab.createur.utilisateurId, 'CANDIDATURE_ACCEPTEE', 'Collaboration', collab.id);
+  }
+
   return collab;
 }
 
-// ─── REFUSER ───────────────────────────────────────────────────────────────────
+// ─── REFUSER LA COLLABORATION (créateur OU entreprise, à tout moment) ─────────
+// Créateur : refuse une invitation, retire sa candidature, ou abandonne en cours de négociation.
+// Entreprise : décline une candidature, ou écarte un créateur sans négociation ligne par ligne.
+// Libère dans budgetDepense de la campagne les lignes ACCEPTEE non encore intégralement validées.
 
-export async function refuserCollaboration(collaborationId, utilisateurId) {
-  const { Campagne } = models;
+export async function refuserCollaboration(collaborationId, utilisateurId, role) {
+  return sequelize.transaction(async (t) => {
+    const collab = await Collaboration.findByPk(collaborationId, {
+      include: [
+        { model: Createur, as: 'createur' },
+        { model: models.Campagne, as: 'campagne' },
+        { model: CollaborationContenu, as: 'contenus', include: [{ model: Soumission, as: 'soumissions' }] },
+      ],
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!collab) throw { status: 404, message: 'Collaboration introuvable.' };
 
-  const collab = await findCollabOrFail(collaborationId, [
-    { model: Createur, as: 'createur' },
-    { model: Campagne, as: 'campagne', attributes: ['entrepriseId'] },
-  ]);
+    if (role === 'CREATEUR') {
+      if (collab.createur.utilisateurId !== utilisateurId)
+        throw { status: 403, message: 'Accès interdit.' };
+    } else if (role === 'ENTREPRISE') {
+      const entreprise = await getEntrepriseByUser(utilisateurId, t);
+      if (!entreprise || collab.campagne.entrepriseId !== entreprise.id)
+        throw { status: 403, message: 'Accès interdit.' };
+    } else {
+      throw { status: 403, message: 'Accès interdit.' };
+    }
 
-  if (collab.createur.utilisateurId !== utilisateurId)
-    throw { status: 403, message: 'Seul le créateur invité peut refuser cette collaboration.' };
+    if (!STATUTS_REFUSABLES.includes(collab.statut))
+      throw { status: 400, message: `Impossible de refuser une collaboration au statut "${collab.statut}".` };
 
-  assertStatut(collab, 'INVITATION_ENVOYEE');
+    // Libérer le budget des lignes acceptées mais pas intégralement validées
+    const aLiberer = collab.contenus.filter((c) => {
+      if (c.statut !== 'ACCEPTEE') return false;
+      const validees = c.soumissions.filter((s) => s.dateValidation).length;
+      return validees < c.quantite;
+    });
+    const montantALiberer = aLiberer.reduce((sum, c) => sum + parseFloat(c.sousTotal || 0), 0);
 
-  await collab.update({ statut: 'REFUSEE' });
-  await creerNotification(collab.campagne.entrepriseId, 'COLLABORATION_REFUSEE', 'Collaboration', collab.id);
-  return collab;
+    if (montantALiberer > 0) {
+      const nouveauBudgetDepense = parseFloat((parseFloat(collab.campagne.budgetDepense || 0) - montantALiberer).toFixed(2));
+      await collab.campagne.update({ budgetDepense: Math.max(0, nouveauBudgetDepense) }, { transaction: t });
+      await CollaborationContenu.update(
+        { statut: 'REFUSEE', dateTraitement: new Date() },
+        { where: { id: aLiberer.map((c) => c.id) }, transaction: t }
+      );
+    }
+
+    await collab.update({ statut: 'REFUSEE' }, { transaction: t });
+
+    if (role === 'CREATEUR') {
+      await notifierEntreprise(collab.campagne.entrepriseId, 'COLLABORATION_REFUSEE', 'Collaboration', collab.id);
+    } else {
+      await creerNotification(collab.createur.utilisateurId, 'COLLABORATION_REFUSEE', 'Collaboration', collab.id);
+    }
+
+    return collab;
+  });
 }
 
-// ─── SOUMETTRE ─────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// LIGNES DE CONTENU — négociation ligne par ligne
+// ═════════════════════════════════════════════════════════════════════════════
 
-export async function soumettreContenu(collaborationId, utilisateurId, contenuUrl) {
-  const { Campagne } = models;
+// ─── PROPOSER UNE LIGNE (créateur) ─────────────────────────────────────────────
+// Aucune réservation de budget à ce stade — seulement à l'acceptation par la marque.
 
-  const collab = await findCollabOrFail(collaborationId, [
-    { model: Createur, as: 'createur' },
-    { model: Campagne, as: 'campagne', attributes: ['entrepriseId'] },
-  ]);
+export async function proposerLigne(collaborationId, utilisateurId, { offreId, quantite, prixUnitaire }) {
+  const collab = await findCollabOrFail(collaborationId, [{ model: Createur, as: 'createur' }]);
 
   if (collab.createur.utilisateurId !== utilisateurId)
     throw { status: 403, message: 'Accès interdit.' };
+  if (collab.statut !== 'TRAVAIL_EN_COURS')
+    throw { status: 400, message: 'Impossible de proposer une ligne dans ce statut.' };
 
-  assertStatut(collab, 'TRAVAIL_EN_COURS');
+  const offre = await Offre.findByPk(offreId);
+  if (!offre) throw { status: 404, message: 'Offre introuvable.' };
+  if (offre.createurId !== collab.createurId)
+    throw { status: 400, message: 'Cette offre ne vous appartient pas.' };
 
-  await collab.update({ statut: 'CONTENU_SOUMIS', contenuUrl, dateSoumission: new Date() });
-  await creerNotification(collab.campagne.entrepriseId, 'CONTENU_SOUMIS', 'Collaboration', collab.id);
-  return collab;
+  const sousTotal = parseFloat((prixUnitaire * quantite).toFixed(2));
+
+  const ligne = await CollaborationContenu.create({
+    collaborationId,
+    offreId,
+    typeContenu: offre.typeContenu,
+    quantite,
+    prixUnitaire,
+    sousTotal,
+    statut: 'PROPOSEE',
+    dateProposition: new Date(),
+  });
+
+  const { Campagne } = models;
+  const campagne = await Campagne.findByPk(collab.campagneId, { attributes: ['entrepriseId'] });
+  await notifierEntreprise(campagne.entrepriseId, 'LIGNE_PROPOSEE', 'Collaboration', collab.id);
+
+  return ligne;
 }
 
-// ─── VALIDER ───────────────────────────────────────────────────────────────────
+// ─── MODIFIER UNE LIGNE (créateur, avant acceptation) ──────────────────────────
+// Permet d'ajuster une ligne refusée (ou encore en attente) pour la re-proposer.
 
-export async function validerContenu(collaborationId, utilisateurId) {
-  const { Campagne, Entreprise } = models;
+export async function modifierLigne(ligneId, utilisateurId, { quantite, prixUnitaire }) {
+  const ligne = await CollaborationContenu.findByPk(ligneId, {
+    include: [{ model: Collaboration, include: [{ model: Createur, as: 'createur' }] }],
+  });
+  if (!ligne) throw { status: 404, message: 'Ligne introuvable.' };
+  if (ligne.Collaboration.createur.utilisateurId !== utilisateurId)
+    throw { status: 403, message: 'Accès interdit.' };
+  if (!['PROPOSEE', 'REFUSEE'].includes(ligne.statut))
+    throw { status: 400, message: 'Cette ligne ne peut plus être modifiée (déjà acceptée).' };
 
-  const collab = await findCollabOrFail(collaborationId, [
-    { model: Createur, as: 'createur' },
-    { model: Campagne, as: 'campagne', attributes: ['entrepriseId'] },
-  ]);
+  const nouvelleQuantite = quantite ?? ligne.quantite;
+  const nouveauPrix      = prixUnitaire ?? ligne.prixUnitaire;
 
-  const entreprise = await Entreprise?.findOne({ where: { utilisateurId } });
+  await ligne.update({
+    quantite: nouvelleQuantite,
+    prixUnitaire: nouveauPrix,
+    sousTotal: parseFloat((nouvelleQuantite * nouveauPrix).toFixed(2)),
+    statut: 'PROPOSEE',
+    dateTraitement: null,
+  });
+
+  return ligne;
+}
+
+// ─── SUPPRIMER UNE LIGNE (créateur, avant acceptation) ─────────────────────────
+
+export async function supprimerLigne(ligneId, utilisateurId) {
+  const ligne = await CollaborationContenu.findByPk(ligneId, {
+    include: [{ model: Collaboration, include: [{ model: Createur, as: 'createur' }] }],
+  });
+  if (!ligne) throw { status: 404, message: 'Ligne introuvable.' };
+  if (ligne.Collaboration.createur.utilisateurId !== utilisateurId)
+    throw { status: 403, message: 'Accès interdit.' };
+  if (ligne.statut === 'ACCEPTEE')
+    throw { status: 400, message: 'Impossible de supprimer une ligne déjà acceptée.' };
+
+  await ligne.destroy();
+}
+
+// ─── TRAITER UNE LIGNE : accepter ou refuser (entreprise) ──────────────────────
+
+export async function traiterLigne(ligneId, utilisateurId, action) {
+  return sequelize.transaction(async (t) => {
+    const ligne = await CollaborationContenu.findByPk(ligneId, {
+      include: [{
+        model: Collaboration,
+        include: [
+          { model: Createur, as: 'createur' },
+          { model: models.Campagne, as: 'campagne' },
+        ],
+      }],
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!ligne) throw { status: 404, message: 'Ligne introuvable.' };
+
+    const collab = ligne.Collaboration;
+    const entreprise = await getEntrepriseByUser(utilisateurId, t);
+    if (!entreprise || collab.campagne.entrepriseId !== entreprise.id)
+      throw { status: 403, message: 'Accès interdit.' };
+
+    if (ligne.statut !== 'PROPOSEE')
+      throw { status: 400, message: `Cette ligne a déjà été traitée (statut "${ligne.statut}").` };
+
+    if (action === 'ACCEPTER') {
+      // Recharger la campagne avec verrou pour éviter une double-réservation concurrente
+      const campagne = await models.Campagne.findByPk(collab.campagneId, { transaction: t, lock: t.LOCK.UPDATE });
+      const budgetDisponible = parseFloat(campagne.budget) - parseFloat(campagne.budgetDepense || 0);
+      if (parseFloat(ligne.sousTotal) > budgetDisponible) {
+        throw {
+          status: 400,
+          message: `Budget de la campagne insuffisant. Disponible : ${budgetDisponible.toLocaleString('fr-FR')} FCFA, requis : ${parseFloat(ligne.sousTotal).toLocaleString('fr-FR')} FCFA.`,
+        };
+      }
+
+      await campagne.update(
+        { budgetDepense: parseFloat((parseFloat(campagne.budgetDepense || 0) + parseFloat(ligne.sousTotal)).toFixed(2)) },
+        { transaction: t }
+      );
+      await ligne.update({ statut: 'ACCEPTEE', dateTraitement: new Date() }, { transaction: t });
+      await creerNotification(collab.createur.utilisateurId, 'LIGNE_ACCEPTEE', 'Collaboration', collab.id);
+    } else {
+      await ligne.update({ statut: 'REFUSEE', dateTraitement: new Date() }, { transaction: t });
+      await creerNotification(collab.createur.utilisateurId, 'LIGNE_REFUSEE', 'Collaboration', collab.id);
+    }
+
+    return ligne;
+  });
+}
+
+// ─── SOUMETTRE UNE UNITÉ DE CONTENU (créateur) ─────────────────────────────────
+// Une ligne acceptée de quantite=N attend N soumissions distinctes, validables une par une.
+
+export async function soumettreLigne(ligneId, utilisateurId, contenuUrl) {
+  const ligne = await CollaborationContenu.findByPk(ligneId, {
+    include: [
+      {
+        model: Collaboration,
+        include: [
+          { model: Createur, as: 'createur' },
+          { model: models.Campagne, as: 'campagne', attributes: ['entrepriseId'] },
+        ],
+      },
+      { model: Soumission, as: 'soumissions' },
+    ],
+  });
+  if (!ligne) throw { status: 404, message: 'Ligne introuvable.' };
+
+  const collab = ligne.Collaboration;
+  if (collab.createur.utilisateurId !== utilisateurId)
+    throw { status: 403, message: 'Accès interdit.' };
+  if (ligne.statut !== 'ACCEPTEE')
+    throw { status: 400, message: 'Seule une ligne acceptée peut recevoir un contenu.' };
+  // Une soumission refusée libère sa place — seules EN_ATTENTE/VALIDEE comptent dans le quota.
+  const soumissionsActives = ligne.soumissions.filter((s) => s.statut !== 'REFUSEE');
+  if (soumissionsActives.length >= ligne.quantite)
+    throw { status: 400, message: `Les ${ligne.quantite} unité(s) de cette ligne ont déjà été soumises.` };
+
+  const soumission = await Soumission.create({ ligneId, contenuUrl, dateSoumission: new Date() });
+  await notifierEntreprise(collab.campagne.entrepriseId, 'CONTENU_SOUMIS', 'Collaboration', collab.id);
+  return soumission;
+}
+
+// ─── VALIDER UNE SOUMISSION (entreprise) ───────────────────────────────────────
+// Déclenche la clôture + le paiement automatique dès que toutes les unités de
+// toutes les lignes acceptées de la collaboration sont validées.
+
+export async function validerSoumission(soumissionId, utilisateurId) {
+  const soumission = await Soumission.findByPk(soumissionId, {
+    include: [{
+      model: CollaborationContenu, as: 'ligne',
+      include: [{
+        model: Collaboration,
+        include: [
+          { model: Createur, as: 'createur' },
+          { model: models.Campagne, as: 'campagne' },
+          { model: CollaborationContenu, as: 'contenus', include: [{ model: Soumission, as: 'soumissions' }] },
+        ],
+      }],
+    }],
+  });
+  if (!soumission) throw { status: 404, message: 'Soumission introuvable.' };
+  if (soumission.statut !== 'EN_ATTENTE')
+    throw { status: 400, message: `Cette soumission a déjà été traitée (statut "${soumission.statut}").` };
+
+  const ligne = soumission.ligne;
+  const collab = ligne.Collaboration;
+  const entreprise = await getEntrepriseByUser(utilisateurId);
   if (!entreprise || collab.campagne.entrepriseId !== entreprise.id)
-    throw { status: 403, message: 'Seule l\'entreprise propriétaire peut valider le contenu.' };
+    throw { status: 403, message: 'Accès interdit.' };
 
-  assertStatut(collab, 'CONTENU_SOUMIS');
-
-  await collab.update({ statut: 'CONTENU_VALIDE', dateValidation: new Date() });
+  const maintenant = new Date();
+  await soumission.update({ statut: 'VALIDEE', dateValidation: maintenant, dateTraitement: maintenant });
   await creerNotification(collab.createur.utilisateurId, 'CONTENU_VALIDE', 'Collaboration', collab.id);
-  return collab;
+
+  // Une ligne est "complète" quand toutes ses unités actives (hors refusées) sont
+  // soumises ET validées. La collaboration se termine quand toutes ses lignes le sont.
+  const lignesAcceptees = collab.contenus.filter((c) => c.statut === 'ACCEPTEE');
+  const ligneComplete = (c) => {
+    const soumissions = (c.id === ligne.id
+      ? [...c.soumissions.filter((s) => s.id !== soumission.id), soumission.toJSON()]
+      : c.soumissions
+    ).filter((s) => s.statut !== 'REFUSEE');
+    return soumissions.length >= c.quantite && soumissions.every((s) => s.statut === 'VALIDEE');
+  };
+  const toutesCompletes = lignesAcceptees.length > 0 && lignesAcceptees.every(ligneComplete);
+
+  if (toutesCompletes) {
+    await collab.update({ statut: 'TERMINEE' });
+    // Paiement automatique et immédiat — la marque n'a plus rien à déclencher.
+    await payerCreateurAutomatiquement(collab);
+  }
+
+  return soumission;
+}
+
+// ─── REFUSER UNE SOUMISSION (entreprise) ───────────────────────────────────────
+// Ne libère pas le budget de la ligne (le travail reste dû) — libère seulement
+// la place pour que le créateur puisse soumettre une nouvelle unité à la place.
+
+export async function refuserSoumission(soumissionId, utilisateurId, raison) {
+  const soumission = await Soumission.findByPk(soumissionId, {
+    include: [{
+      model: CollaborationContenu, as: 'ligne',
+      include: [{
+        model: Collaboration,
+        include: [
+          { model: Createur, as: 'createur' },
+          { model: models.Campagne, as: 'campagne' },
+        ],
+      }],
+    }],
+  });
+  if (!soumission) throw { status: 404, message: 'Soumission introuvable.' };
+  if (soumission.statut !== 'EN_ATTENTE')
+    throw { status: 400, message: `Cette soumission a déjà été traitée (statut "${soumission.statut}").` };
+
+  const collab = soumission.ligne.Collaboration;
+  const entreprise = await getEntrepriseByUser(utilisateurId);
+  if (!entreprise || collab.campagne.entrepriseId !== entreprise.id)
+    throw { status: 403, message: 'Accès interdit.' };
+
+  await soumission.update({ statut: 'REFUSEE', raisonRefus: raison || null, dateTraitement: new Date() });
+  await creerNotification(collab.createur.utilisateurId, 'CONTENU_REFUSE', 'Collaboration', collab.id);
+
+  return soumission;
 }
 
 // ─── LISTER CONTENUS ───────────────────────────────────────────────────────────
@@ -340,6 +542,7 @@ export async function listerContenus(collaborationId, utilisateurId, role) {
 
   return CollaborationContenu.findAll({
     where: { collaborationId },
-    include: [{ model: Offre, as: 'offre' }],
+    include: [{ model: Offre, as: 'offre' }, { model: Soumission, as: 'soumissions' }],
+    order: [['dateProposition', 'ASC']],
   });
 }

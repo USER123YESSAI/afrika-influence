@@ -92,9 +92,11 @@ export async function envoyerMessage(collaborationId, utilisateurId, contenu) {
     
     if (destinataireEmail && expediteurInfo) {
       const campagneInfo = await models.Campagne.findByPk(collab.campagneId);
-      import('./emailService.js').then(({ sendNewMessageEmail }) => {
-        sendNewMessageEmail(destinataireEmail, destinataireNom, expediteurInfo.nom, campagneInfo ? campagneInfo.titre : 'votre collaboration').catch(console.error);
-      });
+      import('./emailService.js')
+        .then(({ sendNewMessageEmail }) =>
+          sendNewMessageEmail(destinataireEmail, destinataireNom, expediteurInfo.nom, campagneInfo ? campagneInfo.titre : 'votre collaboration')
+        )
+        .catch(console.error);
     }
   } catch (err) { console.error('Erreur notif message', err); }
 

@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import models from '../models/index.js';
 
-const { Createur, CreateurNiche, Offre } = models;
+const { Createur, CreateurNiche, Offre, Avis } = models;
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 async function findCreateurOrFail(createurId) {
@@ -125,23 +125,36 @@ export async function listerCreateursPublic(filtres = {}) {
     ];
   }
 
+  // Pas de jointure obligatoire sur les collaborations : un créateur qui n'a
+  // encore jamais travaillé avec personne doit rester découvrable et invitable.
   let createurs = await Createur.findAll({
     where,
-    include: [
-      ...INCLUDES_COMPLET,
-      {
-        model: models.Collaboration,
-        as: 'collaborations',
-        required: true,
-      }
-    ],
+    include: INCLUDES_COMPLET,
     order: [['createdAt', 'DESC']],
   });
 
   if (niche)  createurs = createurs.filter(c => c.niches?.some(n => n.niche === niche));
   if (reseau) createurs = createurs.filter(c => c.reseaux?.[reseau]?.handle);
 
-  return createurs;
+  // Note moyenne — un seul aller-retour DB pour tous les créateurs de la page.
+  const createurIds = createurs.map(c => c.id);
+  const tousLesAvis = createurIds.length
+    ? await Avis.findAll({ where: { cibleId: createurIds } })
+    : [];
+  const avisParCreateur = {};
+  tousLesAvis.forEach(a => {
+    (avisParCreateur[a.cibleId] ??= []).push(a.note);
+  });
+
+  return createurs.map(c => {
+    const json = c.toJSON();
+    const notes = avisParCreateur[c.id] || [];
+    json.noteMoyenne = notes.length ? Number((notes.reduce((s, n) => s + n, 0) / notes.length).toFixed(1)) : null;
+    json.nombreAvis = notes.length;
+    const prix = (json.offres || []).map(o => parseFloat(o.prix)).filter(p => !isNaN(p));
+    json.tarifMoyen = prix.length ? Math.round(prix.reduce((s, p) => s + p, 0) / prix.length) : null;
+    return json;
+  });
 }
 
 export async function getOffresCreateur(createurId) {
