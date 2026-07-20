@@ -19,7 +19,7 @@ const STATUTS: { value: string; label: string }[] = [
 ];
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' CFA';
-const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
+const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
 
 export default function CampagnesPage() {
   const [campagnes, setCampagnes] = useState<Campagne[]>([]);

@@ -5,8 +5,6 @@ dist/
 build/
 .env
 .env.local
-=======
-.env
 uploads/**
 !uploads/**/
 !uploads/**/.gitkeep

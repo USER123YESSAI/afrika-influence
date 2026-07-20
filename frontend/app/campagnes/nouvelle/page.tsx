@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CampagneForm from '@/components/campagne/CampagneForm';
-import { createCampagne, publierCampagne, type Campagne } from '@/lib/api';
+import { createCampagne, publierCampagne, getMonProfilEntreprise, type Campagne } from '@/lib/api';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 
 const ETAPES = ['Informations', 'Contenu & créateurs', 'Récapitulatif'];
@@ -15,6 +15,13 @@ export default function NouvelleCampagnePage() {
   const [campagneId, setCampagneId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [soldeDisponible, setSoldeDisponible] = useState<number | null>(null);
+
+  useEffect(() => {
+    getMonProfilEntreprise().then(e => setSoldeDisponible(Number(e.solde ?? 0))).catch(() => {});
+  }, []);
+
+  const budgetDepasseSolde = soldeDisponible !== null && Number(formData.budget ?? 0) > soldeDisponible;
 
   const handleFormSubmit = async (data: typeof formData) => {
     setFormData(data);
@@ -65,9 +72,14 @@ export default function NouvelleCampagnePage() {
 
       {etape < 2 ? (
         <CampagneForm
+          mode="wizard"
+          step={etape}
+          onNext={() => setEtape(1)}
+          onBack={() => setEtape(0)}
           initialData={formData}
           onSubmit={handleFormSubmit}
           submitLabel="Continuer →"
+          soldeDisponible={soldeDisponible}
         />
       ) : (
         /* Récapitulatif */
@@ -90,6 +102,14 @@ export default function NouvelleCampagnePage() {
             ))}
           </div>
 
+          {budgetDepasseSolde && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+              ⚠️ Solde disponible : {fmt(soldeDisponible ?? 0)}. Ce budget dépasse votre solde — vous pouvez
+              l'enregistrer en brouillon, mais la publication sera bloquée tant que vous n'aurez pas{' '}
+              <a href="/entreprise/solde" className="underline font-medium">rechargé votre compte</a>.
+            </p>
+          )}
+
           <div className="flex gap-3">
             <button onClick={() => setEtape(0)} className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-2xl text-sm font-medium hover:bg-gray-50 hover-lift">
               ← Modifier
@@ -98,7 +118,8 @@ export default function NouvelleCampagnePage() {
               className="flex-1 border border-emerald-200 text-emerald-600 py-2.5 rounded-2xl text-sm font-medium hover:bg-emerald-50 disabled:opacity-50 hover-lift">
               Sauvegarder en brouillon
             </button>
-            <button onClick={() => handleCreer(true)} disabled={loading}
+            <button onClick={() => handleCreer(true)} disabled={loading || budgetDepasseSolde}
+              title={budgetDepasseSolde ? 'Solde insuffisant pour publier — enregistrez en brouillon ou rechargez votre compte.' : undefined}
               className="flex-1 bg-gradient-emerald text-white py-2.5 rounded-2xl text-sm font-semibold hover:opacity-90 disabled:opacity-50 shadow-bento hover-lift">
               {loading ? 'Création…' : 'Créer et publier'}
             </button>

@@ -110,20 +110,42 @@ export async function supprimerLigne(req, res) {
 // PATCH /api/collaborations/lignes/:ligneId/traiter — entreprise accepte/refuse une ligne
 export async function traiterLigne(req, res) {
   try {
-    const { action } = req.body;
+    const { action, raison } = req.body;
     if (!['ACCEPTER', 'REFUSER'].includes(action))
       throw { status: 400, message: 'action doit être ACCEPTER ou REFUSER.' };
-    const data = await collabService.traiterLigne(req.params.ligneId, req.user.id, action);
+    const data = await collabService.traiterLigne(req.params.ligneId, req.user.id, action, raison);
     ok(res, data);
   } catch (e) { err(res, e); }
 }
 
 // PATCH /api/collaborations/lignes/:ligneId/soumettre — créateur soumet une unité de contenu
+// Accepte soit un lien (contenuUrl), soit un fichier joint (req.file) — l'un des deux est requis.
 export async function soumettreLigne(req, res) {
   try {
-    const { contenuUrl } = req.body;
+    const contenuUrl = req.file ? `/uploads/soumissions/${req.file.filename}` : req.body.contenuUrl;
+    if (!contenuUrl)
+      return res.status(422).json({ success: false, message: 'Fournissez un lien ou joignez un fichier.' });
     const data = await collabService.soumettreLigne(req.params.ligneId, req.user.id, contenuUrl);
     ok(res, data, 201);
+  } catch (e) { err(res, e); }
+}
+
+// PUT /api/collaborations/soumissions/:soumissionId — créateur modifie sa soumission (tant qu'EN_ATTENTE)
+export async function modifierSoumission(req, res) {
+  try {
+    const contenuUrl = req.file ? `/uploads/soumissions/${req.file.filename}` : req.body.contenuUrl;
+    if (!contenuUrl)
+      return res.status(422).json({ success: false, message: 'Fournissez un lien ou joignez un fichier.' });
+    const data = await collabService.modifierSoumission(req.params.soumissionId, req.user.id, contenuUrl);
+    ok(res, data);
+  } catch (e) { err(res, e); }
+}
+
+// DELETE /api/collaborations/soumissions/:soumissionId — créateur supprime sa soumission (tant qu'EN_ATTENTE)
+export async function supprimerSoumission(req, res) {
+  try {
+    await collabService.supprimerSoumission(req.params.soumissionId, req.user.id);
+    ok(res, { message: 'Soumission supprimée.' });
   } catch (e) { err(res, e); }
 }
 

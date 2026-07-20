@@ -7,7 +7,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { getCampagnesPubliques, getCampagne, formatFCFA, collabApi, favoriApi, type Campagne } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
 
-const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
 
 export default function CampagneImmersivePage() {
   const { id } = useParams<{ id: string }>();

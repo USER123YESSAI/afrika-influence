@@ -15,9 +15,10 @@ import {
 import CampagneStatut from '@/components/campagne/CampagneStatut';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 import CreateurRecommande from '@/components/recommandation/CreateurRecommande';
+import CreateursInvitationTable from '@/components/campagne/CreateursInvitationTable';
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' CFA';
-const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
+const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
 
 export default function CampagneDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -77,7 +78,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
 
   return (
     <DashboardEntreprise>
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* En-tête */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -110,7 +111,6 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             ['Budget total', fmt(campagne.budget ?? 0)],
             ['Dépensé', fmt(campagne.budgetDepense ?? 0)],
             ['Créateurs voulus', (campagne.nombreCreateursVoulus ?? '—') as any],
-            ['Posts / créateur', (campagne.nombrePostsParCreateur ?? '—') as any],
             ['Date début', fmtDate(campagne.dateDebut)],
             ['Date fin', fmtDate(campagne.dateFin)],
           ].map(([label, value]) => (
@@ -243,6 +243,14 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             </p>
           )}
         </div>
+
+        {/* Invitation manuelle — présente directement, sans passer par les recommandations */}
+        <CreateursInvitationTable
+          campagneId={id}
+          invitedIds={invitedIds}
+          onInvited={(ids) => setInvitedIds((prev) => new Set([...prev, ...ids]))}
+          onError={(message) => setError(message)}
+        />
       </div>
     </DashboardEntreprise>
   );

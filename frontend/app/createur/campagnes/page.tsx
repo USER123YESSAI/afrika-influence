@@ -24,7 +24,6 @@ interface Campagne {
   contraintesContenu?: string;
   exempleContenu?: string;
   nombreCreateursVoulus?: number;
-  nombrePostsParCreateur?: number;
   statut: string;
   dateCreation: string;
   dateDebut?: string;

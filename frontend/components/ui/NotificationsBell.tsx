@@ -8,6 +8,7 @@ interface Notification {
   type: string;
   entiteCible?: string;
   entiteCibleId?: string;
+  message?: string;
   dateCreation: string;
   lue: boolean;
 }
@@ -21,6 +22,8 @@ const getMessageFromType = (type: string) => {
     case 'CONTENU_SOUMIS': return 'Un contenu a été soumis pour validation.';
     case 'CONTENU_VALIDE': return 'Votre contenu a été validé !';
     case 'PAIEMENT_RECU': return 'Paiement confirmé.';
+    case 'AVERTISSEMENT_SIGNALEMENT': return '⚠️ Vous avez reçu un avertissement de l\'équipe de modération.';
+    case 'SIGNALEMENT_TRAITE': return 'Votre signalement a été traité.';
     default: return 'Nouvelle notification.';
   }
 };
@@ -135,6 +138,9 @@ export default function NotificationsBell() {
                     }`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-900">{getMessageFromType(notif.type)}</p>
+                      {notif.message && (
+                        <p className="text-xs text-gray-600 mt-0.5">{notif.message}</p>
+                      )}
                       <p className="text-xs text-gray-400 mt-1">
                         {new Date(notif.dateCreation).toLocaleString('fr-FR', {
                           day: 'numeric',

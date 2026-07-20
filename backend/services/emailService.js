@@ -128,6 +128,31 @@ export async function sendNewMessageEmail(email, destinataireNom, expediteurNom,
   return sendEmail({ to: email, subject, htmlContent });
 }
 
+export const MOTIF_LABELS = {
+  COMPORTEMENT_INAPPROPRIE: 'Comportement inapproprié',
+  NON_RESPECT_ACCORD: 'Non-respect de l\'accord',
+  CONTENU_FRAUDULEUX: 'Contenu frauduleux',
+  PAIEMENT_NON_RECU: 'Paiement non reçu',
+  COMMUNICATION_ABUSIVE: 'Communication abusive',
+  AUTRE: 'Autre',
+};
+
+export async function sendAvertissementEmail(email, nom, motif, decisionAdmin) {
+  const subject = 'Avertissement de l\'équipe de modération';
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #ef4444;">Avertissement</h2>
+      <p>Bonjour ${nom},</p>
+      <p>Un signalement vous concernant a été examiné et jugé fondé par notre équipe de modération.</p>
+      <p><strong>Motif :</strong> ${MOTIF_LABELS[motif] || motif}</p>
+      ${decisionAdmin ? `<p><strong>Message de la modération :</strong> ${decisionAdmin}</p>` : ''}
+      <p>Nous vous invitons à respecter les règles de la plateforme afin d'éviter toute sanction ultérieure (suspension du compte).</p>
+      <p style="color: #666;">Cordialement,<br>L'équipe Afrika Influence Hub</p>
+    </div>
+  `;
+  return sendEmail({ to: email, subject, htmlContent });
+}
+
 export async function sendPaymentNotificationEmail(email, nom, montant, reference) {
   const subject = 'Confirmation de paiement';
   const htmlContent = `

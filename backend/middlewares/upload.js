@@ -80,6 +80,14 @@ export const mediaUpload = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 });
 
+// ─── soumissionUpload ────────────────────────────────────────────────────────
+// Utilisé par les soumissions de contenu (créateur) — alternative à un simple lien.
+export const soumissionUpload = multer({
+  storage: storage('soumissions'),
+  fileFilter: mediaFilter,
+  limits: { fileSize: 20 * 1024 * 1024 },
+}).single('fichier');
+
 export const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError || err) {
     return res.status(400).json({ success: false, message: err.message });

@@ -127,6 +127,14 @@ export const updateCampagne = async (req, res) => {
       return res.status(400).json({ success: false, message: `Modification impossible : campagne ${campagne.statut}.` });
 
     const { plateformes, ...campagneData } = req.body;
+
+    // Vérifie l'ordre des dates en tenant compte des valeurs déjà en base pour
+    // les champs non transmis dans cette requête (mise à jour partielle).
+    const dateDebut = 'dateDebut' in campagneData ? campagneData.dateDebut : campagne.dateDebut;
+    const dateFin    = 'dateFin' in campagneData ? campagneData.dateFin : campagne.dateFin;
+    if (dateDebut && dateFin && new Date(dateFin) <= new Date(dateDebut))
+      return res.status(422).json({ success: false, message: 'La date de fin doit être postérieure à la date de début.' });
+
     await campagne.update(campagneData);
 
     if (plateformes !== undefined) {

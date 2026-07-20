@@ -110,11 +110,10 @@ export interface Campagne {
   contraintesContenu?: string;
   exempleContenu?: string;
   nombreCreateursVoulus?: number;
-  nombrePostsParCreateur?: number;
   statut: StatutCampagne;
   datePaiement: string;
-  dateDebut?: string;
-  dateFin?: string;
+  dateDebut?: string | null;
+  dateFin?: string | null;
   plateformes?: { id: string; plateforme: string }[];
   medias?: { id: string; mediaUrl: string; type: string }[];
   entreprise?: Partial<Entreprise>;
@@ -308,6 +307,21 @@ export const avisApi = {
   getRecus: (cibleId: string) => request(`/avis/${cibleId}`),
 };
 
+// ─── SIGNALEMENTS ─────────────────────────────────────────────────────────────
+export const MOTIFS_SIGNALEMENT: { value: string; label: string }[] = [
+  { value: 'COMPORTEMENT_INAPPROPRIE', label: 'Comportement inapproprié' },
+  { value: 'NON_RESPECT_ACCORD',       label: 'Non-respect de l\'accord' },
+  { value: 'CONTENU_FRAUDULEUX',       label: 'Contenu frauduleux' },
+  { value: 'PAIEMENT_NON_RECU',        label: 'Paiement non reçu' },
+  { value: 'COMMUNICATION_ABUSIVE',    label: 'Communication abusive' },
+  { value: 'AUTRE',                    label: 'Autre' },
+];
+
+export const signalementApi = {
+  creer: (data: { cibleId: string; motif: string; description?: string }) =>
+    request('/signalements', { method: 'POST', body: JSON.stringify(data) }),
+};
+
 // ─── CRÉATEUR (P3) ────────────────────────────────────────────────────────────
 export const createurApi = {
   getProfil:   (id: string) => request(`/createurs/${id}`),
@@ -377,6 +391,7 @@ export interface LigneContenu {
   statut: StatutLigne;
   dateProposition: string;
   dateTraitement?: string;
+  raisonRefus?: string;
   offre?: { id: string; reseau: string; typeContenu: string; prix: number; delaiLivraison: number };
   soumissions?: Soumission[];
 }
@@ -401,12 +416,41 @@ export const collabApi = {
     request<LigneContenu>(`/collaborations/lignes/${ligneId}`, { method: 'PUT', body: JSON.stringify(data) }),
   supprimerLigne: (ligneId: string) =>
     request<void>(`/collaborations/lignes/${ligneId}`, { method: 'DELETE' }),
-  traiterLigne: (ligneId: string, action: 'ACCEPTER' | 'REFUSER') =>
-    request<LigneContenu>(`/collaborations/lignes/${ligneId}/traiter`, { method: 'PATCH', body: JSON.stringify({ action }) }),
+  traiterLigne: (ligneId: string, action: 'ACCEPTER' | 'REFUSER', raison?: string) =>
+    request<LigneContenu>(`/collaborations/lignes/${ligneId}/traiter`, { method: 'PATCH', body: JSON.stringify({ action, raison }) }),
 
-  // Soumissions — une ligne acceptée de quantite N attend N soumissions distinctes
-  soumettreLigne: (ligneId: string, contenuUrl: string) =>
-    request<Soumission>(`/collaborations/lignes/${ligneId}/soumettre`, { method: 'PATCH', body: JSON.stringify({ contenuUrl }) }),
+  // Soumissions — une ligne acceptée de quantite N attend N soumissions distinctes.
+  // Chaque soumission accepte soit un lien, soit un fichier — jamais les deux.
+  soumettreLigne: async (ligneId: string, contenu: { contenuUrl?: string; fichier?: File }): Promise<Soumission> => {
+    const form = new FormData();
+    if (contenu.fichier) form.append('fichier', contenu.fichier);
+    else if (contenu.contenuUrl) form.append('contenuUrl', contenu.contenuUrl);
+    const res = await fetch(`${BASE_URL}/api/collaborations/lignes/${ligneId}/soumettre`, {
+      method: 'PATCH',
+      headers: { ...getAuthHeaders() },
+      body: form,
+    });
+    const json = await res.json().catch(() => ({ message: res.statusText }));
+    if (!res.ok) throw new Error(json?.message || `Erreur ${res.status}`);
+    if (!json?.success) throw new Error(json?.message || 'Erreur serveur.');
+    return json.data;
+  },
+  modifierSoumission: async (soumissionId: string, contenu: { contenuUrl?: string; fichier?: File }): Promise<Soumission> => {
+    const form = new FormData();
+    if (contenu.fichier) form.append('fichier', contenu.fichier);
+    else if (contenu.contenuUrl) form.append('contenuUrl', contenu.contenuUrl);
+    const res = await fetch(`${BASE_URL}/api/collaborations/soumissions/${soumissionId}`, {
+      method: 'PUT',
+      headers: { ...getAuthHeaders() },
+      body: form,
+    });
+    const json = await res.json().catch(() => ({ message: res.statusText }));
+    if (!res.ok) throw new Error(json?.message || `Erreur ${res.status}`);
+    if (!json?.success) throw new Error(json?.message || 'Erreur serveur.');
+    return json.data;
+  },
+  supprimerSoumission: (soumissionId: string) =>
+    request<void>(`/collaborations/soumissions/${soumissionId}`, { method: 'DELETE' }),
   validerSoumission: (soumissionId: string) =>
     request<Soumission>(`/collaborations/soumissions/${soumissionId}/valider`, { method: 'PATCH' }),
   refuserSoumission: (soumissionId: string, raison?: string) =>

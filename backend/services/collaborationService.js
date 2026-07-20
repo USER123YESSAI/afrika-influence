@@ -138,11 +138,14 @@ export async function listerCollaborations(utilisateurId, role, filtres = {}) {
 // (lignes acceptées uniquement, validation comptée par soumission unitaire).
 
 export async function getCollaboration(collaborationId) {
-  const { Campagne } = models;
+  const { Campagne, Entreprise } = models;
 
   const collab = await Collaboration.findByPk(collaborationId, {
     include: [
-      { model: Campagne, as: 'campagne' },
+      {
+        model: Campagne, as: 'campagne',
+        include: [{ model: Entreprise, as: 'entreprise', attributes: ['id', 'nom', 'utilisateurId'] }],
+      },
       { model: Createur, as: 'createur', attributes: ['id', 'nom', 'handle', 'photoProfilUrl', 'utilisateurId'] },
       {
         model: CollaborationContenu, as: 'contenus',
@@ -343,7 +346,7 @@ export async function supprimerLigne(ligneId, utilisateurId) {
 
 // ─── TRAITER UNE LIGNE : accepter ou refuser (entreprise) ──────────────────────
 
-export async function traiterLigne(ligneId, utilisateurId, action) {
+export async function traiterLigne(ligneId, utilisateurId, action, raison) {
   return sequelize.transaction(async (t) => {
     const ligne = await CollaborationContenu.findByPk(ligneId, {
       include: [{
@@ -384,7 +387,7 @@ export async function traiterLigne(ligneId, utilisateurId, action) {
       await ligne.update({ statut: 'ACCEPTEE', dateTraitement: new Date() }, { transaction: t });
       await creerNotification(collab.createur.utilisateurId, 'LIGNE_ACCEPTEE', 'Collaboration', collab.id);
     } else {
-      await ligne.update({ statut: 'REFUSEE', dateTraitement: new Date() }, { transaction: t });
+      await ligne.update({ statut: 'REFUSEE', dateTraitement: new Date(), raisonRefus: raison || null }, { transaction: t });
       await creerNotification(collab.createur.utilisateurId, 'LIGNE_REFUSEE', 'Collaboration', collab.id);
     }
 
@@ -423,6 +426,43 @@ export async function soumettreLigne(ligneId, utilisateurId, contenuUrl) {
   const soumission = await Soumission.create({ ligneId, contenuUrl, dateSoumission: new Date() });
   await notifierEntreprise(collab.campagne.entrepriseId, 'CONTENU_SOUMIS', 'Collaboration', collab.id);
   return soumission;
+}
+
+// ─── MODIFIER UNE SOUMISSION (créateur, tant qu'EN_ATTENTE) ────────────────────
+
+export async function modifierSoumission(soumissionId, utilisateurId, contenuUrl) {
+  const soumission = await Soumission.findByPk(soumissionId, {
+    include: [{
+      model: CollaborationContenu, as: 'ligne',
+      include: [{ model: Collaboration, include: [{ model: Createur, as: 'createur' }] }],
+    }],
+  });
+  if (!soumission) throw { status: 404, message: 'Soumission introuvable.' };
+  if (soumission.ligne.Collaboration.createur.utilisateurId !== utilisateurId)
+    throw { status: 403, message: 'Accès interdit.' };
+  if (soumission.statut !== 'EN_ATTENTE')
+    throw { status: 400, message: `Cette soumission a déjà été traitée (statut "${soumission.statut}") et ne peut plus être modifiée.` };
+
+  await soumission.update({ contenuUrl, dateSoumission: new Date() });
+  return soumission;
+}
+
+// ─── SUPPRIMER UNE SOUMISSION (créateur, tant qu'EN_ATTENTE) ───────────────────
+
+export async function supprimerSoumission(soumissionId, utilisateurId) {
+  const soumission = await Soumission.findByPk(soumissionId, {
+    include: [{
+      model: CollaborationContenu, as: 'ligne',
+      include: [{ model: Collaboration, include: [{ model: Createur, as: 'createur' }] }],
+    }],
+  });
+  if (!soumission) throw { status: 404, message: 'Soumission introuvable.' };
+  if (soumission.ligne.Collaboration.createur.utilisateurId !== utilisateurId)
+    throw { status: 403, message: 'Accès interdit.' };
+  if (soumission.statut !== 'EN_ATTENTE')
+    throw { status: 400, message: `Cette soumission a déjà été traitée (statut "${soumission.statut}") et ne peut plus être supprimée.` };
+
+  await soumission.destroy();
 }
 
 // ─── VALIDER UNE SOUMISSION (entreprise) ───────────────────────────────────────
