@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
-import { createurApi, NICHES_DISPONIBLES, RESEAUX, getToken } from '@/lib/api';
+import { createurApi, NICHES_DISPONIBLES, RESEAUX, getToken, getImageUrl } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
+import { useAuth } from '@/contexts/AuthContext';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -22,12 +24,7 @@ export default function ProfilCreateurPage() {
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const getImageUrl = (url: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${BASE}${url}`;
-  };
+  const { refreshUser } = useAuth();
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
   const set = (k: string, v: any) => setProfil((p: any) => ({ ...p, [k]: v }));
@@ -74,6 +71,7 @@ export default function ProfilCreateurPage() {
         numeroOrangeMoney: profil.numeroOrangeMoney,
         numeroFreeMoney: profil.numeroFreeMoney,
       });
+      await refreshUser();
       showToast('✅ Profil enregistré !');
     } catch (e: any) { showToast('❌ ' + e.message); }
     finally { setSaving(false); }
@@ -228,6 +226,8 @@ export default function ProfilCreateurPage() {
               </div>
             </div>
           </div>
+
+          <ChangePasswordForm />
 
           <button onClick={handleSave} disabled={saving || !createurId}
             className="w-full py-3.5 bg-gradient-emerald hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all shadow-bento hover-lift">
