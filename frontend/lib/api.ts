@@ -509,10 +509,8 @@ export const moderateurApi = {
   getSignalements:     (p?: Record<string,string>)          => request(`/moderateur/signalements${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
   traiterSignalement:  (id: string, data: { statut: string; decisionAdmin?: string }) =>
     request(`/moderateur/signalements/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  // Contenus
+  // Contenus — visibilité uniquement, pas d'action (voir moderateurService.getContenus)
   getContenus:         (p?: Record<string,string>)          => request(`/moderateur/contenus${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
-  modererContenu:      (id: string, data: { action: string; raison?: string }) =>
-    request(`/moderateur/contenus/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   // Sanctions
   appliquerSanction:   (id: string, data: { action: string; raison?: string }) =>
     request(`/moderateur/sanctions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),

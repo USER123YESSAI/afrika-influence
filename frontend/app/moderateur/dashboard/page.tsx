@@ -9,7 +9,7 @@ export default function ModerateurDashboard() {
     profilsEnAttente: 0,
     campagnesAControler: 0,
     signalementsEnAttente: 0,
-    contenusAVerifier: 0,
+    soumissionsRecentes: 0,
     actionsAujourdhui: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export default function ModerateurDashboard() {
             { label: 'Profils en attente',      value: stats.profilsEnAttente,     icon: '👤', href: '/moderateur/profils' },
             { label: 'Campagnes à contrôler',   value: stats.campagnesAControler,  icon: '📢', href: '/moderateur/campagnes' },
             { label: 'Signalements en attente', value: stats.signalementsEnAttente, icon: '🚩', href: '/moderateur/signalements' },
-            { label: 'Contenus à vérifier',     value: stats.contenusAVerifier,    icon: '📋', href: '/moderateur/contenus' },
+            { label: 'Soumissions (7 derniers jours)', value: stats.soumissionsRecentes, icon: '📋', href: '/moderateur/contenus' },
           ].map((k) => (
             <Link key={k.label} href={k.href}
               className="rounded-2xl border border-hairline bg-surface p-5 shadow-bento hover-lift transition-all">

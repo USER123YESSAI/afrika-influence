@@ -62,20 +62,11 @@ export async function traiterSignalement(req, res) {
   } catch (e) { err(res, e); }
 }
 
-// ─── CONTENUS DES COLLABORATIONS ─────────────────────────────────────────────
+// ─── CONTENUS DES COLLABORATIONS (visibilité uniquement) ─────────────────────
 export async function getContenus(req, res) {
   try {
     const { statut, page, limit } = req.query;
     ok(res, await modService.getContenus({ statut, page: +page || 1, limit: +limit || 20 }));
-  } catch (e) { err(res, e); }
-}
-
-export async function modererContenu(req, res) {
-  try {
-    const { action, raison } = req.body;
-    const data = await modService.modererContenu(req.params.id, action, raison, req.user.id);
-    await creerLog(req.user.id, `CONTENU_${action.toUpperCase()}`, 'Collaboration', req.params.id, { raison }, req.ip);
-    ok(res, data);
   } catch (e) { err(res, e); }
 }
 
