@@ -121,6 +121,8 @@ export async function getProfil(utilisateurId) {
   return data;
 }
 
+
+
 export async function reinitialiserMotDePasse(email, nouveauMotDePasse) {
   const utilisateur = await Utilisateur.findOne({ where: { email } });
   if (!utilisateur)

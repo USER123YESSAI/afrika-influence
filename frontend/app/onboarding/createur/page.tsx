@@ -15,6 +15,8 @@ const PAYS_OPTIONS = [
   { value: 'NE', label: '🇳🇪 Niger' }, { value: 'CD', label: '🇨🇩 RDC' },
 ];
 
+import { ArrowLeft } from 'lucide-react';
+
 export default function OnboardingCreateurPage() {
   const [profil, setProfil]   = useState<any>(null);
   const [createurId, setId]   = useState('');
@@ -109,6 +111,16 @@ export default function OnboardingCreateurPage() {
 
   return (
     <AuthGuard roles={['CREATEUR']}>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 relative">
+        <button 
+          onClick={() => router.back()}
+          className="absolute top-6 left-6 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm hover:shadow-md"
+        >
+          <ArrowLeft size={16} />
+          Retour
+        </button>
+
+        <div className="max-w-3xl mx-auto mt-8">
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">

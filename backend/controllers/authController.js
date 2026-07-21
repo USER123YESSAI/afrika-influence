@@ -51,6 +51,8 @@ export async function changerMdp(req, res) {
   } catch (e) { err(res, e); }
 }
 
+
+
 // POST /api/auth/deconnexion
 export async function deconnexion(req, res) {
   ok(res, { message: 'Déconnexion réussie.' });
