@@ -182,21 +182,24 @@ export async function getSignalements({ statut, page = 1, limit = 20 }) {
 }
 
 // Notifie l'auteur du signalement (résultat de son signalement) et, si celui-ci est jugé
-// fondé (RESOLU) et cible un utilisateur, avertit aussi cette personne directement
+// fondé (TRAITE) et cible un utilisateur, avertit aussi cette personne directement
 // (notification in-app + email reprenant motif et le message rédigé par le modérateur).
-// Le statut ici est 'RESOLU' (interface modérateur) — différent de 'TRAITE' côté admin.
+// Le statut stocké est 'TRAITE', identique à celui utilisé côté admin (même table,
+// mêmes valeurs) — seul le libellé affiché ("Résolu") diffère côté interface modérateur.
+// Avant ce correctif, le modérateur écrivait 'RESOLU' : un signalement traité par un
+// modérateur devenait invisible dans le filtre "Traités" de l'admin, et inversement.
 export async function traiterSignalement(signalementId, statut, decisionAdmin, moderateurId) {
   const sig = await Signalement.findByPk(signalementId);
   if (!sig) throw { status: 404, message: 'Signalement introuvable.' };
 
   await sig.update({ statut, decisionAdmin, adminId: moderateurId, dateTraitement: new Date() });
 
-  const messageAuteur = statut === 'RESOLU'
+  const messageAuteur = statut === 'TRAITE'
     ? 'Votre signalement a été jugé fondé — un avertissement a été envoyé à la personne concernée.'
     : 'Votre signalement a été examiné et rejeté.';
   await creerNotification(sig.auteurId, 'SIGNALEMENT_TRAITE', 'Signalement', signalementId, messageAuteur);
 
-  if (statut === 'RESOLU' && sig.entiteCible === 'Utilisateur') {
+  if (statut === 'TRAITE' && sig.entiteCible === 'Utilisateur') {
     const cible = await Utilisateur.findByPk(sig.cibleId);
     if (cible) {
       const motifLabel = MOTIF_LABELS[sig.motif] || sig.motif;
