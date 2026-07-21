@@ -130,6 +130,7 @@ export default function Accueil() {
           </div>
         </div>
       </section>
+
       {/* AVANTAGES */}
       <section id="avantages" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">

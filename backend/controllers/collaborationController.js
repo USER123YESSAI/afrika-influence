@@ -44,7 +44,7 @@ export async function lister(req, res) {
 // GET /api/collaborations/:id
 export async function detail(req, res) {
   try {
-    const data = await collabService.getCollaboration(req.params.id, req.user.id, req.user.role);
+    const data = await collabService.getCollaboration(req.params.id);
     ok(res, data);
   } catch (e) { err(res, e); }
 }
@@ -82,7 +82,7 @@ export async function proposerLigne(req, res) {
 // GET /api/collaborations/:id/lignes (alias /contenus conservé)
 export async function listerContenus(req, res) {
   try {
-    const data = await collabService.listerContenus(req.params.id, req.user.id, req.user.role);
+    const data = await collabService.listerContenus(req.params.id);
     ok(res, data);
   } catch (e) { err(res, e); }
 }
@@ -143,4 +143,3 @@ export async function refuserSoumission(req, res) {
     ok(res, data);
   } catch (e) { err(res, e); }
 }
-

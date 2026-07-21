@@ -15,9 +15,7 @@ const updateSchema = Joi.object({
   secteurPersonnalise: Joi.string().allow('', null),
   description:         Joi.string().allow('', null),
   pays:                Joi.string().valid('SENEGAL', 'COTE_DIVOIRE', 'CAMEROUN', 'MALI', 'BURKINA_FASO', 'GUINEE', 'TOGO', 'BENIN', 'NIGER', 'RDC', 'AUTRE'),
-  // SECURITE (XSS) : même raisonnement que schemas.js — restreint aux
-  // schémas http/https pour empêcher un "javascript:" stocké comme site web.
-  siteWeb:             Joi.string().uri({ scheme: ['http', 'https'] }).allow('', null),
+  siteWeb:             Joi.string().uri().allow('', null),
   telephone:           Joi.string().allow('', null),
 }).min(1);
 
@@ -28,7 +26,7 @@ export const getEntreprisesPubliques = async (req, res) => {
     const where = {};
     if (secteur) where.secteur = secteur;
     if (pays) where.pays = pays;
-    if (recherche) where.nom = { [Op.like]: `%${recherche}%` };
+    if (recherche) where.nom = { [Op.iLike]: `%${recherche}%` };
 
     const entreprises = await Entreprise.findAll({
       where,
@@ -39,6 +37,7 @@ export const getEntreprisesPubliques = async (req, res) => {
       order: [['nom', 'ASC']]
     });
 
+    // Transformer pour renvoyer un nombre de campagnes plutôt que le détail
     const resultat = entreprises.map(e => {
       const data = e.toJSON();
       data.nombreCampagnes = data.campagnes ? data.campagnes.filter(c => c.statut === 'PUBLIEE' || c.statut === 'EN_COURS').length : 0;

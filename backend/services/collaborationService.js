@@ -137,8 +137,8 @@ export async function listerCollaborations(utilisateurId, role, filtres = {}) {
 // Détail d'une collaboration, avec totalRemuneration/totalValide calculés
 // (lignes acceptées uniquement, validation comptée par soumission unitaire).
 
-export async function getCollaboration(collaborationId, utilisateurId, role) {
-  const { Campagne, Entreprise } = models;
+export async function getCollaboration(collaborationId) {
+  const { Campagne } = models;
 
   const collab = await Collaboration.findByPk(collaborationId, {
     include: [
@@ -161,24 +161,6 @@ export async function getCollaboration(collaborationId, utilisateurId, role) {
   }, 0);
 
   return { ...collab.toJSON(), totalRemuneration, totalValide };
-}
-
-// ─── HELPER : contrôle d'accès partagé (détail + contenus) ────────────────────
-async function verifierAccesCollaboration(collab, utilisateurId, role) {
-  const { Entreprise } = models;
-
-  if (role === 'ADMINISTRATEUR' || role === 'MODERATEUR') return;
-
-  if (role === 'CREATEUR') {
-    if (collab.createur?.utilisateurId === utilisateurId) return;
-  }
-
-  if (role === 'ENTREPRISE') {
-    const entreprise = await Entreprise?.findOne({ where: { utilisateurId } });
-    if (entreprise && collab.campagne?.entrepriseId === entreprise.id) return;
-  }
-
-  throw { status: 403, message: 'Vous n\'avez pas accès à cette collaboration.' };
 }
 
 // ─── ACCEPTER (invitation OU candidature) ──────────────────────────────────────
@@ -530,16 +512,7 @@ export async function refuserSoumission(soumissionId, utilisateurId, raison) {
 
 // ─── LISTER CONTENUS ───────────────────────────────────────────────────────────
 
-export async function listerContenus(collaborationId, utilisateurId, role) {
-  const { Campagne } = models;
-
-  const collab = await Collaboration.findByPk(collaborationId, {
-    include: [{ model: Campagne, as: 'campagne' }, { model: Createur, as: 'createur' }],
-  });
-  if (!collab) throw { status: 404, message: 'Collaboration introuvable.' };
-
-  await verifierAccesCollaboration(collab, utilisateurId, role);
-
+export async function listerContenus(collaborationId) {
   return CollaborationContenu.findAll({
     where: { collaborationId },
     include: [{ model: Offre, as: 'offre' }, { model: Soumission, as: 'soumissions' }],

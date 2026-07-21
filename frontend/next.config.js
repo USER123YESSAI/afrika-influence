@@ -37,7 +37,7 @@ const nextConfig = {
               "default-src 'self'",
               scriptSrc,
               "style-src 'self' 'unsafe-inline'",
-              `img-src 'self' data: ${apiUrl}`,
+              `img-src 'self' data: ${apiUrl} https://api.dicebear.com`,
               `connect-src 'self' ${apiUrl}`,
               "font-src 'self' data:",
               "object-src 'none'",
