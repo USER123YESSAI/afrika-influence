@@ -3,6 +3,7 @@ import Joi from 'joi';
 import { Entreprise, Campagne } from '../models/index.js';
 import { Op } from 'sequelize';
 import { creerLog } from '../services/logService.js';
+import { crediterSolde, getHistorique } from '../services/soldeService.js';
 
 const ok  = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const err = (res, e, status = 500) =>
@@ -14,7 +15,9 @@ const updateSchema = Joi.object({
   secteurPersonnalise: Joi.string().allow('', null),
   description:         Joi.string().allow('', null),
   pays:                Joi.string().valid('SENEGAL', 'COTE_DIVOIRE', 'CAMEROUN', 'MALI', 'BURKINA_FASO', 'GUINEE', 'TOGO', 'BENIN', 'NIGER', 'RDC', 'AUTRE'),
-  siteWeb:             Joi.string().uri().allow('', null),
+  // SECURITE (XSS) : même raisonnement que schemas.js — restreint aux
+  // schémas http/https pour empêcher un "javascript:" stocké comme site web.
+  siteWeb:             Joi.string().uri({ scheme: ['http', 'https'] }).allow('', null),
   telephone:           Joi.string().allow('', null),
 }).min(1);
 
@@ -25,7 +28,7 @@ export const getEntreprisesPubliques = async (req, res) => {
     const where = {};
     if (secteur) where.secteur = secteur;
     if (pays) where.pays = pays;
-    if (recherche) where.nom = { [Op.iLike]: `%${recherche}%` };
+    if (recherche) where.nom = { [Op.like]: `%${recherche}%` };
 
     const entreprises = await Entreprise.findAll({
       where,
@@ -36,7 +39,6 @@ export const getEntreprisesPubliques = async (req, res) => {
       order: [['nom', 'ASC']]
     });
 
-    // Transformer pour renvoyer un nombre de campagnes plutôt que le détail
     const resultat = entreprises.map(e => {
       const data = e.toJSON();
       data.nombreCampagnes = data.campagnes ? data.campagnes.filter(c => c.statut === 'PUBLIEE' || c.statut === 'EN_COURS').length : 0;
@@ -95,5 +97,30 @@ export const uploadLogo = async (req, res) => {
     await entreprise.update({ logoUrl });
     await creerLog(req.user.id, 'UPLOAD_LOGO', 'Entreprise', entreprise.id, null, req.ip);
     return ok(res, { logoUrl });
+  } catch (e) { return err(res, e); }
+};
+
+// POST /api/entreprises/solde/recharger — recharge simulée (aucun vrai paiement)
+export const rechargerSolde = async (req, res) => {
+  try {
+    const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
+    if (!entreprise) return res.status(404).json({ success: false, message: 'Profil entreprise non trouvé.' });
+
+    const { montant } = req.body;
+    const { solde } = await crediterSolde(entreprise.id, montant);
+    await creerLog(req.user.id, 'RECHARGE_SOLDE', 'Entreprise', entreprise.id, { montant }, req.ip);
+    return ok(res, { solde });
+  } catch (e) { return err(res, e); }
+};
+
+// GET /api/entreprises/solde/historique
+export const getHistoriqueSolde = async (req, res) => {
+  try {
+    const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
+    if (!entreprise) return res.status(404).json({ success: false, message: 'Profil entreprise non trouvé.' });
+
+    const { page, limit } = req.query;
+    const data = await getHistorique(entreprise.id, { page: +page || 1, limit: +limit || 20 });
+    return ok(res, data);
   } catch (e) { return err(res, e); }
 };

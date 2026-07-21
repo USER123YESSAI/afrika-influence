@@ -6,7 +6,7 @@ import { verifyToken, requireRole } from '../middlewares/auth.js';
 
 const router = Router();
 
-// Inviter (ENTREPRISE uniquement)
+// Inviter (ENTREPRISE) / Postuler (CREATEUR)
 router.post(
   '/inviter',
   verifyToken,
@@ -14,37 +14,69 @@ router.post(
   validate(schemas.inviter),               // ← Joi valide campagneId + createurId (UUID)
   ctrl.inviter
 );
+router.post(
+  '/postuler',
+  verifyToken,
+  requireRole('CREATEUR'),
+  validate(schemas.postuler),
+  ctrl.postuler
+);
 
 // Lister
 router.get('/', verifyToken, ctrl.lister);
 
+// Lignes de contenu — routes fixes déclarées avant '/:id' pour éviter toute ambiguïté
+router.put(
+  '/lignes/:ligneId',
+  verifyToken,
+  requireRole('CREATEUR'),
+  validate(schemas.modifierLigne),
+  ctrl.modifierLigne
+);
+router.delete('/lignes/:ligneId', verifyToken, requireRole('CREATEUR'), ctrl.supprimerLigne);
+router.patch(
+  '/lignes/:ligneId/traiter',
+  verifyToken,
+  requireRole('ENTREPRISE'),
+  validate(schemas.traiterLigne),
+  ctrl.traiterLigne
+);
+router.patch(
+  '/lignes/:ligneId/soumettre',
+  verifyToken,
+  requireRole('CREATEUR'),
+  validate(schemas.soumettreLigne),
+  ctrl.soumettreLigne
+);
+router.patch('/soumissions/:soumissionId/valider', verifyToken, requireRole('ENTREPRISE'), ctrl.validerSoumission);
+router.patch(
+  '/soumissions/:soumissionId/refuser',
+  verifyToken,
+  requireRole('ENTREPRISE'),
+  validate(schemas.refuserSoumission),
+  ctrl.refuserSoumission
+);
+
 // Détail
 router.get('/:id', verifyToken, ctrl.detail);
 
-// Actions créateur
-router.patch('/:id/accepter', verifyToken, requireRole('CREATEUR'), ctrl.accepter);
-router.patch('/:id/refuser',  verifyToken, requireRole('CREATEUR'), ctrl.refuser);
+// Actions : accepter (créateur sur invitation, entreprise sur candidature)
+router.patch('/:id/accepter', verifyToken, requireRole('CREATEUR', 'ENTREPRISE'), ctrl.accepter);
 
-router.patch(
-  '/:id/soumettre',
-  verifyToken,
-  requireRole('CREATEUR'),
-  validate(schemas.soumettre),             // ← Joi valide contenuUrl (URI obligatoire)
-  ctrl.soumettre
-);
+// Refuser la collaboration entière — créateur ou entreprise, à tout moment
+router.patch('/:id/refuser', verifyToken, requireRole('CREATEUR', 'ENTREPRISE'), ctrl.refuser);
 
-// Validation entreprise
-router.patch('/:id/valider', verifyToken, requireRole('ENTREPRISE'), ctrl.valider);
-
-// Lignes de contenu
+// Proposer une ligne de contenu (créateur)
 router.post(
-  '/:id/contenus',
+  '/:id/lignes',
   verifyToken,
   requireRole('CREATEUR'),
-  validate(schemas.ajouterContenu),        // ← Joi valide offreId (UUID) + quantite (int min 1)
-  ctrl.ajouterContenu
+  validate(schemas.proposerLigne),         // ← Joi valide offreId (UUID) + quantite + prixUnitaire
+  ctrl.proposerLigne
 );
+router.get('/:id/lignes', verifyToken, ctrl.listerContenus);
 
+// Alias rétrocompatible
 router.get('/:id/contenus', verifyToken, ctrl.listerContenus);
 
 export default router;

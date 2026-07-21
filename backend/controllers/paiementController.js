@@ -1,7 +1,7 @@
 // backend/controllers/paiementController.js
 import PDFDocument from 'pdfkit';
 import { Paiement, Entreprise, Collaboration, Createur } from '../models/index.js';
-import { initierPaytech, genererNumeroFacture, genererNumeroRecu } from '../services/paiementService.js';
+import { initierPaytech, genererNumeroFacture, genererNumeroRecu, verifierIPN } from '../services/paiementService.js';
 import { creerNotification } from '../services/notificationService.js';
 import { creerLog } from '../services/logService.js';
 
@@ -18,12 +18,24 @@ export const initierPaiement = async (req, res) => {
 
     // Calculer le montant depuis les contenus de la collaboration
     const collab = await Collaboration.findByPk(collaborationId, {
-      include: [{ association: 'contenus' }],
+      include: [{ association: 'contenus' }, { association: 'campagne' }],
     });
     if (!collab) return res.status(404).json({ success: false, message: 'Collaboration non trouvée.' });
 
-    const montant = collab.totalRemuneration ||
-      (collab.contenus || []).reduce((s, c) => s + (Number(c.sousTotal) || 0), 0);
+    // ─── Contrôle d'accès (IDOR) ────────────────────────────────────────────
+    // Sans ce contrôle, n'importe quelle entreprise connectée peut initier un
+    // paiement pour une collaboration qui ne lui appartient pas — en changeant
+    // simplement le collaborationId dans le body de la requête, elle paierait
+    // (ou déclencherait des notifications/emails) pour une campagne tierce.
+    if (!collab.campagne || collab.campagne.entrepriseId !== entreprise.id) {
+      return res.status(403).json({ success: false, message: 'Cette collaboration ne vous appartient pas.' });
+    }
+
+    // Seules les lignes acceptées par l'entreprise entrent dans le montant à payer
+    // (une ligne encore en négociation ou refusée n'a jamais engagé de budget).
+    const montant = (collab.contenus || [])
+      .filter((c) => c.statut === 'ACCEPTEE')
+      .reduce((s, c) => s + (Number(c.sousTotal) || 0), 0);
 
     const paiement = await Paiement.create({
       collaborationId,
@@ -54,15 +66,42 @@ export const initierPaiement = async (req, res) => {
   } catch (e) { return err(res, e); }
 };
 
-// Webhook PayTech — pas d'auth JWT
+// Webhook PayTech — pas d'auth JWT (PayTech ne peut pas nous fournir de Bearer
+// token), mais authentifié via signature HMAC/SHA256 — voir verifierIPN().
 export const confirmerPaiement = async (req, res) => {
   try {
-    const { ref_command, type_event } = req.body;
+    // ─── Étape 1 : authenticité de la notification ─────────────────────────
+    // Sans ce contrôle, n'importe qui peut forger cette requête et confirmer
+    // un paiement jamais effectué (fraude directe).
+    if (!verifierIPN(req.body)) {
+      console.warn('[confirmerPaiement] IPN PayTech rejetée : signature invalide.', {
+        ip: req.ip,
+        ref_command: req.body?.ref_command,
+      });
+      return res.status(403).json({ success: false, message: 'Notification non authentifiée.' });
+    }
+
+    const { ref_command, type_event, item_price, final_item_price } = req.body;
     if (type_event !== 'sale_complete') return res.status(200).json({ success: true, message: 'Événement ignoré.' });
 
     const paiement = await Paiement.findByPk(ref_command);
     if (!paiement) return res.status(404).json({ success: false, message: 'Paiement non trouvé.' });
     if (paiement.statut === 'CONFIRME') return res.status(200).json({ success: true, message: 'Déjà confirmé.' });
+
+    // ─── Étape 2 : cohérence du montant (défense en profondeur) ────────────
+    // La signature prouve que la notification vient bien de PayTech, mais on
+    // vérifie en plus que le montant annoncé correspond à celui qu'on attend
+    // pour ce paiement précis — évite qu'une notif authentique mais relative
+    // à un autre montant ne vienne confirmer ce paiement.
+    // En mode test PayTech débite un montant aléatoire (100-150 CFA), donc on
+    // ne bloque cette vérification qu'en environnement de production.
+    const montantRecu = Number(final_item_price ?? item_price);
+    if (process.env.PAYTECH_ENV === 'prod' && montantRecu !== Number(paiement.montant)) {
+      console.warn('[confirmerPaiement] Montant IPN incohérent avec le paiement attendu.', {
+        paiementId: paiement.id, attendu: paiement.montant, recu: montantRecu,
+      });
+      return res.status(400).json({ success: false, message: 'Montant incohérent.' });
+    }
 
     const numeroFacture = await genererNumeroFacture(Paiement);
     const numeroRecu    = await genererNumeroRecu(Paiement);
@@ -74,9 +113,11 @@ export const confirmerPaiement = async (req, res) => {
     await creerNotification(createurIdNotif, 'PAIEMENT_RECU', 'Paiement', paiement.id);
     
     if (createur && createur.utilisateur && createur.utilisateur.email) {
-      import('../services/emailService.js').then(({ sendPaymentNotificationEmail }) => {
-        sendPaymentNotificationEmail(createur.utilisateur.email, createur.nom, paiement.montant, numeroFacture || paiement.id).catch(console.error);
-      });
+      import('../services/emailService.js')
+        .then(({ sendPaymentNotificationEmail }) =>
+          sendPaymentNotificationEmail(createur.utilisateur.email, createur.nom, paiement.montant, numeroFacture || paiement.id)
+        )
+        .catch(console.error);
     }
 
     return res.status(200).json({ success: true, message: 'Paiement confirmé.' });
@@ -90,7 +131,8 @@ export const getFacture = async (req, res) => {
 
     const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
     const isEntreprise = entreprise && paiement.entrepriseId === entreprise.utilisateurId;
-    const isCreateur   = paiement.createurId === req.user.id;
+    const createur = await Createur.findOne({ where: { utilisateurId: req.user.id } });
+    const isCreateur = createur && paiement.createurId === createur.id;
     if (!isEntreprise && !isCreateur)
       return res.status(403).json({ success: false, message: 'Accès refusé.' });
     if (paiement.statut !== 'CONFIRME')
@@ -136,9 +178,15 @@ export const getFacture = async (req, res) => {
 export const getHistorique = async (req, res) => {
   try {
     const entreprise = await Entreprise.findOne({ where: { utilisateurId: req.user.id } });
-    const where = entreprise
-      ? { entrepriseId: entreprise.utilisateurId }
-      : { createurId: req.user.id };
+    let where;
+    if (entreprise) {
+      where = { entrepriseId: entreprise.utilisateurId };
+    } else {
+      // Paiement.createurId référence Createur.id (PK), pas l'utilisateurId du JWT.
+      const createur = await Createur.findOne({ where: { utilisateurId: req.user.id } });
+      if (!createur) return res.status(404).json({ success: false, message: 'Profil créateur non trouvé.' });
+      where = { createurId: createur.id };
+    }
 
     const paiements = await Paiement.findAll({
       where,

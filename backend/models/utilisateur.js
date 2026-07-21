@@ -30,6 +30,30 @@ export default (sequelize) => {
       type: DataTypes.STRING(50),
       defaultValue: 'validated',
     },
+    resetPasswordTokenHash: {
+      // On ne stocke JAMAIS le token brut, seulement son hash SHA-256.
+      // Si la base fuite, un attaquant ne peut pas reconstituer le lien de reset.
+      type: DataTypes.STRING(64),
+      allowNull: true,
+    },
+    resetPasswordExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    // ─── SECURITE : verrouillage de compte anti brute-force ─────────────────
+    // Complète le rate-limit par IP (middlewares/antiBot.js), qui ne protège
+    // pas contre un attaquant distribué (botnet / rotation d'IP) ciblant un
+    // seul compte. Après N échecs, le compte est verrouillé temporairement
+    // indépendamment de l'IP d'origine.
+    tentativesEchouees: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    verrouilleJusqua: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     tableName: 'utilisateurs',
     timestamps: true,

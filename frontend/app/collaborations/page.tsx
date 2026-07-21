@@ -22,9 +22,8 @@ interface Collab {
 const FILTRES = [
   { value: '', label: 'Toutes' },
   { value: 'INVITATION_ENVOYEE', label: 'Invitations' },
+  { value: 'CANDIDATURE_ENVOYEE', label: 'Candidatures' },
   { value: 'TRAVAIL_EN_COURS', label: 'En cours' },
-  { value: 'CONTENU_SOUMIS', label: 'Soumis' },
-  { value: 'CONTENU_VALIDE', label: 'Validés' },
   { value: 'TERMINEE', label: 'Terminées' },
 ];
 
@@ -74,6 +73,8 @@ export default function CollaborationsPage() {
   const filtresAffiches = FILTRES.map(f => {
     if (f.value === 'INVITATION_ENVOYEE' && userRole === 'CREATEUR') return { ...f, label: 'Invitations reçues' };
     if (f.value === 'INVITATION_ENVOYEE' && (userRole === 'ENTREPRISE' || userRole === 'PARTICULIER')) return { ...f, label: 'Invitations envoyées' };
+    if (f.value === 'CANDIDATURE_ENVOYEE' && userRole === 'CREATEUR') return { ...f, label: 'Mes candidatures' };
+    if (f.value === 'CANDIDATURE_ENVOYEE' && (userRole === 'ENTREPRISE' || userRole === 'PARTICULIER')) return { ...f, label: 'Candidatures reçues' };
     return f;
   });
 
@@ -175,7 +176,10 @@ export default function CollaborationsPage() {
                         })}
                       </td>
                       <td className="px-6 py-4 flex items-center justify-end gap-2">
-                        {c.statut === 'INVITATION_ENVOYEE' && userRole === 'CREATEUR' ? (
+                        {(
+                          (c.statut === 'INVITATION_ENVOYEE' && userRole === 'CREATEUR') ||
+                          (c.statut === 'CANDIDATURE_ENVOYEE' && (userRole === 'ENTREPRISE' || userRole === 'PARTICULIER'))
+                        ) ? (
                           <>
                             <button
                               onClick={(e) => handleRefuser(c.id, e)}

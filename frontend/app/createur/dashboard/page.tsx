@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { collabApi, formatFCFA } from '@/lib/api';
+import { collabApi, getPaiements, formatFCFA, type Paiement } from '@/lib/api';
 import Link from 'next/link';
 import AuthGuard from '@/components/auth/AuthGuard';
 
@@ -17,13 +17,17 @@ interface Collab {
 
 export default function DashboardPage() {
   const [collabs, setCollabs] = useState<Collab[]>([]);
+  const [paiements, setPaiements] = useState<Paiement[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    collabApi
-      .lister()
-      .then((data: any) => {
-        setCollabs(data);
+    Promise.all([
+      collabApi.lister(),
+      getPaiements().catch(() => []),
+    ])
+      .then(([c, p]: any) => {
+        setCollabs(c);
+        setPaiements(p);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -33,9 +37,9 @@ export default function DashboardPage() {
     enCours: collabs.filter((c) => c.statut === 'TRAVAIL_EN_COURS').length,
     aValider: collabs.filter((c) => c.statut === 'CONTENU_SOUMIS').length,
     invitations: collabs.filter((c) => c.statut === 'INVITATION_ENVOYEE').length,
-    gains: collabs
-      .filter((c) => c.statut === 'CONTENU_VALIDE' || c.statut === 'TERMINEE')
-      .reduce((s, c) => s + (c.totalRemuneration || 0), 0),
+    gains: paiements
+      .filter((p) => p.statut === 'CONFIRME')
+      .reduce((s, p) => s + Number(p.montantCreateur || 0), 0),
   };
 
   return (
@@ -54,7 +58,7 @@ export default function DashboardPage() {
               { label: 'Campagnes en cours', value: 0 },
               { label: 'Invitations reçues', value: stats.invitations },
               { label: 'Contenus en attente', value: stats.aValider },
-              { label: 'Gains validés', value: formatFCFA(stats.gains) },
+              { label: 'Revenus perçus', value: formatFCFA(stats.gains) },
             ].map((kpi) => (
               <div key={kpi.label} className="rounded-2xl border border-hairline bg-surface p-6">
                 <div className="font-display text-2xl font-semibold text-mist">{kpi.value}</div>

@@ -35,6 +35,18 @@ export default (sequelize) => {
       allowNull: false,
       // Calculé automatiquement : quantite × prixUnitaire
     },
+    statut: {
+      type: DataTypes.STRING(20),
+      defaultValue: 'PROPOSEE', // PROPOSEE | ACCEPTEE | REFUSEE
+    },
+    dateProposition: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    dateTraitement: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     tableName: 'collaboration_contenus',
     timestamps: false,
@@ -43,6 +55,7 @@ export default (sequelize) => {
   CollaborationContenu.associate = (models) => {
     CollaborationContenu.belongsTo(models.Collaboration, { foreignKey: 'collaborationId' });
     CollaborationContenu.belongsTo(models.Offre, { foreignKey: 'offreId', as: 'offre' });
+    CollaborationContenu.hasMany(models.Soumission, { foreignKey: 'ligneId', as: 'soumissions', onDelete: 'CASCADE' });
   };
 
   return CollaborationContenu;

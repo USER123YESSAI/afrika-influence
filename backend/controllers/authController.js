@@ -1,4 +1,5 @@
 import * as authService from '../services/authService.js';
+import { revokeToken } from '../middlewares/auth.js';
 
 const ok  = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const err = (res, e) => {
@@ -19,8 +20,9 @@ export async function inscription(req, res) {
 // POST /api/auth/connexion
 export async function connexion(req, res) {
   try {
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const data = await authService.connecter(req.body, ip);
+    // SECURITE : req.ip respecte "trust proxy" (voir app.js) — fiable même
+    // derrière un reverse-proxy, contrairement à un header client arbitraire.
+    const data = await authService.connecter(req.body, req.ip);
     ok(res, data);
   } catch (e) { err(res, e); }
 }
@@ -33,11 +35,20 @@ export async function profil(req, res) {
   } catch (e) { err(res, e); }
 }
 
-// POST /api/auth/reinitialiser-mdp
-export async function reinitialiserMdp(req, res) {
+// POST /api/auth/mot-de-passe-oublie
+export async function demanderResetMdp(req, res) {
   try {
-    const { email, nouveauMotDePasse } = req.body;
-    const data = await authService.reinitialiserMotDePasse(email, nouveauMotDePasse);
+    const { email } = req.body;
+    const data = await authService.demanderReinitialisation(email);
+    ok(res, data);
+  } catch (e) { err(res, e); }
+}
+
+// POST /api/auth/reinitialiser-mdp
+export async function confirmerResetMdp(req, res) {
+  try {
+    const { email, token, nouveauMotDePasse } = req.body;
+    const data = await authService.confirmerReinitialisation(email, token, nouveauMotDePasse);
     ok(res, data);
   } catch (e) { err(res, e); }
 }
@@ -53,5 +64,6 @@ export async function changerMdp(req, res) {
 
 // POST /api/auth/deconnexion
 export async function deconnexion(req, res) {
+  await revokeToken(req.tokenPayload);
   ok(res, { message: 'Déconnexion réussie.' });
 }

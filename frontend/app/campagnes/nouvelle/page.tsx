@@ -76,7 +76,7 @@ export default function NouvelleCampagnePage() {
             <h2 className="font-semibold text-gray-900 mb-4">Récapitulatif</h2>
             {[
               ['Titre', formData.titre],
-              ['Budget', fmt(formData.budget)],
+              ['Budget', fmt(formData.budget ?? 0)],
               ['Objectif', formData.objectifPrincipal],
               ['Créateurs voulus', formData.nombreCreateursVoulus],
               ['Plateformes', (formData.plateformes ?? []).join(', ') || '—'],
