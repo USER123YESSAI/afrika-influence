@@ -9,6 +9,13 @@ const nextConfig = {
   // sert réellement les pages HTML consultées par le navigateur.
   async headers() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    
+    // En développement, Next.js a besoin de unsafe-eval et unsafe-inline pour le hot-reload
+    const isDev = process.env.NODE_ENV !== 'production';
+    const scriptSrc = isDev 
+      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'" 
+      : "script-src 'self'";
+
     return [
       {
         source: '/:path*',
@@ -28,7 +35,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self'",
+              scriptSrc,
               "style-src 'self' 'unsafe-inline'",
               `img-src 'self' data: ${apiUrl}`,
               `connect-src 'self' ${apiUrl}`,

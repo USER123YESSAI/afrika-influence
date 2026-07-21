@@ -11,7 +11,7 @@ export const connexionSlowDown = slowDown({
   delayAfter: 5,
   delayMs: (hits) => hits * 500,
   maxDelayMs: 10000,
-  keyGenerator: (req) => `${ipKeyGenerator(req.ip)}:${req.body?.email || 'anonyme'}`,
+  keyGenerator: (req) => `${req.ip}:${req.body?.email || 'anonyme'}`,
 });
 
 // ─── Blocage dur après trop de tentatives ──────────────────────────────────
@@ -20,7 +20,7 @@ export const connexionLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => `${ipKeyGenerator(req.ip)}:${req.body?.email || 'anonyme'}`,
+  keyGenerator: (req) => `${req.ip}:${req.body?.email || 'anonyme'}`,
   message: { success: false, message: 'Trop de tentatives de connexion. Réessayez dans quelques minutes.' },
 });
 

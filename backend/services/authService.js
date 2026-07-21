@@ -215,5 +215,3 @@ export async function changerMotDePasse(utilisateurId, ancienMotDePasse, nouveau
   await creerLog(utilisateur.id, 'CHANGE_MDP', 'Utilisateur', utilisateur.id);
   return { message: 'Mot de passe modifié avec succès.' };
 }
-  return { message: 'Mot de passe réinitialisé avec succès. Vous pouvez vous connecter.' };
-}

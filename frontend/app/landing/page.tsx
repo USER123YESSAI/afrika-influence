@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Shield, TrendingUp } from "lucide-react";
 import { MeshBackground } from "@/components/layout/MeshBackground";
 import { createurApi, getEntreprisesPubliques } from "@/lib/api";
+import CreateursPage from "../createurs/page";
+import EntreprisesPage from "../entreprises/page";
 
 const avatarUrl = (seed: string) =>
   `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=0b1114,101a1e&radius=0`;
@@ -127,41 +129,7 @@ export default function Accueil() {
             </Link>
           </div>
         </div>
-
-        {/* Bandeau défilant : aperçu créateurs — cartes agrandies, photo en fond */}
-        <div className="relative border-t border-hairline bg-surface/60 py-8">
-        <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">Créateurs</h2>
-          <div className="flex overflow-hidden">
-            <div className="marquee-track flex shrink-0 gap-5 pr-5">
-              {displayCreateurs.map((c, i) => (
-                <Link
-                  href={c.isStatic ? "#" : `/createurs/${c.id}`}
-                  key={i}
-                  className="group relative h-72 w-56 shrink-0 overflow-hidden rounded-2xl border border-hairline hover:border-cyan/50 transition-all hover:shadow-[0_0_30px_-5px_rgba(45,212,191,0.15)] hover:-translate-y-1 block"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={c.isStatic ? avatarUrl(c.seed) : (c.photoProfilUrl ? getImageUrl(c.photoProfilUrl) : avatarUrl(c.nom || c.id))}
-                    alt={`Photo de profil de ${c.nom}`}
-                    className="absolute inset-0 h-full w-full scale-125 object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4 text-left">
-                    <p className="font-display text-base text-white line-clamp-1">{c.nom}</p>
-                    <p className="mt-1 font-mono text-[11px] text-cyan-400 line-clamp-1">
-                      {c.isStatic ? c.niche : (c.niches && c.niches.length > 0 ? c.niches[0].niche : "Créateur")}
-                    </p>
-                    <p className="font-mono text-[11px] text-gray-300 line-clamp-1">
-                      {c.isStatic ? c.plateforme : getReseaux(c)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
       </section>
-
       {/* AVANTAGES */}
       <section id="avantages" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">
@@ -178,44 +146,30 @@ export default function Accueil() {
         </div>
       </section>
 
-    
-      {/* ANNUAIRE PUBLIC — CRÉATEURS (aperçu verrouillé) */}
-     
-
-      {/* ANNUAIRE PUBLIC — ENTREPRISES (aperçu) */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="flex items-end justify-between">
-          <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">Entreprises</h2>
-          <Link href="/connexion" className="text-sm text-cyan hover:underline">
-            Voir toutes les entreprises →
-          </Link>
+      {/* ANNUAIRE PUBLIC — CRÉATEURS (embarqué) */}
+      <section className="bg-ink border-t border-hairline py-16">
+        <div className="mx-auto max-w-6xl px-5 text-center mb-6">
+          <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">
+            Découvrez nos Créateurs
+          </h2>
+          <p className="mt-3 text-sm text-fog max-w-xl mx-auto">
+            Recherchez et filtrez les talents pour trouver la voix parfaite pour votre prochaine campagne.
+          </p>
         </div>
+        <CreateursPage embedded={true} />
+      </section>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {displayEntreprises.map((e, i) => (
-            <Link 
-              href={e.isStatic ? "#" : `/entreprises/${e.id}`}
-              key={i} 
-              className="group flex flex-col items-center text-center rounded-2xl border border-hairline bg-surface p-6 hover:border-cyan/50 transition-all hover:shadow-[0_0_30px_-5px_rgba(45,212,191,0.15)] hover:-translate-y-1 block"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <div className="h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-hairline bg-surface-2 p-2 shadow-sm mb-4">
-                <img
-                  src={e.isStatic ? logoUrl(e.seed) : (e.logoUrl ? getImageUrl(e.logoUrl) : logoUrl(e.nom || e.id))}
-                  alt={`Logo de ${e.nom}`}
-                  className="h-full w-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <p className="text-lg font-semibold text-mist line-clamp-1 group-hover:text-cyan transition-colors">{e.nom}</p>
-              <p className="mt-1 text-sm text-fog line-clamp-1">
-                {e.isStatic ? e.secteur : (e.secteur === 'AUTRE' ? e.secteurPersonnalise : e.secteur?.replace('_', ' ') || 'Non spécifié')}
-              </p>
-              <p className="mt-3 font-mono text-[11px] text-cyan px-3 py-1 rounded-full border border-hairline bg-surface-2">
-                {e.isStatic ? e.campagnes : `${e.nombreCampagnes || 0} campagne${e.nombreCampagnes !== 1 ? 's' : ''}`}
-              </p>
-            </Link>
-          ))}
+      {/* ANNUAIRE PUBLIC — ENTREPRISES (embarqué) */}
+      <section className="bg-surface py-16">
+        <div className="mx-auto max-w-6xl px-5 text-center mb-6">
+          <h2 className="font-display text-2xl font-semibold text-mist sm:text-3xl">
+            Découvrez nos Marques
+          </h2>
+          <p className="mt-3 text-sm text-fog max-w-xl mx-auto">
+            Explorez les entreprises qui font confiance à notre plateforme pour leurs campagnes d'influence.
+          </p>
         </div>
+        <EntreprisesPage embedded={true} />
       </section>
 
       {/* CTA FINAL */}
