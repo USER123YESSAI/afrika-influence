@@ -30,7 +30,7 @@ const getImageUrl = (url: string) => {
   return `${BASE}${url}`;
 };
 
-export default function EntreprisesPage() {
+export default function EntreprisesPage({ embedded = false }: { embedded?: boolean }) {
   const [entreprises, setEntreprises] = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
@@ -52,19 +52,21 @@ export default function EntreprisesPage() {
   }, [pays, secteur, search]);
 
   return (
-    <div className="relative min-h-screen bg-afrika-mesh text-mist">
-      <MeshBackground />
+    <div className={`relative text-mist ${embedded ? '' : 'min-h-screen bg-afrika-mesh'}`}>
+      {!embedded && <MeshBackground />}
       
-      <div className="relative mx-auto max-w-7xl px-5 py-12 sm:py-20">
-        <div className="mb-12 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan mb-4">Annuaire Public</p>
-          <h1 className="font-display text-4xl font-semibold sm:text-5xl lg:text-6xl text-mist">
-            Découvrez nos <span className="text-gradient-afrika">Marques</span>
-          </h1>
-          <p className="mt-6 text-fog max-w-2xl mx-auto text-base sm:text-lg">
-            Explorez les entreprises qui font confiance à notre plateforme pour leurs campagnes d'influence.
-          </p>
-        </div>
+      <div className={`relative mx-auto max-w-7xl px-5 ${embedded ? 'py-8' : 'py-12 sm:py-20'}`}>
+        {!embedded && (
+          <div className="mb-12 text-center">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan mb-4">Annuaire Public</p>
+            <h1 className="font-display text-4xl font-semibold sm:text-5xl lg:text-6xl text-mist">
+              Découvrez nos <span className="text-gradient-afrika">Marques</span>
+            </h1>
+            <p className="mt-6 text-fog max-w-2xl mx-auto text-base sm:text-lg">
+              Explorez les entreprises qui font confiance à notre plateforme pour leurs campagnes d'influence.
+            </p>
+          </div>
+        )}
 
         {/* Filtres */}
         <div className="mb-10 rounded-2xl border border-hairline bg-surface/60 backdrop-blur-md p-4 sm:p-6 shadow-2xl">

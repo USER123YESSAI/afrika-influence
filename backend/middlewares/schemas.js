@@ -45,6 +45,14 @@ export const schemas = {
       }),
   }),
 
+  changerMdp: Joi.object({
+    ancienMotDePasse: Joi.string().required(),
+    nouveauMotDePasse: Joi.string().min(6).required()
+      .messages({
+        'string.min': 'Le nouveau mot de passe doit contenir au moins 6 caractères.'
+      }),
+  }),
+
   // ─── CRÉATEUR ─────────────────────────────────────────────────────────────
 
   // PUT /api/createurs/:id

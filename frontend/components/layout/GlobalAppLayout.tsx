@@ -8,13 +8,15 @@ export function GlobalAppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  // Certain pages like login/register should definitely NOT have a sidebar.
-  // We can skip sidebar if user is null OR if we are on an auth page.
-  const isAuthPage = pathname.startsWith('/connexion') || pathname.startsWith('/inscription');
+  const isAuthPage = pathname.startsWith('/connexion') || pathname.startsWith('/inscription') || pathname.startsWith('/reinitialiser-mdp');
   const isOnboardingPage = pathname.startsWith('/onboarding');
   const isLegalPage = pathname.startsWith('/conditions-utilisation') || pathname.startsWith('/politique-confidentialite');
+  const isLandingPage = pathname === '/';
+  const isPublicList = pathname.startsWith('/createurs') || pathname.startsWith('/entreprises');
 
-  if (!user || isAuthPage || isOnboardingPage || isLegalPage) {
+  const showSidebar = user && !isAuthPage && !isOnboardingPage && !isLegalPage && !isLandingPage && !isPublicList;
+
+  if (!showSidebar) {
     return (
       <div className="flex flex-col min-h-screen">
         {!isAuthPage && !isOnboardingPage && !isLegalPage && <Navbar />}
