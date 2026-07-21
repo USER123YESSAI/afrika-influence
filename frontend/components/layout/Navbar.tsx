@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const LIENS = [
   { href: "/createurs", label: "Créateurs" },
   { href: "/entreprises", label: "Entreprises" },
-  { href: "/#avantages", label: "Avantages" },
+  { href: "/#comment-ca-marche", label: "Comment ça marche" },
 ];
 
 export function Navbar() {
@@ -51,7 +51,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-hairline bg-ink/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Link href="/" aria-label="Accueil Afrika Influence Hub">
           <Logo />
@@ -62,7 +62,7 @@ export function Navbar() {
             <Link
               key={lien.href}
               href={lien.href}
-              className="text-sm text-fog transition-colors hover:text-mist"
+              className="text-sm text-gray-600 transition-colors hover:text-brand-700"
             >
               {lien.label}
             </Link>
@@ -74,13 +74,13 @@ export function Navbar() {
             <>
               <Link
                 href="/connexion"
-                className="text-sm text-fog transition-colors hover:text-mist"
+                className="text-sm text-gray-600 transition-colors hover:text-brand-700"
               >
                 Connexion
               </Link>
               <Link
                 href="/inscription"
-                className="rounded-full bg-gradient-to-r from-cyan to-emerald px-4 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90"
+                className="rounded-full bg-brass-500 px-4 py-2 text-sm font-semibold text-brand-900 transition-colors hover:bg-brass-400"
               >
                 Rejoindre la plateforme
               </Link>
@@ -89,19 +89,19 @@ export function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOuvert(!dropdownOuvert)}
-                className="flex items-center gap-2 rounded-full border border-hairline bg-surface/50 pl-2 pr-4 py-1.5 transition-colors hover:bg-surface"
+                className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 pl-2 pr-4 py-1.5 transition-colors hover:bg-gray-100"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-cyan to-emerald text-xs font-bold text-ink">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">
                   {user.nom?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <span className="text-sm font-medium text-mist">{user.nom}</span>
+                <span className="text-sm font-medium text-gray-800">{user.nom}</span>
               </button>
 
               {dropdownOuvert && (
-                <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-hairline bg-surface-2 shadow-xl animate-fade-in">
+                <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-soft animate-fade-in">
                   <Link
                     href={getDashboardLink()}
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-fog hover:bg-surface hover:text-mist"
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-brand-700"
                     onClick={() => setDropdownOuvert(false)}
                   >
                     <LayoutDashboard size={16} />
@@ -109,19 +109,19 @@ export function Navbar() {
                   </Link>
                   <Link
                     href={getProfileLink()}
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-fog hover:bg-surface hover:text-mist"
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-brand-700"
                     onClick={() => setDropdownOuvert(false)}
                   >
                     <UserIcon size={16} />
                     Mon profil
                   </Link>
-                  <div className="h-px bg-hairline" />
+                  <div className="h-px bg-gray-100" />
                   <button
                     onClick={() => {
                       setDropdownOuvert(false);
                       logout();
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-surface hover:text-red-300"
+                    className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50"
                   >
                     <LogOut size={16} />
                     Déconnexion
@@ -134,7 +134,7 @@ export function Navbar() {
 
         <button
           onClick={() => setOuvert(!ouvert)}
-          className="text-mist md:hidden"
+          className="text-brand-800 md:hidden"
           aria-label={ouvert ? "Fermer le menu" : "Ouvrir le menu"}
         >
           {ouvert ? <X size={22} /> : <Menu size={22} />}
@@ -142,20 +142,20 @@ export function Navbar() {
       </nav>
 
       {ouvert && (
-        <div className="border-t border-hairline bg-ink px-5 py-4 md:hidden">
+        <div className="border-t border-gray-100 bg-white px-5 py-4 md:hidden">
           <div className="flex flex-col gap-4">
             {LIENS.map((lien) => (
-              <Link key={lien.href} href={lien.href} className="text-sm text-fog" onClick={() => setOuvert(false)}>
+              <Link key={lien.href} href={lien.href} className="text-sm text-gray-600" onClick={() => setOuvert(false)}>
                 {lien.label}
               </Link>
             ))}
-            <hr className="border-hairline" />
+            <hr className="border-gray-100" />
             {!user ? (
               <>
-                <Link href="/connexion" className="text-sm text-fog" onClick={() => setOuvert(false)}>Connexion</Link>
+                <Link href="/connexion" className="text-sm text-gray-600" onClick={() => setOuvert(false)}>Connexion</Link>
                 <Link
                   href="/inscription"
-                  className="rounded-full bg-gradient-to-r from-cyan to-emerald px-4 py-2 text-center text-sm font-medium text-ink"
+                  className="rounded-full bg-brass-500 px-4 py-2 text-center text-sm font-semibold text-brand-900"
                   onClick={() => setOuvert(false)}
                 >
                   Rejoindre la plateforme
@@ -163,15 +163,15 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Link href={getDashboardLink()} className="flex items-center gap-2 text-sm text-fog" onClick={() => setOuvert(false)}>
+                <Link href={getDashboardLink()} className="flex items-center gap-2 text-sm text-gray-600" onClick={() => setOuvert(false)}>
                   <LayoutDashboard size={16} /> Mon espace
                 </Link>
-                <Link href={getProfileLink()} className="flex items-center gap-2 text-sm text-fog" onClick={() => setOuvert(false)}>
+                <Link href={getProfileLink()} className="flex items-center gap-2 text-sm text-gray-600" onClick={() => setOuvert(false)}>
                   <UserIcon size={16} /> Mon profil
                 </Link>
                 <button
                   onClick={() => { setOuvert(false); logout(); }}
-                  className="flex items-center gap-2 text-left text-sm text-red-400"
+                  className="flex items-center gap-2 text-left text-sm text-red-600"
                 >
                   <LogOut size={16} /> Déconnexion
                 </button>

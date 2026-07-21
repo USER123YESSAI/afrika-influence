@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createurApi, NICHES_DISPONIBLES, RESEAUX } from '@/lib/api';
 import Link from 'next/link';
 import { Search, MapPin, Tag, Share2, Users } from 'lucide-react';
@@ -31,12 +32,13 @@ const getImageUrl = (url: string) => {
 };
 
 export default function CreateursPage() {
+  const searchParams = useSearchParams();
   const [createurs, setCreateurs] = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
-  const [pays, setPays]           = useState('');
-  const [niche, setNiche]         = useState('');
-  const [reseau, setReseau]       = useState('');
+  const [pays, setPays]           = useState(searchParams?.get('pays') ?? '');
+  const [niche, setNiche]         = useState(searchParams?.get('niche') ?? '');
+  const [reseau, setReseau]       = useState(searchParams?.get('reseau') ?? '');
   const [search, setSearch]       = useState('');
 
   useEffect(() => {
