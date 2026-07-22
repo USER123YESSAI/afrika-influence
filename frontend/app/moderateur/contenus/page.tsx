@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import DashboardModerateur from '@/components/layout/DashboardModerateur';
+import ContenuViewerModal from '@/components/ui/ContenuViewerModal';
 import { moderateurApi } from '@/lib/api';
 
 const STATUT_BADGE: Record<string, { label: string; className: string }> = {
@@ -15,6 +16,7 @@ export default function ModContenus() {
   const [loading, setLoading]         = useState(true);
   const [filter, setFilter]           = useState('');
   const [toast, setToast]             = useState('');
+  const [viewingUrl, setViewingUrl]   = useState<string | null>(null);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
@@ -78,10 +80,10 @@ export default function ModContenus() {
                           {s.ligne?.offre && ` · ${s.ligne.offre.typeContenu} (${s.ligne.offre.reseau})`}
                         </p>
                         {s.contenuUrl && (
-                          <a href={s.contenuUrl} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-emerald-600 hover:underline truncate block mt-1">
-                            🔗 {s.contenuUrl}
-                          </a>
+                          <button onClick={() => setViewingUrl(s.contenuUrl)}
+                            className="text-xs text-emerald-600 hover:underline truncate block mt-1 text-left">
+                            {s.contenuUrl.startsWith('/uploads') ? '📎 Voir le fichier joint' : `🔗 ${s.contenuUrl}`}
+                          </button>
                         )}
                         {s.statut === 'REFUSEE' && s.raisonRefus && (
                           <p className="text-xs text-red-500 mt-1">Motif du refus (par l'entreprise) : {s.raisonRefus}</p>
@@ -98,6 +100,8 @@ export default function ModContenus() {
           )}
         </div>
       </div>
+
+      {viewingUrl && <ContenuViewerModal url={viewingUrl} onClose={() => setViewingUrl(null)} />}
     </DashboardModerateur>
   );
 }

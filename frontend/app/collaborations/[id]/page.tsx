@@ -6,6 +6,7 @@ import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import ContenuViewerModal from '@/components/ui/ContenuViewerModal';
 import { collabApi, messageApi, signalementApi, MOTIFS_SIGNALEMENT, formatFCFA, getUser, type LigneContenu } from '@/lib/api';
 
 
@@ -17,9 +18,6 @@ interface Message {
   lu: boolean;
   expediteur: { id: string; nom: string; role: string };
 }
-
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-const contenuUrl = (url: string) => (url.startsWith('http') ? url : `${BASE}${url}`);
 
 export default function CollabDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +40,7 @@ export default function CollabDetailPage() {
   const [signalementDescription, setSignalementDescription] = useState('');
   const [signalementSending, setSignalementSending] = useState(false);
   const [signalementEnvoye, setSignalementEnvoye] = useState(false);
+  const [viewingUrl, setViewingUrl] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const currentUserId   = typeof window !== 'undefined' ? (getUser()?.id ?? '') : '';
   const currentUserRole = typeof window !== 'undefined' ? (getUser()?.role ?? '') : '';
@@ -342,10 +341,10 @@ export default function CollabDetailPage() {
                             {soumissions.map((s, i) => (
                               <div key={s.id} className="py-1.5 border-t border-gray-100 first:border-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <a href={contenuUrl(s.contenuUrl)} target="_blank" rel="noreferrer"
-                                    className={`text-xs hover:underline truncate flex-1 ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-emerald-600'}`}>
+                                  <button onClick={() => setViewingUrl(s.contenuUrl)}
+                                    className={`text-xs hover:underline truncate flex-1 text-left ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-emerald-600'}`}>
                                     {s.contenuUrl.startsWith('/uploads') ? '📎' : '🔗'} Unité {i + 1} — {s.contenuUrl.startsWith('/uploads') ? 'fichier joint' : s.contenuUrl}
-                                  </a>
+                                  </button>
                                   {s.statut === 'VALIDEE' && (
                                     <span className="text-xs text-emerald-600 font-medium shrink-0">✓ Validée</span>
                                   )}
@@ -627,6 +626,8 @@ export default function CollabDetailPage() {
           </div>
         </div>
       </div>
+
+      {viewingUrl && <ContenuViewerModal url={viewingUrl} onClose={() => setViewingUrl(null)} />}
     </Shell>
   );
 }
