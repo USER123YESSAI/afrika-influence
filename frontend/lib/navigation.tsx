@@ -49,6 +49,7 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
           { href: '/createur/offres',    label: 'Mes offres',      icon: <IconOffer /> },
           { href: '/collaborations',     label: 'Collaborations',  icon: <IconCollab /> },
           { href: '/messages',           label: 'Messages',        icon: <IconMsg /> },
+          { href: '/paiements',          label: 'Paiements',       icon: <IconPayment /> },
         ]
       };
     case 'ENTREPRISE':
