@@ -9,10 +9,6 @@ const mod = [verifyToken, requireRole('MODERATEUR', 'ADMINISTRATEUR')];
 // Tableau de bord
 router.get('/dashboard',        ...mod, ctrl.getDashboard);
 
-// Profils
-router.get('/profils',          ...mod, ctrl.getProfilsEnAttente);
-router.patch('/profils/:id',    ...mod, ctrl.validerProfil);
-
 // Campagnes
 router.get('/campagnes',        ...mod, ctrl.getCampagnesAControler);
 router.patch('/campagnes/:id',  ...mod, ctrl.modererCampagne);

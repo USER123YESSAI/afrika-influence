@@ -514,10 +514,6 @@ export const favoriApi = {
 // ─── MODÉRATEUR ───────────────────────────────────────────────────────────────
 export const moderateurApi = {
   getDashboard:        ()                                    => request('/moderateur/dashboard'),
-  // Profils
-  getProfilsEnAttente: (p?: Record<string,string>)          => request(`/moderateur/profils${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
-  validerProfil:       (id: string, data: { statut: string; raison?: string }) =>
-    request(`/moderateur/profils/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   // Campagnes
   getCampagnes:        (p?: Record<string,string>)          => request(`/moderateur/campagnes${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
   modererCampagne:     (id: string, data: { action: string; raison?: string }) =>

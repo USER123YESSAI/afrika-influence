@@ -20,13 +20,11 @@ const STATUTS_COLLAB_ACTIFS = [
 // ─── STATS TABLEAU DE BORD ────────────────────────────────────────────────────
 export async function getStats() {
   const [
-    profilsEnAttente,
     campagnesAControler,
     signalementsEnAttente,
     soumissionsRecentes,
     actionsAujourdhui,
   ] = await Promise.all([
-    Utilisateur.count({ where: { statut: 'pending' } }),
     Campagne.count({ where: { statut: { [Op.in]: ['PUBLIEE', 'EN_COURS'] } } }),
     Signalement.count({ where: { statut: 'EN_ATTENTE' } }),
     Soumission.count({ where: { dateSoumission: { [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } }),
@@ -38,45 +36,11 @@ export async function getStats() {
   ]);
 
   return {
-    profilsEnAttente,
     campagnesAControler,
     signalementsEnAttente,
     soumissionsRecentes,
     actionsAujourdhui,
   };
-}
-
-// ─── PROFILS ──────────────────────────────────────────────────────────────────
-export async function getProfilsEnAttente({ role, page = 1, limit = 20 }) {
-  const where = { statut: 'pending' };
-  if (role) where.role = role;
-
-  const { count, rows } = await Utilisateur.findAndCountAll({
-    where,
-    attributes: { exclude: ['motDePasse'] },
-    order: [['createdAt', 'ASC']],
-    limit,
-    offset: (page - 1) * limit,
-  });
-
-  return { total: count, page, totalPages: Math.ceil(count / limit), utilisateurs: rows };
-}
-
-export async function validerProfil(utilisateurId, statut, raison, moderateurId) {
-  const statutsValides = ['validated', 'rejected', 'suspended'];
-  if (!statutsValides.includes(statut))
-    throw { status: 400, message: `Statut invalide. Valeurs : ${statutsValides.join(', ')}.` };
-
-  const utilisateur = await Utilisateur.findByPk(utilisateurId);
-  if (!utilisateur) throw { status: 404, message: 'Utilisateur introuvable.' };
-
-  await utilisateur.update({ statut });
-
-  const typeNotif = statut === 'validated' ? 'PROFIL_VALIDE' : 'PROFIL_REJETE';
-  await creerNotification(utilisateurId, typeNotif, 'Utilisateur', utilisateurId);
-
-  const { motDePasse: _, ...data } = utilisateur.toJSON();
-  return { utilisateur: data, raison };
 }
 
 // ─── CAMPAGNES ────────────────────────────────────────────────────────────────

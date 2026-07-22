@@ -28,7 +28,7 @@ export async function changerStatutUtilisateur(utilisateurId, statut, adminId) {
   const utilisateur = await Utilisateur.findByPk(utilisateurId);
   if (!utilisateur) throw { status: 404, message: 'Utilisateur introuvable.' };
 
-  const statutsValides = ['validated', 'rejected', 'suspended', 'pending', 'banned'];
+  const statutsValides = ['validated', 'rejected', 'suspended', 'banned'];
   if (!statutsValides.includes(statut))
     throw { status: 400, message: `Statut invalide. Valeurs acceptées : ${statutsValides.join(', ')}.` };
 

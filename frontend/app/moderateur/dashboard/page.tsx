@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 export default function ModerateurDashboard() {
   const [stats, setStats] = useState({
-    profilsEnAttente: 0,
     campagnesAControler: 0,
     signalementsEnAttente: 0,
     soumissionsRecentes: 0,
@@ -32,7 +31,6 @@ export default function ModerateurDashboard() {
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Profils en attente',      value: stats.profilsEnAttente,     icon: '👤', href: '/moderateur/profils' },
             { label: 'Campagnes à contrôler',   value: stats.campagnesAControler,  icon: '📢', href: '/moderateur/campagnes' },
             { label: 'Signalements en attente', value: stats.signalementsEnAttente, icon: '🚩', href: '/moderateur/signalements' },
             { label: 'Soumissions (7 derniers jours)', value: stats.soumissionsRecentes, icon: '📋', href: '/moderateur/contenus' },

@@ -11,23 +11,6 @@ export async function getDashboard(req, res) {
   catch (e) { err(res, e); }
 }
 
-// ─── PROFILS EN ATTENTE ───────────────────────────────────────────────────────
-export async function getProfilsEnAttente(req, res) {
-  try {
-    const { role, page, limit } = req.query;
-    ok(res, await modService.getProfilsEnAttente({ role, page: +page || 1, limit: +limit || 20 }));
-  } catch (e) { err(res, e); }
-}
-
-export async function validerProfil(req, res) {
-  try {
-    const { statut, raison } = req.body;
-    const data = await modService.validerProfil(req.params.id, statut, raison, req.user.id);
-    await creerLog(req.user.id, `PROFIL_${statut.toUpperCase()}`, 'Utilisateur', req.params.id, { raison }, req.ip);
-    ok(res, data);
-  } catch (e) { err(res, e); }
-}
-
 // ─── CAMPAGNES À CONTRÔLER ───────────────────────────────────────────────────
 export async function getCampagnesAControler(req, res) {
   try {
