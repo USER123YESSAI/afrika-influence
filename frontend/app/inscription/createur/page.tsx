@@ -2,12 +2,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { authApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function InscriptionCreateurPage() {
+  const router = useRouter();
+  const { setAuthData } = useAuth();
   const [form, setForm]       = useState({ nom: '', email: '', password: '', confirm: '' });
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur]   = useState('');
-  const [success, setSuccess] = useState(false);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -15,28 +19,18 @@ export default function InscriptionCreateurPage() {
     if (!form.nom || !form.email || !form.password) return setErreur('Tous les champs sont obligatoires.');
     if (form.password.length < 8) return setErreur('Le mot de passe doit contenir au moins 8 caractères.');
     if (form.password !== form.confirm) return setErreur('Les mots de passe ne correspondent pas.');
+    if (!acceptTerms) return setErreur('Vous devez accepter les conditions d\'utilisation.');
 
     setLoading(true); setErreur('');
     try {
-      await authApi.inscription({ nom: form.nom, email: form.email, password: form.password, role: 'CREATEUR' });
-      setSuccess(true);
+      const response = await authApi.inscription({ nom: form.nom, email: form.email, password: form.password, role: 'CREATEUR' });
+      // authApi.inscription now returns { token, utilisateur }
+      setAuthData(response.token, response.utilisateur);
+      router.push('/onboarding/createur');
     } catch (e: any) {
       setErreur(e.message || 'Erreur lors de l\'inscription.');
     } finally { setLoading(false); }
   };
-
-  if (success) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="max-w-md text-center animate-fade-in rounded-[32px] bg-white p-10 shadow-bento border border-gray-100">
-        <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-3xl mx-auto mb-6">✅</div>
-        <h1 className="font-display text-2xl text-gray-900 mb-3">Votre compte est créé !</h1>
-        <p className="text-gray-500 leading-relaxed mb-8">
-          Votre profil créateur est en attente de validation par notre équipe. Vous recevrez un email dès que votre compte sera activé.
-        </p>
-        <Link href="/connexion" className="btn-primary inline-flex w-full justify-center">Aller à la connexion</Link>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -81,6 +75,21 @@ export default function InscriptionCreateurPage() {
                   className="input-base mt-1.5" placeholder="••••••••" />
               </div>
             </div>
+
+            <label className="flex items-start gap-3 cursor-pointer mt-4">
+              <input
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={e => setAcceptTerms(e.target.checked)}
+                className="mt-1 h-5 w-5 rounded border-gray-200 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-sm text-gray-500 leading-relaxed">
+                J'ai lu et j'accepte les{" "}
+                <Link href="/conditions-utilisation" className="text-emerald-600 hover:underline">Conditions d'utilisation</Link>
+                {" "}ainsi que la{" "}
+                <Link href="/politique-confidentialite" className="text-emerald-600 hover:underline">Politique de confidentialité</Link>.
+              </span>
+            </label>
 
             <button onClick={handleSubmit} disabled={loading} className="btn-primary w-full py-3.5 mt-2">
               {loading ? 'Création du compte…' : 'Créer mon compte créateur'}

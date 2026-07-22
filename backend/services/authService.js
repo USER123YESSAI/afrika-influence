@@ -56,7 +56,8 @@ export async function inscrire({ nom, email, password, role }) {
 
   console.log('[authService.inscrire] DONE.');
   const { motDePasse: _, ...data } = utilisateur.toJSON();
-  return data;
+  const token = generateToken(utilisateur);
+  return { token, utilisateur: data };
 }
 
 export async function connecter({ email, password }, ipAdresse) {
@@ -77,6 +78,21 @@ export async function connecter({ email, password }, ipAdresse) {
   await creerLog(utilisateur.id, 'CONNEXION', 'Utilisateur', utilisateur.id, null, ipAdresse);
 
   const { motDePasse: _, ...data } = utilisateur.toJSON();
+
+  if (data.role === 'CREATEUR') {
+    const createur = await Createur.findOne({ where: { utilisateurId: data.id } });
+    if (createur) {
+      data.photoProfil = createur.photoProfilUrl;
+      data.profilComplet = !!createur.nom && !!createur.pays;
+    }
+  } else if (data.role === 'ENTREPRISE' || data.role === 'PARTICULIER') {
+    const entreprise = await Entreprise.findOne({ where: { utilisateurId: data.id } });
+    if (entreprise) {
+      data.logo = entreprise.logoUrl;
+      data.profilComplet = !!entreprise.nom && !!entreprise.secteur;
+    }
+  }
+
   return { token, utilisateur: data };
 }
 
@@ -85,8 +101,27 @@ export async function getProfil(utilisateurId) {
     attributes: { exclude: ['motDePasse'] },
   });
   if (!utilisateur) throw { status: 404, message: 'Utilisateur introuvable.' };
-  return utilisateur;
+
+  const data = utilisateur.toJSON();
+
+  if (data.role === 'CREATEUR') {
+    const createur = await Createur.findOne({ where: { utilisateurId } });
+    if (createur) {
+      data.photoProfil = createur.photoProfilUrl;
+      data.profilComplet = !!createur.nom && !!createur.pays; // par exemple
+    }
+  } else if (data.role === 'ENTREPRISE' || data.role === 'PARTICULIER') {
+    const entreprise = await Entreprise.findOne({ where: { utilisateurId } });
+    if (entreprise) {
+      data.logo = entreprise.logoUrl;
+      data.profilComplet = !!entreprise.nom && !!entreprise.secteur; // par exemple
+    }
+  }
+
+  return data;
 }
+
+
 
 export async function reinitialiserMotDePasse(email, nouveauMotDePasse) {
   const utilisateur = await Utilisateur.findOne({ where: { email } });
@@ -97,4 +132,19 @@ export async function reinitialiserMotDePasse(email, nouveauMotDePasse) {
   await utilisateur.update({ motDePasse: hash });
   await creerLog(utilisateur.id, 'RESET_MDP', 'Utilisateur', utilisateur.id);
   return { message: 'Mot de passe réinitialisé avec succès.' };
+}
+
+export async function changerMotDePasse(utilisateurId, ancienMotDePasse, nouveauMotDePasse) {
+  const utilisateur = await Utilisateur.findByPk(utilisateurId);
+  if (!utilisateur)
+    throw { status: 404, message: 'Utilisateur introuvable.' };
+
+  const valide = await bcrypt.compare(ancienMotDePasse, utilisateur.motDePasse);
+  if (!valide)
+    throw { status: 401, message: 'Ancien mot de passe incorrect.' };
+
+  const hash = await bcrypt.hash(nouveauMotDePasse, SALT_ROUNDS);
+  await utilisateur.update({ motDePasse: hash });
+  await creerLog(utilisateur.id, 'CHANGE_MDP', 'Utilisateur', utilisateur.id);
+  return { message: 'Mot de passe modifié avec succès.' };
 }

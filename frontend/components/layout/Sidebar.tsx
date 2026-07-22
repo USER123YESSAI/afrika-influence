@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { logout, getUser } from '@/lib/api';
+import { logout, getUser, getImageUrl } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSidebarConfig } from '@/lib/navigation';
@@ -65,17 +65,21 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-gradient-sidebar flex flex-col fixed h-full z-20 shadow-soft">
-      {/* Logo */}
+      {/* User Info / Logo */}
       <div className="px-5 py-6 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-3 mb-3 hover:opacity-80 transition-opacity">
-          <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur">
-            <span className="text-white font-bold text-lg">AI</span>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur overflow-hidden flex-shrink-0">
+            {user?.photoProfil || user?.logo || user?.photo ? (
+              <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-lg">{user?.nom?.[0]?.toUpperCase() ?? '?'}</span>
+            )}
           </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">Afrika Influence</p>
-            <p className="text-white/50 text-xs">Hub</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-sm leading-tight truncate">{user.nom || 'Utilisateur'}</p>
+            <p className="text-white/50 text-xs truncate">{user.email || ''}</p>
           </div>
-        </Link>
+        </div>
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${roleColor}`}>
           {roleLabel}
         </span>
@@ -96,10 +100,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User menu at bottom */}
-      <div className="px-3 py-4 border-t border-white/10">
-        <UserMenu />
-      </div>
     </aside>
   );
 }
