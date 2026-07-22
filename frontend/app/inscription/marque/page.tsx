@@ -3,6 +3,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { authApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import RetourNav from '@/components/nav/RetourNav';
+import HoneypotField from '@/components/security/HoneypotField';
 
 const CATEGORIES = [
   { value: 'PARTICULIER', label: 'Particulier', desc: 'Je gère ma marque personnelle ou mon side-project' },
@@ -14,6 +16,7 @@ export default function InscriptionMarquePage() {
   const [step, setStep]       = useState(1);
   const [categorie, setCat]   = useState<'PARTICULIER' | 'ENTREPRISE' | ''>('');
   const [form, setForm]       = useState({ nom: '', email: '', password: '', confirm: '' });
+  const [siteInternet, setSiteInternet] = useState(''); // champ piège honeypot
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur]   = useState('');
@@ -29,7 +32,7 @@ export default function InscriptionMarquePage() {
 
     setLoading(true); setErreur('');
     try {
-      await authApi.inscription({ nom: form.nom, email: form.email, password: form.password, role: categorie });
+      await authApi.inscription({ nom: form.nom, email: form.email, password: form.password, role: categorie, siteInternet });
       router.push('/connexion');
     } catch (e: any) {
       setErreur(e.message || 'Erreur lors de l\'inscription.');
@@ -48,6 +51,8 @@ export default function InscriptionMarquePage() {
         </div>
 
         <div className="rounded-[32px] bg-white shadow-bento border border-gray-100 p-10">
+          <RetourNav theme="light" />
+
           <div className="flex items-center gap-3 mb-8">
            
             <div>
@@ -57,6 +62,8 @@ export default function InscriptionMarquePage() {
           </div>
 
           {erreur && <div className="mb-5 p-4 rounded-3xl bg-red-50 border border-red-100 text-sm text-red-700">{erreur}</div>}
+
+          <HoneypotField value={siteInternet} onChange={setSiteInternet} />
 
           {step === 1 ? (
             <div className="space-y-5">

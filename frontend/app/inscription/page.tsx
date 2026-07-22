@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import RetourNav from '@/components/nav/RetourNav';
 
 
 const OPTIONS = [
@@ -24,6 +25,7 @@ export default function InscriptionChoixPage() {
     <div className="min-h-screen bg-ink">
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-16 lg:grid-cols-[1.1fr_minmax(360px,0.9fr)] lg:px-8">
         <div className="space-y-8">
+          <RetourNav theme="dark" />
           <div className="max-w-2xl">
             <span className="badge bg-cyan/20 text-cyan">Rejoindre Afrika Influence</span>
             <h1 className="font-display text-5xl text-mist mt-6 mb-4">Choisissez votre espace</h1>

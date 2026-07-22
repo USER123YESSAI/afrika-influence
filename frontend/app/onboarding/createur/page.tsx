@@ -121,8 +121,6 @@ export default function OnboardingCreateurPage() {
         </button>
 
         <div className="max-w-3xl mx-auto mt-8">
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <h1 className="font-display text-4xl font-bold text-gray-900 mb-3">Bienvenue sur Afrika Influence ! </h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">

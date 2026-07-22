@@ -4,11 +4,14 @@ import Link from 'next/link';
 import { authApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import RetourNav from '@/components/nav/RetourNav';
+import HoneypotField from '@/components/security/HoneypotField';
 
 export default function InscriptionCreateurPage() {
   const router = useRouter();
   const { setAuthData } = useAuth();
   const [form, setForm]       = useState({ nom: '', email: '', password: '', confirm: '' });
+  const [siteInternet, setSiteInternet] = useState(''); // champ piège honeypot
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur]   = useState('');
@@ -23,7 +26,7 @@ export default function InscriptionCreateurPage() {
 
     setLoading(true); setErreur('');
     try {
-      const response = await authApi.inscription({ nom: form.nom, email: form.email, password: form.password, role: 'CREATEUR' });
+      const response = await authApi.inscription({ nom: form.nom, email: form.email, password: form.password, role: 'CREATEUR', siteInternet });
       // authApi.inscription now returns { token, utilisateur }
       setAuthData(response.token, response.utilisateur);
       router.push('/onboarding/createur');
@@ -44,6 +47,8 @@ export default function InscriptionCreateurPage() {
         </div>
 
         <div className="rounded-[32px] bg-white shadow-bento border border-gray-100 p-10">
+          <RetourNav theme="light" />
+
           <div className="flex items-center gap-3 mb-8">
            
             <div>
@@ -55,6 +60,7 @@ export default function InscriptionCreateurPage() {
           {erreur && <div className="mb-5 p-4 rounded-3xl bg-red-50 border border-red-100 text-sm text-red-700">{erreur}</div>}
 
           <div className="space-y-4">
+            <HoneypotField value={siteInternet} onChange={setSiteInternet} />
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Nom complet</label>
               <input value={form.nom} onChange={e => set('nom', e.target.value)} className="input-base mt-1.5" placeholder="Aminata Diallo" autoFocus />

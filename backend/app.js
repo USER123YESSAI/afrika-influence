@@ -7,6 +7,7 @@ import { dirname, join } from 'path';
 
 import { sequelize } from './models/index.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { sanitizeBody } from './middlewares/sanitize.js';
 
 // Routes P1
 import authRoutes from './routes/auth.routes.js';
@@ -35,6 +36,11 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Défense XSS : nettoie récursivement toutes les chaînes de req.body avant
+// qu'elles n'atteignent un contrôleur, quel que soit le module (P1/P2/P3).
+app.use(sanitizeBody);
+
 // Rate limit global : désactivé en développement pour éviter les blocages
 if (process.env.NODE_ENV !== 'production') {
   app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import RetourNav from '@/components/nav/RetourNav';
 
 export default function ConnexionPage() {
   const router = useRouter();
@@ -69,10 +70,7 @@ export default function ConnexionPage() {
 
         <div className="flex items-center justify-center p-4 sm:p-6 lg:p-0">
           <div className="w-full max-w-sm animate-fade-in">
-            <Link href="/landing" className="inline-flex items-center gap-2 text-sm text-fog hover:text-cyan mb-8 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Retour à l'accueil
-            </Link>
+            <RetourNav theme="dark" />
 
             <h1 className="font-display text-3xl text-mist mb-2">Connexion</h1>
             <p className="text-fog mb-8">Accédez à votre espace Afrika Influence Hub.</p>
