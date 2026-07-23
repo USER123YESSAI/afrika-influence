@@ -6,7 +6,8 @@ import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { collabApi, messageApi, formatFCFA, getUser, type LigneContenu } from '@/lib/api';
+import ContenuViewerModal from '@/components/ui/ContenuViewerModal';
+import { collabApi, messageApi, signalementApi, MOTIFS_SIGNALEMENT, formatFCFA, getUser, type LigneContenu } from '@/lib/api';
 
 
 interface Message {
@@ -28,8 +29,18 @@ export default function CollabDetailPage() {
   const [toast, setToast] = useState('');
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [submitUrl, setSubmitUrl] = useState('');
+  const [submitFile, setSubmitFile] = useState<File | null>(null);
   const [refusingId, setRefusingId] = useState<string | null>(null);
   const [refusRaison, setRefusRaison] = useState('');
+  const [editingSoumissionId, setEditingSoumissionId] = useState<string | null>(null);
+  const [editSoumissionUrl, setEditSoumissionUrl] = useState('');
+  const [editSoumissionFile, setEditSoumissionFile] = useState<File | null>(null);
+  const [signalementOpen, setSignalementOpen] = useState(false);
+  const [signalementMotif, setSignalementMotif] = useState('');
+  const [signalementDescription, setSignalementDescription] = useState('');
+  const [signalementSending, setSignalementSending] = useState(false);
+  const [signalementEnvoye, setSignalementEnvoye] = useState(false);
+  const [viewingUrl, setViewingUrl] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const currentUserId   = typeof window !== 'undefined' ? (getUser()?.id ?? '') : '';
   const currentUserRole = typeof window !== 'undefined' ? (getUser()?.role ?? '') : '';
@@ -99,13 +110,45 @@ export default function CollabDetailPage() {
   };
 
   const handleSoumettre = async (ligneId: string) => {
-    if (!submitUrl.trim()) return showToast('❌ Entrez un lien.');
+    if (!submitUrl.trim() && !submitFile) return showToast('❌ Entrez un lien ou joignez un fichier.');
     try {
-      await collabApi.soumettreLigne(ligneId, submitUrl.trim());
-      setSubmittingId(null); setSubmitUrl('');
+      await collabApi.soumettreLigne(ligneId, { contenuUrl: submitUrl.trim() || undefined, fichier: submitFile || undefined });
+      setSubmittingId(null); setSubmitUrl(''); setSubmitFile(null);
       showToast('🎉 Contenu soumis !');
       rafraichirCollab();
     } catch (e: any) { showToast('❌ ' + e.message); }
+  };
+
+  const handleModifierSoumission = async (soumissionId: string) => {
+    if (!editSoumissionUrl.trim() && !editSoumissionFile) return showToast('❌ Entrez un lien ou joignez un fichier.');
+    try {
+      await collabApi.modifierSoumission(soumissionId, { contenuUrl: editSoumissionUrl.trim() || undefined, fichier: editSoumissionFile || undefined });
+      setEditingSoumissionId(null); setEditSoumissionUrl(''); setEditSoumissionFile(null);
+      showToast('✅ Soumission modifiée.');
+      rafraichirCollab();
+    } catch (e: any) { showToast('❌ ' + e.message); }
+  };
+
+  const handleSupprimerSoumission = async (soumissionId: string) => {
+    if (!confirm('Supprimer cette soumission ?')) return;
+    try {
+      await collabApi.supprimerSoumission(soumissionId);
+      showToast('Soumission supprimée.');
+      rafraichirCollab();
+    } catch (e: any) { showToast('❌ ' + e.message); }
+  };
+
+  const handleSignaler = async (cibleId: string) => {
+    if (!signalementMotif) return showToast('❌ Choisissez un motif.');
+    if (!confirm('Confirmer l\'envoi de ce signalement à l\'équipe de modération ?')) return;
+    setSignalementSending(true);
+    try {
+      await signalementApi.creer({ cibleId, motif: signalementMotif, description: signalementDescription.trim() || undefined });
+      setSignalementEnvoye(true);
+      setSignalementOpen(false);
+      showToast('✅ Signalement envoyé à l\'équipe de modération.');
+    } catch (e: any) { showToast('❌ ' + e.message); }
+    finally { setSignalementSending(false); }
   };
 
   const handleValider = async (soumissionId: string) => {
@@ -298,18 +341,27 @@ export default function CollabDetailPage() {
                             {soumissions.map((s, i) => (
                               <div key={s.id} className="py-1.5 border-t border-gray-100 first:border-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <a href={s.contenuUrl} target="_blank" rel="noreferrer"
-                                    className={`text-xs hover:underline truncate flex-1 ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-emerald-600'}`}>
-                                    🔗 Unité {i + 1} — {s.contenuUrl}
-                                  </a>
+                                  <button onClick={() => setViewingUrl(s.contenuUrl)}
+                                    className={`text-xs hover:underline truncate flex-1 text-left ${s.statut === 'REFUSEE' ? 'text-gray-400 line-through' : 'text-emerald-600'}`}>
+                                    {s.contenuUrl.startsWith('/uploads') ? '📎' : '🔗'} Unité {i + 1} — {s.contenuUrl.startsWith('/uploads') ? 'fichier joint' : s.contenuUrl}
+                                  </button>
                                   {s.statut === 'VALIDEE' && (
                                     <span className="text-xs text-emerald-600 font-medium shrink-0">✓ Validée</span>
                                   )}
                                   {s.statut === 'REFUSEE' && (
                                     <span className="text-xs text-red-600 font-medium shrink-0">✗ Refusée</span>
                                   )}
-                                  {s.statut === 'EN_ATTENTE' && currentUserRole === 'CREATEUR' && (
-                                    <span className="text-xs text-amber-600 shrink-0">En attente</span>
+                                  {s.statut === 'EN_ATTENTE' && currentUserRole === 'CREATEUR' && editingSoumissionId !== s.id && (
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span className="text-xs text-amber-600">En attente</span>
+                                      <button onClick={() => {
+                                        setEditingSoumissionId(s.id);
+                                        setEditSoumissionUrl(s.contenuUrl.startsWith('/uploads') ? '' : s.contenuUrl);
+                                        setEditSoumissionFile(null);
+                                      }} className="text-xs text-gray-400 hover:text-emerald-600">Modifier</button>
+                                      <button onClick={() => handleSupprimerSoumission(s.id)}
+                                        className="text-xs text-gray-400 hover:text-red-600">Supprimer</button>
+                                    </div>
                                   )}
                                   {s.statut === 'EN_ATTENTE' && currentUserRole !== 'CREATEUR' && refusingId !== s.id && (
                                     <div className="flex gap-1.5 shrink-0">
@@ -326,6 +378,31 @@ export default function CollabDetailPage() {
                                 </div>
                                 {s.statut === 'REFUSEE' && s.raisonRefus && (
                                   <p className="text-xs text-red-500 mt-1">Motif : {s.raisonRefus}</p>
+                                )}
+                                {s.statut === 'EN_ATTENTE' && currentUserRole === 'CREATEUR' && editingSoumissionId === s.id && (
+                                  <div className="mt-1.5 space-y-1.5">
+                                    <div className="flex gap-2">
+                                      <input value={editSoumissionUrl}
+                                        onChange={e => { setEditSoumissionUrl(e.target.value); setEditSoumissionFile(null); }}
+                                        placeholder="https://instagram.com/p/..." autoFocus
+                                        className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                                      <label className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer shrink-0">
+                                        📎 {editSoumissionFile ? editSoumissionFile.name.slice(0, 12) : 'Fichier'}
+                                        <input type="file" className="hidden"
+                                          onChange={e => { const f = e.target.files?.[0]; if (f) { setEditSoumissionFile(f); setEditSoumissionUrl(''); } }} />
+                                      </label>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <button onClick={() => { setEditingSoumissionId(null); setEditSoumissionUrl(''); setEditSoumissionFile(null); }}
+                                        className="flex-1 px-2.5 py-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg">
+                                        Annuler
+                                      </button>
+                                      <button onClick={() => handleModifierSoumission(s.id)}
+                                        className="flex-1 px-2.5 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                        Enregistrer
+                                      </button>
+                                    </div>
+                                  </div>
                                 )}
                                 {s.statut === 'EN_ATTENTE' && currentUserRole !== 'CREATEUR' && refusingId === s.id && (
                                   <div className="flex gap-2 mt-1.5">
@@ -345,12 +422,20 @@ export default function CollabDetailPage() {
 
                             {encoreASoumettre > 0 && currentUserRole === 'CREATEUR' && (
                               submittingId === ligne.id ? (
-                                <div className="flex gap-2 mt-2">
-                                  <input value={submitUrl} onChange={e => setSubmitUrl(e.target.value)}
-                                    placeholder="https://instagram.com/p/..." autoFocus
-                                    className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                                <div className="mt-2 space-y-1.5">
+                                  <div className="flex gap-2">
+                                    <input value={submitUrl}
+                                      onChange={e => { setSubmitUrl(e.target.value); setSubmitFile(null); }}
+                                      placeholder="https://instagram.com/p/..." autoFocus
+                                      className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                                    <label className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer shrink-0">
+                                      📎 {submitFile ? submitFile.name.slice(0, 12) : 'Fichier'}
+                                      <input type="file" className="hidden"
+                                        onChange={e => { const f = e.target.files?.[0]; if (f) { setSubmitFile(f); setSubmitUrl(''); } }} />
+                                    </label>
+                                  </div>
                                   <button onClick={() => handleSoumettre(ligne.id)}
-                                    className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                    className="w-full py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
                                     Envoyer
                                   </button>
                                 </div>
@@ -451,12 +536,6 @@ export default function CollabDetailPage() {
             <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-5">
               <h3 className="font-semibold text-gray-900 mb-4">Mission</h3>
               <div className="space-y-3">
-                {campagne.nombrePostsParCreateur && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Publications</span>
-                    <span className="font-medium">{campagne.nombrePostsParCreateur}</span>
-                  </div>
-                )}
                 {campagne.budget && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Budget campagne</span>
@@ -497,9 +576,58 @@ export default function CollabDetailPage() {
                 ))}
               </div>
             </div>
+
+            {/* Signalement — dépose une plainte contre l'autre partie, visible directement par la modération */}
+            {(() => {
+              const cibleId = currentUserRole === 'CREATEUR'
+                ? collab.campagne?.entreprise?.utilisateurId
+                : collab.createur?.utilisateurId;
+              const cibleNom = currentUserRole === 'CREATEUR'
+                ? (collab.campagne?.entreprise?.nom || 'cette entreprise')
+                : (collab.createur?.nom || 'ce créateur');
+              if (!cibleId) return null;
+
+              return (
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-5">
+                  <h3 className="font-semibold text-gray-900 mb-1">Signaler un problème</h3>
+                  <p className="text-xs text-gray-400 mb-3">Envoyé directement à l'équipe de modération.</p>
+                  {signalementEnvoye ? (
+                    <p className="text-sm text-emerald-600">✅ Signalement envoyé.</p>
+                  ) : !signalementOpen ? (
+                    <button onClick={() => setSignalementOpen(true)}
+                      className="w-full py-2 text-sm font-medium border border-gray-200 text-gray-600 rounded-xl hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors">
+                      🚩 Signaler {cibleNom}
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <select value={signalementMotif} onChange={e => setSignalementMotif(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                        <option value="">— Choisir un motif —</option>
+                        {MOTIFS_SIGNALEMENT.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                      </select>
+                      <textarea value={signalementDescription} onChange={e => setSignalementDescription(e.target.value)}
+                        placeholder="Décrivez la situation (optionnel)" rows={3}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none" />
+                      <div className="flex gap-2">
+                        <button onClick={() => { setSignalementOpen(false); setSignalementMotif(''); setSignalementDescription(''); }}
+                          className="flex-1 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg">
+                          Annuler
+                        </button>
+                        <button onClick={() => handleSignaler(cibleId)} disabled={signalementSending}
+                          className="flex-1 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
+                          {signalementSending ? 'Envoi…' : 'Envoyer'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
+
+      {viewingUrl && <ContenuViewerModal url={viewingUrl} onClose={() => setViewingUrl(null)} />}
     </Shell>
   );
 }

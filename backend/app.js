@@ -27,6 +27,7 @@ import offreRoutes from './routes/offre.routes.js';
 import collaborationRoutes from './routes/collaboration.routes.js';
 import messageRoutes from './routes/message.routes.js';
 import favoriRoutes from './routes/favori.routes.js';
+import signalementRoutes from './routes/signalement.routes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -69,6 +70,7 @@ app.use('/api/offres', offreRoutes);
 app.use('/api/collaborations', collaborationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/favoris', favoriRoutes);
+app.use('/api/signalements', signalementRoutes);
 
 app.get('/', (_req, res) => {
   res.json({ message: 'Afrika Influence API is running' });

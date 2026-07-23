@@ -39,6 +39,10 @@ export default function ContenusPage() {
   const [editQuantite, setEditQuantite] = useState(1);
   const [editPrix, setEditPrix] = useState<number | ''>('');
 
+  // Refus d'une ligne avec motif (entreprise)
+  const [refusingId, setRefusingId] = useState<string | null>(null);
+  const [refusRaison, setRefusRaison] = useState('');
+
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const charger = () => {
@@ -107,6 +111,15 @@ export default function ContenusPage() {
     try {
       await collabApi.traiterLigne(ligneId, action);
       showToast(action === 'ACCEPTER' ? '✅ Ligne acceptée !' : 'Ligne refusée.');
+      charger();
+    } catch (e: any) { showToast('❌ ' + e.message); }
+  };
+
+  const handleRefuserLigne = async (ligneId: string) => {
+    try {
+      await collabApi.traiterLigne(ligneId, 'REFUSER', refusRaison.trim() || undefined);
+      setRefusingId(null); setRefusRaison('');
+      showToast('Ligne refusée.');
       charger();
     } catch (e: any) { showToast('❌ ' + e.message); }
   };
@@ -281,9 +294,9 @@ export default function ContenusPage() {
                       </div>
 
                       {/* Actions entreprise : accepter/refuser une proposition */}
-                      {isEntreprise && ligne.statut === 'PROPOSEE' && (
+                      {isEntreprise && ligne.statut === 'PROPOSEE' && refusingId !== ligne.id && (
                         <div className="flex gap-2 mt-3">
-                          <button onClick={() => handleTraiter(ligne.id, 'REFUSER')}
+                          <button onClick={() => setRefusingId(ligne.id)}
                             className="flex-1 py-2 text-sm font-medium border border-gray-200 text-gray-600 rounded-xl hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors">
                             Refuser
                           </button>
@@ -292,6 +305,23 @@ export default function ContenusPage() {
                             Accepter
                           </button>
                         </div>
+                      )}
+                      {isEntreprise && ligne.statut === 'PROPOSEE' && refusingId === ligne.id && (
+                        <div className="flex gap-2 mt-3">
+                          <input value={refusRaison} onChange={e => setRefusRaison(e.target.value)}
+                            placeholder="Motif du refus (optionnel)" autoFocus
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm" />
+                          <button onClick={() => { setRefusingId(null); setRefusRaison(''); }}
+                            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Annuler</button>
+                          <button onClick={() => handleRefuserLigne(ligne.id)}
+                            className="px-3 py-2 text-sm font-semibold bg-red-600 text-white rounded-xl hover:bg-red-700">
+                            Confirmer le refus
+                          </button>
+                        </div>
+                      )}
+
+                      {ligne.statut === 'REFUSEE' && ligne.raisonRefus && (
+                        <p className="text-xs text-red-500 mt-2">Motif du refus : {ligne.raisonRefus}</p>
                       )}
 
                       {/* Créateur : ligne en attente, peut retirer */}

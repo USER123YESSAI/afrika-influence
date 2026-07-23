@@ -14,7 +14,7 @@ interface Props {
 const fmt = (n: number) =>
   new Intl.NumberFormat('fr-FR').format(n) + ' XOF';
 
-const fmtDate = (d?: string) =>
+const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString('fr-FR') : '—';
 
 export default function CampagneCard({ campagne, onRefresh }: Props) {

@@ -47,6 +47,10 @@ export default (sequelize) => {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    raisonRefus: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
   }, {
     tableName: 'collaboration_contenus',
     timestamps: false,

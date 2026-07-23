@@ -32,7 +32,7 @@ export default function SignalementsPage() {
     setProc(modal.id);
     try {
       await moderateurApi.traiterSignalement(modal.id, { statut, decisionAdmin });
-      showToast(statut === 'RESOLU' ? '✅ Signalement résolu' : '❌ Signalement rejeté');
+      showToast(statut === 'TRAITE' ? '✅ Signalement résolu' : '❌ Signalement rejeté');
       setModal(null); setDecision('');
       load();
     } catch (e: any) { showToast('Erreur : ' + e.message); }
@@ -65,13 +65,15 @@ export default function SignalementsPage() {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Décision du modérateur</label>
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Message à la personne signalée <span className="normal-case font-normal text-gray-400">(envoyé directement si "Résolu")</span>
+              </label>
               <textarea value={decisionAdmin} onChange={e => setDecision(e.target.value)} rows={3}
                 className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
-                placeholder="Ex: Avertissement envoyé, faux signalement, etc." />
+                placeholder="Ex: Merci de respecter les délais convenus lors de vos prochaines collaborations." />
             </div>
             <div className="flex gap-2">
-              <button onClick={() => handleAction('RESOLU')} disabled={!!processing}
+              <button onClick={() => handleAction('TRAITE')} disabled={!!processing}
                 className="flex-1 py-2.5 bg-gradient-emerald text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all hover-lift">
                 ✅ Marquer Résolu
               </button>
@@ -92,7 +94,7 @@ export default function SignalementsPage() {
               className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
               <option value="">Tous les statuts</option>
               <option value="EN_ATTENTE">En attente</option>
-              <option value="RESOLU">Résolus</option>
+              <option value="TRAITE">Résolus</option>
               <option value="REJETE">Rejetés</option>
             </select>
           </div>
@@ -116,7 +118,7 @@ export default function SignalementsPage() {
                       <span className="font-semibold text-gray-900 text-sm">Cible : {s.entiteCible}</span>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{s.motif}</span>
                       {s.statut === 'EN_ATTENTE' && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">En attente</span>}
-                      {s.statut === 'RESOLU' && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Résolu</span>}
+                      {s.statut === 'TRAITE' && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Résolu</span>}
                     </div>
                     <div className="text-xs text-gray-500 line-clamp-1 break-all">
                       Auteur: {s.auteur?.nom} | ID Cible: {s.cibleId}

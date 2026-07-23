@@ -23,6 +23,12 @@ export default (sequelize) => {
       type: DataTypes.STRING(60),
       allowNull: false,
     },
+    message: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      // Texte optionnel affiché à la place du libellé générique associé à `type`
+      // (ex: contenu réel d'un avertissement de modération).
+    },
     lue: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

@@ -65,10 +65,12 @@ export default function AdminSignalementsPage() {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Décision / Commentaire Administrateur</label>
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Message à la personne signalée <span className="normal-case font-normal text-gray-400">(envoyé directement si "Traité")</span>
+              </label>
               <textarea value={decisionAdmin} onChange={e => setDecision(e.target.value)} rows={3}
                 className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
-                placeholder="Ex: Avertissement envoyé, faux signalement, etc." />
+                placeholder="Ex: Merci de respecter les délais convenus lors de vos prochaines collaborations." />
             </div>
             <div className="flex gap-2">
               <button onClick={() => handleAction('TRAITE')} disabled={!!processing}

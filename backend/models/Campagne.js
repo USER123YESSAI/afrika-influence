@@ -33,7 +33,6 @@ export default (sequelize) => {
     contraintesContenu:   { type: DataTypes.TEXT, allowNull: true },
     exempleContenu:       { type: DataTypes.TEXT, allowNull: true },
     nombreCreateursVoulus:  { type: DataTypes.INTEGER, allowNull: true },
-    nombrePostsParCreateur: { type: DataTypes.INTEGER, allowNull: true },
     statut: {
       type: DataTypes.STRING(30),
       defaultValue: 'BROUILLON',

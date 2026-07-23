@@ -9,10 +9,6 @@ const mod = [verifyToken, requireRole('MODERATEUR', 'ADMINISTRATEUR')];
 // Tableau de bord
 router.get('/dashboard',        ...mod, ctrl.getDashboard);
 
-// Profils
-router.get('/profils',          ...mod, ctrl.getProfilsEnAttente);
-router.patch('/profils/:id',    ...mod, ctrl.validerProfil);
-
 // Campagnes
 router.get('/campagnes',        ...mod, ctrl.getCampagnesAControler);
 router.patch('/campagnes/:id',  ...mod, ctrl.modererCampagne);
@@ -21,9 +17,8 @@ router.patch('/campagnes/:id',  ...mod, ctrl.modererCampagne);
 router.get('/signalements',         ...mod, ctrl.getSignalements);
 router.patch('/signalements/:id',   ...mod, ctrl.traiterSignalement);
 
-// Contenus collaborations
+// Contenus collaborations — visibilité uniquement (voir getContenus)
 router.get('/contenus',         ...mod, ctrl.getContenus);
-router.patch('/contenus/:id',   ...mod, ctrl.modererContenu);
 
 // Sanctions
 router.patch('/sanctions/:id',  ...mod, ctrl.appliquerSanction);

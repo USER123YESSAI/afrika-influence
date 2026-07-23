@@ -58,13 +58,21 @@ export default function DashboardPage() {
               { label: 'Campagnes en cours', value: 0 },
               { label: 'Invitations reçues', value: stats.invitations },
               { label: 'Contenus en attente', value: stats.aValider },
-              { label: 'Revenus perçus', value: formatFCFA(stats.gains) },
-            ].map((kpi) => (
-              <div key={kpi.label} className="rounded-2xl border border-hairline bg-surface p-6">
-                <div className="font-display text-2xl font-semibold text-mist">{kpi.value}</div>
-                <div className="text-sm text-fog mt-2">{kpi.label}</div>
-              </div>
-            ))}
+              { label: 'Revenus perçus', value: formatFCFA(stats.gains), href: '/paiements' },
+            ].map((kpi) =>
+              kpi.href ? (
+                <Link key={kpi.label} href={kpi.href}
+                  className="rounded-2xl border border-hairline bg-surface p-6 hover:border-cyan hover-lift transition-all">
+                  <div className="font-display text-2xl font-semibold text-mist">{kpi.value}</div>
+                  <div className="text-sm text-fog mt-2">{kpi.label}</div>
+                </Link>
+              ) : (
+                <div key={kpi.label} className="rounded-2xl border border-hairline bg-surface p-6">
+                  <div className="font-display text-2xl font-semibold text-mist">{kpi.value}</div>
+                  <div className="text-sm text-fog mt-2">{kpi.label}</div>
+                </div>
+              )
+            )}
           </div>
 
           {/* Collaborations récentes */}

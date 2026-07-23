@@ -3,7 +3,7 @@ import { Notification } from '../models/index.js';
 
 // ─── CRÉER UNE NOTIFICATION ───────────────────────────────────────────────────
 
-export async function creerNotification(destinataireId, type, entiteCible, entiteCibleId) {
+export async function creerNotification(destinataireId, type, entiteCible, entiteCibleId, message) {
   if (!destinataireId || !type) return null;
   try {
     return await Notification.create({
@@ -11,6 +11,7 @@ export async function creerNotification(destinataireId, type, entiteCible, entit
       type,
       entiteCible:   entiteCible   || null,
       entiteCibleId: entiteCibleId || null,
+      message:       message       || null,
       lue:           false,
       dateCreation:  new Date(),
     });

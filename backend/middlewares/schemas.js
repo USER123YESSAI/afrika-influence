@@ -14,6 +14,20 @@ const TYPES_CONTENU = [
   'Vidéo intégrée', 'Vlog intégré', 'Post vidéo', 'Live',
 ];
 
+const MOTIFS_SIGNALEMENT = [
+  'COMPORTEMENT_INAPPROPRIE', 'NON_RESPECT_ACCORD', 'CONTENU_FRAUDULEUX',
+  'PAIEMENT_NON_RECU', 'COMMUNICATION_ABUSIVE', 'AUTRE',
+];
+
+// N'échoue que si les deux dates sont réellement fournies — une mise à jour
+// partielle (ex: PATCH ne touchant que dateFin) n'est jamais bloquée à tort.
+const dateOrdreValide = (value, helpers) => {
+  if (value.dateDebut && value.dateFin && new Date(value.dateFin) <= new Date(value.dateDebut)) {
+    return helpers.error('dates.ordre');
+  }
+  return value;
+};
+
 // ─── CRÉATEUR ──────────────────────────────────────────────────────────────────
 
 export const schemas = {
@@ -171,10 +185,9 @@ export const schemas = {
     contraintesContenu: Joi.string().allow('', null),
     exempleContenu: Joi.string().allow('', null),
     nombreCreateursVoulus: Joi.number().integer().min(1),
-    nombrePostsParCreateur: Joi.number().integer().min(1),
     dateDebut: Joi.date().allow(null),
     dateFin: Joi.date().allow(null),
-  }),
+  }).custom(dateOrdreValide).messages({ 'dates.ordre': 'La date de fin doit être postérieure à la date de début.' }),
 
   modifierCampagne: Joi.object({
     titre: Joi.string().min(3).max(200),
@@ -186,10 +199,13 @@ export const schemas = {
     contraintesContenu: Joi.string().allow('', null),
     exempleContenu: Joi.string().allow('', null),
     nombreCreateursVoulus: Joi.number().integer().min(1),
-    nombrePostsParCreateur: Joi.number().integer().min(1),
     dateDebut: Joi.date().allow(null),
     dateFin: Joi.date().allow(null),
-  }).min(1).messages({ 'object.min': 'Au moins un champ est requis pour la modification.' }),
+  }).min(1).custom(dateOrdreValide)
+    .messages({
+      'object.min': 'Au moins un champ est requis pour la modification.',
+      'dates.ordre': 'La date de fin doit être postérieure à la date de début.',
+    }),
 
   // ─── COLLABORATIONS ──────────────────────────────────────────────────────────
 
@@ -219,12 +235,17 @@ export const schemas = {
   }),
 
   // PATCH /api/collaborations/lignes/:ligneId/soumettre
+  // contenuUrl n'est requis que si aucun fichier n'est joint (vérifié dans le contrôleur,
+  // qui a accès à req.file — Joi ne valide que req.body).
   soumettreLigne: Joi.object({
-    contenuUrl: Joi.string().uri().required()
-      .messages({
-        'string.uri': 'L\'URL du contenu soumis est invalide.',
-        'any.required': 'L\'URL du contenu est obligatoire.',
-      }),
+    contenuUrl: Joi.string().uri().allow('', null)
+      .messages({ 'string.uri': 'L\'URL du contenu soumis est invalide.' }),
+  }),
+
+  // PUT /api/collaborations/soumissions/:soumissionId
+  modifierSoumission: Joi.object({
+    contenuUrl: Joi.string().uri().allow('', null)
+      .messages({ 'string.uri': 'L\'URL du contenu soumis est invalide.' }),
   }),
 
   // PATCH /api/collaborations/soumissions/:soumissionId/refuser
@@ -266,6 +287,8 @@ export const schemas = {
         'any.only': 'action doit être ACCEPTER ou REFUSER.',
         'any.required': 'Le champ "action" est obligatoire.',
       }),
+    raison: Joi.string().max(500).allow('', null).trim()
+      .messages({ 'string.max': 'Le motif ne peut pas dépasser 500 caractères.' }),
   }),
 
   // ─── MESSAGES ────────────────────────────────────────────────────────────────
@@ -306,6 +329,24 @@ export const schemas = {
       }),
     commentaire: Joi.string().max(1000).allow('', null).trim()
       .messages({ 'string.max': 'Le commentaire ne peut pas dépasser 1000 caractères.' }),
+  }),
+
+  // ─── SIGNALEMENTS ─────────────────────────────────────────────────────────────
+
+  // POST /api/signalements
+  creerSignalement: Joi.object({
+    cibleId: Joi.string().uuid().required()
+      .messages({
+        'string.uuid': 'L\'identifiant de la personne signalée doit être un UUID valide.',
+        'any.required': 'Le champ "cibleId" est obligatoire.',
+      }),
+    motif: Joi.string().valid(...MOTIFS_SIGNALEMENT).required()
+      .messages({
+        'any.only': `Le motif doit être l'un des suivants : ${MOTIFS_SIGNALEMENT.join(', ')}.`,
+        'any.required': 'Le champ "motif" est obligatoire.',
+      }),
+    description: Joi.string().max(1000).allow('', null).trim()
+      .messages({ 'string.max': 'La description ne peut pas dépasser 1000 caractères.' }),
   }),
 
   // ─── PAIEMENTS ───────────────────────────────────────────────────────────────────
