@@ -66,10 +66,21 @@ export const genererRecommandations = async (campagneId) => {
   // Supprimer les anciennes recommandations
   await Recommandation.destroy({ where: { campagneId } });
 
-  // Requête sur la table Createurs de P3 via SQL brut
+  // Requête sur la table Createurs de P3 via SQL brut.
+  //
+  // NOTE SÉCURITÉ : cette requête ne contient aujourd'hui aucune donnée
+  // utilisateur interpolée (pas d'injection possible telle quelle), mais elle
+  // restait un point de vigilance : c'est le genre d'endroit où quelqu'un
+  // ajoute plus tard un filtre dynamique (ex : limite configurable, secteur
+  // en paramètre) par un simple template string, en oubliant que sequelize.query
+  // n'échappe RIEN automatiquement contrairement au reste de l'ORM.
+  // On fixe donc ici la convention : le LIMIT passe par `replacements` et
+  // `type: QueryTypes.SELECT`, jamais par concaténation — même pour une
+  // valeur qui n'est pas (encore) contrôlée par l'utilisateur. Toute
+  // évolution future de cette requête doit continuer à suivre ce patron.
   let createurs = [];
   try {
-    [createurs] = await sequelize.query(`
+    createurs = await sequelize.query(`
       SELECT c.id, c.reseaux, c.pays,
              MIN(CAST(o.prix AS DECIMAL(15,2))) AS prixMin,
              GROUP_CONCAT(cn.niche) AS niches
@@ -77,8 +88,11 @@ export const genererRecommandations = async (campagneId) => {
       LEFT JOIN offres o ON o.createurId = c.id
       LEFT JOIN createur_niches cn ON cn.createurId = c.id
       GROUP BY c.id
-      LIMIT 50
-    `);
+      LIMIT :limite
+    `, {
+      replacements: { limite: 50 },
+      type: sequelize.QueryTypes.SELECT,
+    });
   } catch {
     // Table Createurs pas encore disponible (P3 n'a pas encore livré)
     return [];

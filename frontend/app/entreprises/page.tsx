@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getEntreprisesPubliques } from '@/lib/api';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, TrendingUp } from 'lucide-react';
+import { Search, MapPin, Briefcase, TrendingUp, Users } from 'lucide-react';
 import { MeshBackground } from '@/components/layout/MeshBackground';
 
 const SECTEURS = [
@@ -36,6 +36,7 @@ export default function EntreprisesPage({ embedded = false }: { embedded?: boole
   const [error, setError]         = useState('');
   const [pays, setPays]           = useState('');
   const [secteur, setSecteur]     = useState('');
+  const [type, setType]           = useState(''); // '', 'ENTREPRISE', 'PARTICULIER'
   const [search, setSearch]       = useState('');
 
   useEffect(() => {
@@ -43,13 +44,14 @@ export default function EntreprisesPage({ embedded = false }: { embedded?: boole
     const filtres: Record<string, string> = {};
     if (pays)    filtres.pays = pays;
     if (secteur) filtres.secteur = secteur;
+    if (type)    filtres.type = type;
     if (search)  filtres.recherche = search;
 
     getEntreprisesPubliques(filtres)
       .then((data: any) => setEntreprises(Array.isArray(data) ? data : []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [pays, secteur, search]);
+  }, [pays, secteur, type, search]);
 
   return (
     <div className={`relative text-mist ${embedded ? '' : 'min-h-screen bg-afrika-mesh'}`}>
@@ -70,7 +72,7 @@ export default function EntreprisesPage({ embedded = false }: { embedded?: boole
 
         {/* Filtres */}
         <div className="mb-10 rounded-2xl border border-hairline bg-surface/60 backdrop-blur-md p-4 sm:p-6 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-fog" size={18} />
               <input 
@@ -103,6 +105,19 @@ export default function EntreprisesPage({ embedded = false }: { embedded?: boole
               >
                 <option value="" className="bg-ink">Tous les secteurs</option>
                 {SECTEURS.map(s => <option key={s} value={s} className="bg-ink">{s.replace('_', ' ')}</option>)}
+              </select>
+            </div>
+
+            <div className="relative">
+              <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-fog pointer-events-none" size={18} />
+              <select
+                value={type}
+                onChange={e => setType(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-hairline bg-surface-2 pl-10 pr-4 py-3 text-sm text-mist focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan transition-colors"
+              >
+                <option value="" className="bg-ink">Marques et particuliers</option>
+                <option value="ENTREPRISE" className="bg-ink">Entreprises uniquement</option>
+                <option value="PARTICULIER" className="bg-ink">Particuliers uniquement</option>
               </select>
             </div>
           </div>
@@ -147,8 +162,11 @@ export default function EntreprisesPage({ embedded = false }: { embedded?: boole
                   </div>
                   <div>
                     <h3 className="font-display text-lg font-semibold text-mist line-clamp-1 group-hover:text-cyan transition-colors">{e.nom}</h3>
-                    <p className="font-mono text-xs text-fog line-clamp-1">
-                      {e.secteur === 'AUTRE' ? e.secteurPersonnalise : e.secteur?.replace('_', ' ') || 'Non spécifié'}
+                    <p className="font-mono text-xs text-fog line-clamp-1 flex items-center gap-1.5">
+                      {e.type === 'PARTICULIER' && (
+                        <span className="inline-block rounded-full bg-cyan/15 text-cyan px-2 py-0.5 text-[10px] uppercase tracking-wide">Particulier</span>
+                      )}
+                      {e.secteur === 'AUTRE' ? e.secteurPersonnalise : e.secteur?.replace('_', ' ') || (e.type === 'PARTICULIER' ? '' : 'Non spécifié')}
                     </p>
                   </div>
                 </div>

@@ -1,22 +1,13 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+import { verifierSignature, ecrireFichierSurDisque } from './fileSignature.js';
 
-const storage = (destination) =>
-  multer.diskStorage({
-    destination: (req, file, cb) => {
-      const dir = `uploads/${destination}`;
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `${uuidv4()}${ext}`);
-    },
-  });
+// CORRECTION SÉCURITÉ : passage en memoryStorage. L'ancien code écrivait
+// directement sur disque avec diskStorage, avant tout contrôle du contenu
+// réel du fichier — impossible à ce stade de vérifier les magic bytes.
+// Le buffer est maintenant inspecté par verifierSignature() puis écrit sur
+// disque par ecrireFichierSurDisque() avec un nom et une extension décidés
+// côté serveur (voir middlewares/fileSignature.js).
+const memoire = multer.memoryStorage();
 
 const imageFilter = (req, file, cb) => {
   const allowed = ['image/jpeg', 'image/png', 'image/webp'];
@@ -35,34 +26,6 @@ const fileFilter = (req, file, cb) => {
     : cb(new Error('Format de fichier non supporté.'));
 };
 
-// Utilisé pour l'upload du logo d'entreprise
-export const logoUpload = multer({
-  storage: storage('logos'),
-  fileFilter: imageFilter,
-  limits: { fileSize: 2 * 1024 * 1024 },
-});
-
-// Middleware final pour POST /:id/logo
-export const uploadLogo = logoUpload.single('logo');
-
-
-// Upload photo profil (createur)
-export const uploadPhoto = multer({
-  storage: storage('profils'),
-  fileFilter: imageFilter,
-  limits: { fileSize: 2 * 1024 * 1024 },
-}).single('photo');
-
-
-export const uploadFichier = multer({
-  storage: storage('messages'),
-  fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 },
-}).single('fichier');
-
-// ─── mediaUpload ─────────────────────────────────────────────────────────────
-// Utilisé par POST /api/campagnes/:id/medias
-// Accepte : images, vidéos, PDF — limite 20 Mo
 const mediaFilter = (req, file, cb) => {
   const allowed = [
     'image/jpeg', 'image/png', 'image/webp', 'image/gif',
@@ -74,20 +37,6 @@ const mediaFilter = (req, file, cb) => {
     : cb(new Error('Format de fichier non supporté pour un média de campagne.'));
 };
 
-export const mediaUpload = multer({
-  storage: storage('medias'),
-  fileFilter: mediaFilter,
-  limits: { fileSize: 20 * 1024 * 1024 },
-});
-
-// ─── soumissionUpload ────────────────────────────────────────────────────────
-// Utilisé par les soumissions de contenu (créateur) — alternative à un simple lien.
-export const soumissionUpload = multer({
-  storage: storage('soumissions'),
-  fileFilter: mediaFilter,
-  limits: { fileSize: 20 * 1024 * 1024 },
-}).single('fichier');
-
 export const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError || err) {
     return res.status(400).json({ success: false, message: err.message });
@@ -95,3 +44,41 @@ export const handleUploadError = (err, req, res, next) => {
   next();
 };
 
+// Enrobe multerSingle pour transformer ses erreurs (fichier trop gros, type
+// refusé au premier filtre déclaratif) en réponse JSON propre, puis enchaîne
+// sur la vérification de signature + l'écriture sur disque. Chaque export
+// est un tableau de middlewares Express, à répandre avec `...` dans les
+// routes (ex : router.post('/x', ...uploadLogo, ctrl.uneFonction)).
+function pipeline(multerSingle, mimetypesAutorises, destination) {
+  return [
+    (req, res, next) => multerSingle(req, res, (err) => (err ? handleUploadError(err, req, res, next) : next())),
+    verifierSignature(mimetypesAutorises),
+    ecrireFichierSurDisque(destination),
+  ];
+}
+
+const IMAGES = ['image/jpeg', 'image/png', 'image/webp'];
+const MEDIAS = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime', 'video/webm', 'application/pdf'];
+const FICHIERS_MESSAGE = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/mp4', 'video/quicktime'];
+
+// Utilisé pour l'upload du logo d'entreprise
+const logoMulter = multer({ storage: memoire, fileFilter: imageFilter, limits: { fileSize: 2 * 1024 * 1024 } });
+export const uploadLogo = pipeline(logoMulter.single('logo'), IMAGES, 'logos');
+
+// Upload photo profil (créateur)
+const photoMulter = multer({ storage: memoire, fileFilter: imageFilter, limits: { fileSize: 2 * 1024 * 1024 } });
+export const uploadPhoto = pipeline(photoMulter.single('photo'), IMAGES, 'profils');
+
+// Fichier joint à un message
+const fichierMulter = multer({ storage: memoire, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } });
+export const uploadFichier = pipeline(fichierMulter.single('fichier'), FICHIERS_MESSAGE, 'messages');
+
+// ─── mediaUpload ─────────────────────────────────────────────────────────────
+// Utilisé par POST /api/campagnes/:id/medias — images, vidéos, PDF, 20 Mo max
+const mediaMulter = multer({ storage: memoire, fileFilter: mediaFilter, limits: { fileSize: 20 * 1024 * 1024 } });
+export const mediaUpload = pipeline(mediaMulter.single('media'), MEDIAS, 'medias');
+
+// ─── soumissionUpload ────────────────────────────────────────────────────────
+// Utilisé par les soumissions de contenu (créateur) — alternative à un simple lien.
+const soumissionMulter = multer({ storage: memoire, fileFilter: mediaFilter, limits: { fileSize: 20 * 1024 * 1024 } });
+export const soumissionUpload = pipeline(soumissionMulter.single('fichier'), MEDIAS, 'soumissions');

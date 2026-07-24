@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation';
 import { logout, getUser, getImageUrl } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 import { getSidebarConfig } from '@/lib/navigation';
 
 function UserMenu() {
@@ -58,6 +60,7 @@ function UserMenu() {
 export default function Sidebar() {
   const path = usePathname();
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   if (!user) return null;
 
@@ -99,6 +102,20 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Bascule clair/sombre — stylée en blanc/transparence comme le reste
+          de la sidebar (volontairement toujours sombre, voir globals.css),
+          pas avec les tokens de thème qui s'inverseraient en mode clair. */}
+      <div className="px-3 py-4 border-t border-white/10">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5 flex-shrink-0" strokeWidth={2} /> : <Moon className="w-5 h-5 flex-shrink-0" strokeWidth={2} />}
+          <span>{theme === 'dark' ? 'Mode clair' : 'Mode sombre'}</span>
+        </button>
+      </div>
 
     </aside>
   );

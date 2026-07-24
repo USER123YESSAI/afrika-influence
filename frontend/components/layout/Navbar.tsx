@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, LayoutDashboard, User as UserIcon, LogOut } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { getImageUrl } from "@/lib/api";
 
@@ -71,6 +72,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {!user ? (
             <>
               <Link
@@ -154,6 +156,11 @@ export function Navbar() {
                 {lien.label}
               </Link>
             ))}
+            <hr className="border-hairline" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-fog">Apparence</span>
+              <ThemeToggle />
+            </div>
             <hr className="border-hairline" />
             {!user ? (
               <>

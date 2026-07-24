@@ -36,7 +36,11 @@ export const schemas = {
 
   inscription: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
+    // CORRECTION : politique de mot de passe harmonisée à 8 caractères mini
+    // partout (backend et frontend affichaient des exigences différentes : 6
+    // ici contre 8 côté frontend, ce qui laissait passer par erreur toute
+    // requête envoyée directement à l'API sans passer par le formulaire).
+    password: Joi.string().min(8).required(),
     nom: Joi.string().min(2).max(100).trim().allow('', null),
     role: Joi.string().valid('CREATEUR', 'ENTREPRISE', 'PARTICULIER').required(),
   }),
@@ -46,24 +50,28 @@ export const schemas = {
     password: Joi.string().required(),
   }),
 
+  // Étape 1 : demande de réinitialisation — seul l'email est nécessaire,
+  // le mot de passe ne se change qu'à l'étape de confirmation (voir
+  // confirmerResetMdp), une fois le jeton reçu par email vérifié.
   resetMdp: Joi.object({
     email: Joi.string().email().required(),
-    nouveauMotDePasse: Joi.string().min(6).required(),
   }),
 
-  changerMdp: Joi.object({
-    ancienMotDePasse: Joi.string().required(),
-    nouveauMotDePasse: Joi.string().min(6).required()
+  // Étape 2 : confirmation avec le jeton reçu par email
+  confirmerResetMdp: Joi.object({
+    email: Joi.string().email().required(),
+    token: Joi.string().hex().length(64).required(),
+    nouveauMotDePasse: Joi.string().min(8).required()
       .messages({
-        'string.min': 'Le nouveau mot de passe doit contenir au moins 6 caractères.'
+        'string.min': 'Le nouveau mot de passe doit contenir au moins 8 caractères.'
       }),
   }),
 
   changerMdp: Joi.object({
     ancienMotDePasse: Joi.string().required(),
-    nouveauMotDePasse: Joi.string().min(6).required()
+    nouveauMotDePasse: Joi.string().min(8).required()
       .messages({
-        'string.min': 'Le nouveau mot de passe doit contenir au moins 6 caractères.'
+        'string.min': 'Le nouveau mot de passe doit contenir au moins 8 caractères.'
       }),
   }),
 

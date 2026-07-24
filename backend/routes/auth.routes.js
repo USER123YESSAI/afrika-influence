@@ -14,7 +14,11 @@ const router = Router();
 router.post('/inscription',       honeypot('siteInternet'), publicFormLimiter, validate(schemas.inscription), ctrl.inscription);
 router.post('/connexion',         connexionSlowDown, connexionLimiter, validate(schemas.connexion),   ctrl.connexion);
 router.post('/deconnexion',       verifyToken,                   ctrl.deconnexion);
-router.post('/reinitialiser-mdp', publicFormLimiter, validate(schemas.resetMdp),   ctrl.reinitialiserMdp);
+
+// Réinitialisation de mot de passe en deux temps (demande → email → confirmation par jeton)
+router.post('/reinitialiser-mdp',           publicFormLimiter, validate(schemas.resetMdp),          ctrl.reinitialiserMdp);
+router.post('/reinitialiser-mdp/confirmer', publicFormLimiter, validate(schemas.confirmerResetMdp), ctrl.confirmerReinitialisationMdp);
+
 router.post('/changer-mdp',       verifyToken, validate(schemas.changerMdp), ctrl.changerMdp);
 router.get('/profil',             verifyToken,                   ctrl.profil);
 

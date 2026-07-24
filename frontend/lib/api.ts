@@ -185,8 +185,15 @@ export const authApi = {
     logout();
   },
 
-  reinitialiserMdp: (data: unknown) =>
+  // Étape 1 : demande d'un lien de réinitialisation (email uniquement — le
+  // mot de passe ne se change qu'à l'étape de confirmation, une fois le
+  // jeton reçu par email vérifié côté serveur).
+  reinitialiserMdp: (data: { email: string }) =>
     apiFetch('/api/auth/reinitialiser-mdp', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Étape 2 : confirmation avec le jeton reçu par email
+  confirmerResetMdp: (data: { email: string; token: string; nouveauMotDePasse: string }) =>
+    apiFetch('/api/auth/reinitialiser-mdp/confirmer', { method: 'POST', body: JSON.stringify(data) }),
 
   profil: () => request('/auth/profil'),
 };
