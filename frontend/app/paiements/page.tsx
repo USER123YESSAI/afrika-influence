@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
+import AuthGuard from '@/components/auth/AuthGuard';
+import TopBar from '@/components/layout/TopBar';
 import { getPaiements, getUser, type Paiement } from '@/lib/api';
 import FactureButton from '@/components/paiement/FactureButton';
 
@@ -29,6 +30,9 @@ export default function PaiementsPage() {
   
   const userRole = typeof window !== 'undefined' ? (getUser()?.role ?? '') : '';
   const hideInternalDetails = userRole === 'ENTREPRISE' || userRole === 'PARTICULIER';
+  const profileHref = userRole === 'CREATEUR' ? '/createur/profil'
+    : userRole === 'PARTICULIER' ? '/entreprise/dashboard'
+    : '/entreprise/profil';
 
   useEffect(() => {
     getPaiements()
@@ -42,8 +46,9 @@ export default function PaiementsPage() {
   if (loading) return <div className="text-center py-20 text-gray-400">Chargement…</div>;
 
   return (
-    <DashboardEntreprise>
-      <div>
+    <AuthGuard roles={['ENTREPRISE', 'PARTICULIER', 'CREATEUR']}>
+      <TopBar profileHref={profileHref} />
+      <div className="p-8">
         <h1 className="font-display text-2xl font-bold text-brand-600 mb-6">Historique des paiements</h1>
 
         {error && <p className="mb-4 text-red-700 bg-red-50 px-4 py-3 rounded-2xl text-sm">{error}</p>}
@@ -104,6 +109,6 @@ export default function PaiementsPage() {
           </div>
         )}
       </div>
-    </DashboardEntreprise>
+    </AuthGuard>
   );
 }

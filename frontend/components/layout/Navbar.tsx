@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X, LayoutDashboard, User as UserIcon, LogOut } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { getImageUrl } from "@/lib/api";
 
 const LIENS = [
   { href: "/createurs", label: "Créateurs" },
@@ -91,8 +92,12 @@ export function Navbar() {
                 onClick={() => setDropdownOuvert(!dropdownOuvert)}
                 className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 pl-2 pr-4 py-1.5 transition-colors hover:bg-gray-100"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">
-                  {user.nom?.charAt(0).toUpperCase() || 'U'}
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white overflow-hidden">
+                  {user?.photoProfil || user?.logo || user?.photo ? (
+                    <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
+                  ) : (
+                    user.nom?.charAt(0).toUpperCase() || 'U'
+                  )}
                 </div>
                 <span className="text-sm font-medium text-gray-800">{user.nom}</span>
               </button>

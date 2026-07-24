@@ -51,16 +51,32 @@ export const schemas = {
     nouveauMotDePasse: Joi.string().min(6).required(),
   }),
 
+  changerMdp: Joi.object({
+    ancienMotDePasse: Joi.string().required(),
+    nouveauMotDePasse: Joi.string().min(6).required()
+      .messages({
+        'string.min': 'Le nouveau mot de passe doit contenir au moins 6 caractères.'
+      }),
+  }),
+
+  changerMdp: Joi.object({
+    ancienMotDePasse: Joi.string().required(),
+    nouveauMotDePasse: Joi.string().min(6).required()
+      .messages({
+        'string.min': 'Le nouveau mot de passe doit contenir au moins 6 caractères.'
+      }),
+  }),
+
   // ─── CRÉATEUR ─────────────────────────────────────────────────────────────
 
   // PUT /api/createurs/:id
   updateProfil: Joi.object({
-    nom: Joi.string().min(2).max(100).trim()
+    nom: Joi.string().min(2).max(100).trim().allow('', null)
       .messages({
         'string.min': 'Le nom doit contenir au moins 2 caractères.',
         'string.max': 'Le nom ne peut pas dépasser 100 caractères.',
       }),
-    handle: Joi.string().min(2).max(60).trim()
+    handle: Joi.string().min(2).max(60).trim().allow('', null)
       .pattern(/^@?[\w.]+$/)
       .messages({
         'string.pattern.base': 'Le handle ne peut contenir que des lettres, chiffres, points et underscores.',
@@ -79,7 +95,7 @@ export const schemas = {
       })
     ).messages({ 'object.unknown': 'Réseau social non reconnu.' }),
     audience: Joi.number().integer().min(0),
-    pays: Joi.string().valid(...PAYS)
+    pays: Joi.string().valid(...PAYS).allow('', null)
       .messages({ 'any.only': `Le pays doit être l'un des suivants : ${PAYS.join(', ')}.` }),
     numeroOrangeMoney: Joi.string()
       .pattern(/^\+?[\d\s]{8,15}$/).allow('', null)

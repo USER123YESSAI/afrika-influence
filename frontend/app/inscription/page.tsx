@@ -45,50 +45,37 @@ export default function InscriptionChoixPage() {
             ))}
           </div>
 
-<div className="p-6 rounded-[32px] bg-surface shadow-card border border-hairline">
-  <h2 className="text-base font-semibold text-mist mb-3">
-    Conditions d'utilisation
-  </h2>
-
-  <label className="flex items-start gap-3 cursor-pointer">
-    <input
-      type="checkbox"
-      name="acceptTerms"
-      required
-      className="mt-1 h-5 w-5 rounded border-hairline bg-surface-2 text-cyan focus:ring-cyan"
-    />
-
-    <span className="text-sm text-fog leading-relaxed">
-      J'ai lu et j'accepte les{" "}
-      <a
-        href="/conditions-utilisation"
-        className="text-cyan font-medium hover:underline"
-      >
-        Conditions d'utilisation
-      </a>{" "}
-      ainsi que la{" "}
-      <a
-        href="/politique-confidentialite"
-        className="text-cyan font-medium hover:underline"
-      >
-        Politique de confidentialité
-      </a>
-      .
-    </span>
-  </label>
-</div>
-
           <p className="text-sm text-fog">
             Déjà inscrit ? <Link href="/connexion" className="text-cyan font-semibold hover:underline">Se connecter</Link>
           </p>
         </div>
 
         <div className="hidden lg:flex flex-1 items-stretch px-6 py-6">
-          <img 
-            src="/images/afrika-content.jpg" 
-            alt="Afrika Influence" 
-            className="w-full h-full object-cover rounded-3xl shadow-soft"
-          />
+          <div className="w-full h-full relative rounded-3xl overflow-hidden shadow-soft">
+            <img 
+              src="/images/afrika-content.jpg" 
+              alt="Afrika Influence" 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Overlay masquant la partie basse "Afrika Nova" */}
+            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-[#064e3b] p-10 flex flex-col justify-end">
+              {/* Dégradé de transition vers les photos du haut */}
+              <div className="absolute top-0 left-0 w-full h-32 -translate-y-full bg-gradient-to-t from-[#064e3b] to-transparent"></div>
+              
+              <div className="relative z-10">
+                <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium mb-4 border border-white/20 backdrop-blur-md">
+                  Rejoignez le mouvement
+                </span>
+                <h2 className="text-3xl font-display text-white leading-tight mb-3">
+                  L'influence en <span className="text-emerald-300">Afrique</span>
+                </h2>
+                <p className="text-emerald-50/90 text-sm leading-relaxed mb-6 max-w-sm">
+                  Connectez-vous avec les meilleurs créateurs de contenu et les marques les plus prestigieuses.
+                </p>
+               
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

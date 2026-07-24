@@ -40,12 +40,31 @@ export default function ConnexionPage() {
   return (
     <div className="min-h-screen bg-ink">
       <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-8 lg:grid-cols-[1.05fr_minmax(420px,0.95fr)] lg:px-8 lg:py-10">
-        <div className="lg:order-2">
-          <img 
-            src="/images/afrika-content.jpg" 
-            alt="Afrika Influence" 
-            className="w-full h-full object-cover rounded-3xl shadow-soft"
-          />
+        <div className="lg:order-2 hidden lg:flex flex-1 items-stretch">
+          <div className="w-full h-full relative rounded-3xl overflow-hidden shadow-soft">
+            <img 
+              src="/images/afrika-content.jpg" 
+              alt="Afrika Influence" 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Overlay masquant la partie basse "Afrika Nova" */}
+            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-[#064e3b] p-10 flex flex-col justify-end">
+              {/* Dégradé de transition vers les photos du haut */}
+              <div className="absolute top-0 left-0 w-full h-32 -translate-y-full bg-gradient-to-t from-[#064e3b] to-transparent"></div>
+              
+              <div className="relative z-10">
+               
+                <h2 className="text-3xl font-display text-white leading-tight mb-3">
+                  L'Afrique a du talent, <br />
+                  <span className="text-emerald-300">faites-le rayonner.</span>
+                </h2>
+                <p className="text-emerald-50/90 text-sm leading-relaxed mb-6 max-w-sm">
+                  Reprenez le contrôle de vos campagnes et de votre communauté d'influenceurs en un clin d'œil.
+                </p>
+                
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center justify-center p-4 sm:p-6 lg:p-0">

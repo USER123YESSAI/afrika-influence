@@ -20,6 +20,12 @@ export function logout(): void {
   window.location.href = '/connexion';
 }
 
+export function getImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 // ─── apiFetch interne ─────────────────────────────────────────────────────────
 // Toutes les routes backend retournent { success, data } ou { success, message }.
 // apiFetch lève une erreur si !success, et retourne data directement.
@@ -149,8 +155,16 @@ export interface Paiement {
 
 // ─── AUTH (P1) ────────────────────────────────────────────────────────────────
 export const authApi = {
-  inscription: (data: unknown) =>
-    apiFetch('/api/auth/inscription', { method: 'POST', body: JSON.stringify(data) }),
+  inscription: async (data: unknown) => {
+    const responseData: any = await apiFetch('/api/auth/inscription', {
+      method: 'POST', body: JSON.stringify(data),
+    });
+    const { token, utilisateur } = responseData;
+    if (!token || !utilisateur) throw new Error('Réponse serveur invalide.');
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('user', JSON.stringify(utilisateur));
+    return { token, utilisateur };
+  },
 
   connexion: async (data: unknown) => {
     const responseData: any = await apiFetch('/api/auth/connexion', {
@@ -162,6 +176,9 @@ export const authApi = {
     localStorage.setItem('user', JSON.stringify(utilisateur));
     return { token, utilisateur };
   },
+
+  changerMdp: (data: any) =>
+    apiFetch('/api/auth/changer-mdp', { method: 'POST', body: JSON.stringify(data) }),
 
   deconnexion: async () => {
     await apiFetch('/api/auth/deconnexion', { method: 'POST' }).catch(() => {});
@@ -497,10 +514,6 @@ export const favoriApi = {
 // ─── MODÉRATEUR ───────────────────────────────────────────────────────────────
 export const moderateurApi = {
   getDashboard:        ()                                    => request('/moderateur/dashboard'),
-  // Profils
-  getProfilsEnAttente: (p?: Record<string,string>)          => request(`/moderateur/profils${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
-  validerProfil:       (id: string, data: { statut: string; raison?: string }) =>
-    request(`/moderateur/profils/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   // Campagnes
   getCampagnes:        (p?: Record<string,string>)          => request(`/moderateur/campagnes${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
   modererCampagne:     (id: string, data: { action: string; raison?: string }) =>
@@ -509,10 +522,8 @@ export const moderateurApi = {
   getSignalements:     (p?: Record<string,string>)          => request(`/moderateur/signalements${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
   traiterSignalement:  (id: string, data: { statut: string; decisionAdmin?: string }) =>
     request(`/moderateur/signalements/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  // Contenus
+  // Contenus — visibilité uniquement, pas d'action (voir moderateurService.getContenus)
   getContenus:         (p?: Record<string,string>)          => request(`/moderateur/contenus${p && Object.keys(p).length ? '?' + new URLSearchParams(p) : ''}`),
-  modererContenu:      (id: string, data: { action: string; raison?: string }) =>
-    request(`/moderateur/contenus/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   // Sanctions
   appliquerSanction:   (id: string, data: { action: string; raison?: string }) =>
     request(`/moderateur/sanctions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),

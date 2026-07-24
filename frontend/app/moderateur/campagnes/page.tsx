@@ -38,7 +38,7 @@ export default function ModCampagnes() {
     setProc(true);
     try {
       await moderateurApi.modererCampagne(modal.id, { action, raison });
-      showToast(action === 'APPROUVER' ? '✅ Campagne approuvée' : action === 'SUSPENDRE' ? '⏸️ Suspendue' : '❌ Rejetée');
+      showToast(action === 'SUSPENDRE' ? '⏸️ Campagne suspendue' : '❌ Campagne rejetée');
       setModal(null); setRaison(''); load();
     } catch (e: any) { showToast('Erreur : ' + e.message); }
     finally { setProc(false); }
@@ -51,23 +51,23 @@ export default function ModCampagnes() {
       {modal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-bento p-6 w-full max-w-lg space-y-4">
-            <h2 className="font-display text-xl font-bold text-gray-900">Modérer la campagne</h2>
+            <h2 className="font-display text-xl font-bold text-gray-900">Intervenir sur la campagne</h2>
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-1 text-sm">
               <p className="font-medium text-gray-900">{modal.titre}</p>
               <p className="text-gray-500">{modal.entreprise?.nom} · {formatFCFA(modal.budget)}</p>
               {modal.description && <p className="text-xs text-gray-400 mt-1">{modal.description}</p>}
             </div>
+            <p className="text-xs text-gray-400">
+              Le budget non consommé sera remboursé à l'entreprise, et toute collaboration en
+              cours sera arrêtée — le créateur concerné en sera notifié.
+            </p>
             <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Raison / commentaire</label>
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Motif (visible par l'entreprise)</label>
               <textarea value={raison} onChange={e => setRaison(e.target.value)} rows={2}
                 className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
-                placeholder="Justifiez votre décision…" />
+                placeholder="Expliquez pourquoi cette campagne est arrêtée…" />
             </div>
             <div className="flex gap-2">
-              <button onClick={() => handleAction('APPROUVER')} disabled={processing}
-                className="flex-1 py-2.5 bg-gradient-emerald text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all hover-lift">
-                ✅ Approuver
-              </button>
               <button onClick={() => handleAction('SUSPENDRE')} disabled={processing}
                 className="flex-1 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all hover-lift">
                 ⏸️ Suspendre
@@ -88,7 +88,11 @@ export default function ModCampagnes() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold text-emerald-600">Campagnes</h1>
-          <p className="text-gray-600 mt-1">{total} campagne{total > 1 ? 's' : ''} à contrôler</p>
+          <p className="text-gray-600 mt-1">
+            {total} campagne{total > 1 ? 's' : ''} actuellement live sur la plateforme — publiées
+            directement par les entreprises, sans validation préalable. Vous pouvez intervenir a
+            posteriori sur une campagne problématique.
+          </p>
         </div>
 
         <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-6">
@@ -118,10 +122,12 @@ export default function ModCampagnes() {
                     </div>
                     <p className="text-xs text-gray-400">{c.entreprise?.nom} · {formatFCFA(c.budget)}</p>
                   </div>
-                  <button onClick={() => setModal(c)}
-                    className="ml-3 text-xs px-3 py-1.5 bg-gradient-emerald text-white rounded-xl hover:opacity-90 font-medium hover-lift transition-all flex-shrink-0">
-                    Modérer
-                  </button>
+                  {c.statut !== 'ANNULEE' && (
+                    <button onClick={() => setModal(c)}
+                      className="ml-3 text-xs px-3 py-1.5 bg-gradient-emerald text-white rounded-xl hover:opacity-90 font-medium hover-lift transition-all flex-shrink-0">
+                      Intervenir
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

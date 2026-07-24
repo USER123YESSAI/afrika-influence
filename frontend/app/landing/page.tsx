@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { createurApi, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from "@/lib/api";
+import CreateursPage from "../createurs/page";
+import EntreprisesPage from "../entreprises/page";
 
 const PAYS_OPTIONS = [
   { value: '', label: 'Tous les pays' },
@@ -300,6 +302,32 @@ export default function Accueil() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ANNUAIRE PUBLIC — CRÉATEURS (embarqué) */}
+      <section className="border-t border-gray-100 bg-white py-16">
+        <div className="mx-auto max-w-6xl px-5 text-center mb-6">
+          <h2 className="font-display text-2xl font-semibold text-brand-900 sm:text-3xl">
+            Découvrez nos créateurs
+          </h2>
+          <p className="mt-3 text-sm text-gray-500 max-w-xl mx-auto">
+            Recherchez et filtrez les talents pour trouver la voix parfaite pour votre prochaine campagne.
+          </p>
+        </div>
+        <CreateursPage embedded={true} />
+      </section>
+
+      {/* ANNUAIRE PUBLIC — ENTREPRISES (embarqué) */}
+      <section className="border-t border-gray-100 bg-stone-50 py-16">
+        <div className="mx-auto max-w-6xl px-5 text-center mb-6">
+          <h2 className="font-display text-2xl font-semibold text-brand-900 sm:text-3xl">
+            Découvrez nos marques
+          </h2>
+          <p className="mt-3 text-sm text-gray-500 max-w-xl mx-auto">
+            Explorez les entreprises qui font confiance à notre plateforme pour leurs campagnes d'influence.
+          </p>
+        </div>
+        <EntreprisesPage embedded={true} />
       </section>
 
       {/* CTA FINAL — deux chemins */}

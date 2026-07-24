@@ -31,7 +31,6 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
         roleColor: 'bg-violet-400/20 text-violet-100',
         nav: [
           { href: '/moderateur/dashboard',    label: 'Tableau de bord',     icon: <IconHome /> },
-          { href: '/moderateur/profils',      label: 'Profils en attente',  icon: <IconUsers /> },
           { href: '/moderateur/campagnes',    label: 'Campagnes',           icon: <IconCampaign /> },
           { href: '/moderateur/signalements', label: 'Signalements',        icon: <IconSignal /> },
           { href: '/moderateur/contenus',     label: 'Contenus',            icon: <IconContent /> },
@@ -49,6 +48,7 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
           { href: '/createur/offres',    label: 'Mes offres',      icon: <IconOffer /> },
           { href: '/collaborations',     label: 'Collaborations',  icon: <IconCollab /> },
           { href: '/messages',           label: 'Messages',        icon: <IconMsg /> },
+          { href: '/paiements',          label: 'Paiements',       icon: <IconPayment /> },
         ]
       };
     case 'ENTREPRISE':

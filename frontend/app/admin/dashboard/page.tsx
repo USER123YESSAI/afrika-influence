@@ -6,10 +6,7 @@ import Link from 'next/link';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    profilsEnAttente: 0,
-    campagnesAControler: 0,
     signalementsEnAttente: 0,
-    contenusAVerifier: 0,
     actionsAujourdhui: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -29,7 +26,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Signalements en attente', value: stats.signalementsEnAttente, icon: '🚩', href: '/admin/signalements' },
-            { label: 'Utilisateurs (Total géré)', value: stats.profilsEnAttente + ' en attente', icon: '👥', href: '/admin/utilisateurs' },
+            { label: 'Utilisateurs', value: 'Gérer', icon: '👥', href: '/admin/utilisateurs' },
             { label: 'Actions d\'audit du jour', value: stats.actionsAujourdhui, icon: '⚡', href: '/admin/logs' },
           ].map((k) => (
             <Link key={k.label} href={k.href}

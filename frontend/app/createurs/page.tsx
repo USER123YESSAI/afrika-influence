@@ -31,7 +31,7 @@ const getImageUrl = (url: string) => {
   return `${BASE}${url}`;
 };
 
-export default function CreateursPage() {
+export default function CreateursPage({ embedded = false }: { embedded?: boolean }) {
   const searchParams = useSearchParams();
   const [createurs, setCreateurs] = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
@@ -61,19 +61,21 @@ export default function CreateursPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-afrika-mesh text-mist">
-      <MeshBackground />
+    <div className={`relative text-mist ${embedded ? '' : 'min-h-screen bg-afrika-mesh'}`}>
+      {!embedded && <MeshBackground />}
       
-      <div className="relative mx-auto max-w-7xl px-5 py-12 sm:py-20">
-        <div className="mb-12 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan mb-4">Annuaire Public</p>
-          <h1 className="font-display text-4xl font-semibold sm:text-5xl lg:text-6xl text-mist">
-            Découvrez nos <span className="text-gradient-afrika">Créateurs</span>
-          </h1>
-          <p className="mt-6 text-fog max-w-2xl mx-auto text-base sm:text-lg">
-            Recherchez et filtrez les talents pour trouver la voix parfaite pour votre prochaine campagne.
-          </p>
-        </div>
+      <div className={`relative mx-auto max-w-7xl px-5 ${embedded ? 'py-8' : 'py-12 sm:py-20'}`}>
+        {!embedded && (
+          <div className="mb-12 text-center">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan mb-4">Annuaire Public</p>
+            <h1 className="font-display text-4xl font-semibold sm:text-5xl lg:text-6xl text-mist">
+              Découvrez nos <span className="text-gradient-afrika">Créateurs</span>
+            </h1>
+            <p className="mt-6 text-fog max-w-2xl mx-auto text-base sm:text-lg">
+              Recherchez et filtrez les talents pour trouver la voix parfaite pour votre prochaine campagne.
+            </p>
+          </div>
+        )}
 
         {/* Filtres avec design Glassmorphism */}
         <div className="mb-10 rounded-2xl border border-hairline bg-surface/60 backdrop-blur-md p-4 sm:p-6 shadow-2xl">

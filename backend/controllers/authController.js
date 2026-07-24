@@ -42,6 +42,17 @@ export async function reinitialiserMdp(req, res) {
   } catch (e) { err(res, e); }
 }
 
+// POST /api/auth/changer-mdp
+export async function changerMdp(req, res) {
+  try {
+    const { ancienMotDePasse, nouveauMotDePasse } = req.body;
+    const data = await authService.changerMotDePasse(req.user.id, ancienMotDePasse, nouveauMotDePasse);
+    ok(res, data);
+  } catch (e) { err(res, e); }
+}
+
+
+
 // POST /api/auth/deconnexion
 export async function deconnexion(req, res) {
   ok(res, { message: 'Déconnexion réussie.' });

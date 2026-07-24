@@ -24,6 +24,8 @@ const getMessageFromType = (type: string) => {
     case 'PAIEMENT_RECU': return 'Paiement confirmé.';
     case 'AVERTISSEMENT_SIGNALEMENT': return '⚠️ Vous avez reçu un avertissement de l\'équipe de modération.';
     case 'SIGNALEMENT_TRAITE': return 'Votre signalement a été traité.';
+    case 'CAMPAGNE_SUSPENDRE': return '⏸️ Une de vos campagnes a été suspendue par la modération.';
+    case 'CAMPAGNE_REJETER': return '❌ Une de vos campagnes a été rejetée par la modération.';
     default: return 'Nouvelle notification.';
   }
 };
