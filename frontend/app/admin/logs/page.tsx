@@ -46,7 +46,7 @@ export default function AdminLogsPage() {
               placeholder="Ex: PROFIL_VALIDE, AVERTISSEMENT..." 
               value={typeAction}
               onChange={(e) => { setTypeAction(e.target.value); setPage(1); }}
-              className="w-full mt-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full mt-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           <div className="flex-1 min-w-[200px]">
@@ -56,7 +56,7 @@ export default function AdminLogsPage() {
               placeholder="UUID de l'utilisateur..." 
               value={acteurId}
               onChange={(e) => { setActeurId(e.target.value); setPage(1); }}
-              className="w-full mt-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full mt-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
         </div>
@@ -82,8 +82,8 @@ export default function AdminLogsPage() {
                 logs.map((log: any) => (
                   <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                     <td className="py-3 px-4 whitespace-nowrap text-gray-500 text-xs">{fmtDate(log.dateAction)}</td>
-                    <td className="py-3 px-4 font-medium text-emerald-700">
-                      <span className="bg-emerald-50 px-2 py-1 rounded-lg text-xs">{log.typeAction}</span>
+                    <td className="py-3 px-4 font-medium text-brand-700">
+                      <span className="bg-brand-50 px-2 py-1 rounded-lg text-xs">{log.typeAction}</span>
                     </td>
                     <td className="py-3 px-4 text-gray-600">
                       {log.acteur?.nom ? (

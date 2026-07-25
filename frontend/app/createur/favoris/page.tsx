@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { favoriApi, formatFCFA } from '@/lib/api';
+import { favoriApi, formatFCFA, getImageUrl } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
 
 interface Campagne {
@@ -53,7 +53,7 @@ export default function FavorisPage() {
       <DashboardCreateur>
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold text-emerald-600">Mes favoris</h1>
+            <h1 className="font-display text-3xl font-bold text-brand-600">Mes favoris</h1>
             <p className="text-gray-600 mt-1">Les campagnes que vous avez enregistrées pour plus tard</p>
           </div>
 
@@ -72,14 +72,14 @@ export default function FavorisPage() {
               <div className="text-5xl mb-4">⭐</div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun favori pour l'instant</h3>
               <p className="text-gray-400 text-sm mb-6">Enregistrez une campagne depuis la marketplace pour la retrouver ici.</p>
-              <Link href="/createur/campagnes" className="text-emerald-600 hover:underline text-sm font-medium">
+              <Link href="/createur/campagnes" className="text-brand-600 hover:underline text-sm font-medium">
                 → Parcourir les campagnes
               </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {campagnes.map((campagne) => (
-                <div key={campagne.id} className="relative bg-white rounded-3xl shadow-bento p-6 hover-lift transition-all border border-transparent hover:border-emerald-200">
+                <div key={campagne.id} className="relative bg-white rounded-3xl shadow-bento p-6 hover-lift transition-all border border-transparent hover:border-brand-200">
                   <button
                     onClick={() => handleRetirer(campagne.id)}
                     title="Retirer des favoris"
@@ -89,17 +89,17 @@ export default function FavorisPage() {
                   </button>
 
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <div className="w-16 h-16 rounded-2xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center flex-shrink-0">
                       {campagne.entreprise?.logoUrl ? (
-                        <img src={campagne.entreprise.logoUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
+                        <img src={getImageUrl(campagne.entreprise.logoUrl)} alt="" className="w-full h-full object-cover rounded-2xl" />
                       ) : (
-                        <span className="text-2xl font-bold text-emerald-600">{campagne.entreprise?.nom?.[0] || 'E'}</span>
+                        <span className="text-2xl font-bold text-brand-600">{campagne.entreprise?.nom?.[0] || 'E'}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 truncate">{campagne.titre}</h3>
                       <p className="text-sm text-gray-400 truncate">{campagne.entreprise?.nom}</p>
-                      <span className="inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                      <span className="inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-700">
                         {STATUT_LABEL[campagne.statut] || campagne.statut}
                       </span>
                     </div>
@@ -109,13 +109,13 @@ export default function FavorisPage() {
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">{campagne.description}</p>
                   )}
 
-                  <div className="bg-emerald-50 rounded-xl p-3 text-center mb-4">
-                    <div className="font-display font-bold text-emerald-600">{formatFCFA(campagne.budget)}</div>
+                  <div className="bg-brand-50 rounded-xl p-3 text-center mb-4">
+                    <div className="font-display font-bold text-brand-600">{formatFCFA(campagne.budget)}</div>
                     <div className="text-xs text-gray-500">Budget</div>
                   </div>
 
                   <Link href="/createur/campagnes"
-                    className="block w-full py-2.5 bg-gradient-emerald text-white rounded-2xl font-semibold hover:opacity-90 transition-all text-sm text-center">
+                    className="block w-full py-2.5 bg-gradient-brand text-white rounded-2xl font-semibold hover:opacity-90 transition-all text-sm text-center">
                     Voir dans la marketplace
                   </Link>
                 </div>

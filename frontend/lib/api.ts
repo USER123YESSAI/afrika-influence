@@ -543,7 +543,7 @@ export const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   CANDIDATURE_ENVOYEE:{ label: 'Candidature envoyée', color: 'bg-amber-100 text-amber-800' },
   TRAVAIL_EN_COURS:   { label: 'En cours',           color: 'bg-blue-100 text-blue-800' },
   CONTENU_SOUMIS:     { label: 'Contenu soumis',     color: 'bg-purple-100 text-purple-800' },
-  CONTENU_VALIDE:     { label: 'Validé ✓',           color: 'bg-emerald-100 text-emerald-800' },
+  CONTENU_VALIDE:     { label: 'Validé ✓',           color: 'bg-brand-100 text-brand-800' },
   PAIEMENT_EFFECTUE:  { label: 'Payé',               color: 'bg-green-100 text-green-800' },
   TERMINEE:           { label: 'Terminée',           color: 'bg-gray-100 text-gray-700' },
   REFUSEE:            { label: 'Refusée',            color: 'bg-red-100 text-red-700' },
@@ -551,7 +551,7 @@ export const STATUT_LABELS: Record<string, { label: string; color: string }> = {
 
 export const STATUT_USER_LABELS: Record<string, { label: string; color: string }> = {
   pending:   { label: 'En attente',  color: 'bg-amber-100 text-amber-800' },
-  validated: { label: 'Validé',      color: 'bg-emerald-100 text-emerald-800' },
+  validated: { label: 'Validé',      color: 'bg-brand-100 text-brand-800' },
   rejected:  { label: 'Rejeté',      color: 'bg-red-100 text-red-700' },
   suspended: { label: 'Suspendu',    color: 'bg-gray-100 text-gray-700' },
   banned:    { label: 'Banni',       color: 'bg-red-900 text-white' },

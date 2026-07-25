@@ -66,7 +66,7 @@ export default function ChangePasswordForm() {
           </div>
         )}
         {success && (
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 text-sm border border-emerald-100 animate-fade-in">
+          <div className="p-3 rounded-xl bg-brand-50 text-brand-600 text-sm border border-brand-100 animate-fade-in">
             {success}
           </div>
         )}

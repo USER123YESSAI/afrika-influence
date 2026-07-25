@@ -141,7 +141,7 @@ export default function OnboardingCreateurPage() {
               <h2 className="font-semibold text-gray-900 mb-2">1. Informations générales</h2>
               <div className="flex flex-col sm:flex-row items-start gap-6">
                 <button onClick={() => fileRef.current?.click()}
-                  className="relative group w-24 h-24 rounded-2xl overflow-hidden bg-emerald-50 border-2 border-emerald-200 flex-shrink-0 mx-auto sm:mx-0">
+                  className="relative group w-24 h-24 rounded-2xl overflow-hidden bg-brand-50 border-2 border-brand-200 flex-shrink-0 mx-auto sm:mx-0">
                   {(previewUrl || profil.photoProfilUrl)
                     ? <img src={previewUrl || getImageUrl(profil.photoProfilUrl)} alt="" className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center text-3xl">📸</div>}
@@ -154,20 +154,20 @@ export default function OnboardingCreateurPage() {
                     <div className="sm:col-span-2">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Nom complet</label>
                       <input value={profil.nom || ''} onChange={e => set('nom', e.target.value)}
-                        className="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                        className="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder="Votre nom" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bio courte</label>
                     <textarea rows={3} value={profil.bio || ''} onChange={e => set('bio', e.target.value)}
-                      className="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
+                      className="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
                       placeholder="Décrivez votre univers créatif en quelques mots…" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Pays de résidence</label>
                     <select value={profil.pays || 'SN'} onChange={e => set('pays', e.target.value)}
-                      className="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                      className="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
                       {PAYS_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                     </select>
                   </div>
@@ -185,7 +185,7 @@ export default function OnboardingCreateurPage() {
                   return (
                     <button key={niche} onClick={() => toggleNiche(niche)}
                       className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all hover-lift ${
-                        active ? 'bg-emerald-600 text-white shadow-bento' : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                        active ? 'bg-brand-600 text-white shadow-bento' : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
                       }`}>
                       {niche}
                     </button>
@@ -211,7 +211,7 @@ export default function OnboardingCreateurPage() {
                       });
                     }}
                       className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all hover-lift ${
-                        active ? 'bg-emerald-600 text-white shadow-bento' : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                        active ? 'bg-brand-600 text-white shadow-bento' : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
                       }`}>
                       {reseau}
                     </button>

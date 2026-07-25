@@ -55,7 +55,7 @@ export default function ContenuViewerModal({ url, onClose }: Props) {
             <div className="p-10 text-center">
               <p className="text-sm text-gray-500 mb-4">Aperçu non disponible pour ce type de fichier.</p>
               <a href={resolved} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:underline">
+                className="inline-flex items-center gap-2 text-brand-600 font-medium hover:underline">
                 <ExternalLink size={16} /> Ouvrir le fichier
               </a>
             </div>
@@ -65,7 +65,7 @@ export default function ContenuViewerModal({ url, onClose }: Props) {
                 Ce contenu est hébergé sur une plateforme externe et ne peut pas être prévisualisé ici.
               </p>
               <a href={resolved} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:underline break-all">
+                className="inline-flex items-center gap-2 text-brand-600 font-medium hover:underline break-all">
                 <ExternalLink size={16} /> {resolved}
               </a>
             </div>

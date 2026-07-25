@@ -81,13 +81,13 @@ export default function InscriptionCreateurPage() {
                 type="checkbox"
                 checked={acceptTerms}
                 onChange={e => setAcceptTerms(e.target.checked)}
-                className="mt-1 h-5 w-5 rounded border-gray-200 text-emerald-600 focus:ring-emerald-500"
+                className="mt-1 h-5 w-5 rounded border-gray-200 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-gray-500 leading-relaxed">
                 J'ai lu et j'accepte les{" "}
-                <Link href="/conditions-utilisation" className="text-emerald-600 hover:underline">Conditions d'utilisation</Link>
+                <Link href="/conditions-utilisation" className="text-brand-600 hover:underline">Conditions d'utilisation</Link>
                 {" "}ainsi que la{" "}
-                <Link href="/politique-confidentialite" className="text-emerald-600 hover:underline">Politique de confidentialité</Link>.
+                <Link href="/politique-confidentialite" className="text-brand-600 hover:underline">Politique de confidentialité</Link>.
               </span>
             </label>
 
@@ -97,7 +97,7 @@ export default function InscriptionCreateurPage() {
           </div>
 
           <p className="text-center text-sm text-gray-400 mt-6">
-            Vous êtes une marque ? <Link href="/inscription/marque" className="text-emerald-600 hover:underline">Inscription marque →</Link>
+            Vous êtes une marque ? <Link href="/inscription/marque" className="text-brand-600 hover:underline">Inscription marque →</Link>
           </p>
         </div>
       </div>

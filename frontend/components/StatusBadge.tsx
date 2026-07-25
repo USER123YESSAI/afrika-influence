@@ -7,7 +7,7 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const statusStyles = {
-    active: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    active: 'bg-brand-100 text-brand-700 border-brand-200',
     pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     completed: 'bg-blue-100 text-blue-700 border-blue-200',
     cancelled: 'bg-red-100 text-red-700 border-red-200',

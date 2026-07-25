@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createurApi, NICHES_DISPONIBLES, RESEAUX } from '@/lib/api';
+import { createurApi, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from '@/lib/api';
 import Link from 'next/link';
-import { Search, MapPin, Tag, Share2, Users } from 'lucide-react';
-import { MeshBackground } from '@/components/layout/MeshBackground';
+import { Search, MapPin, Tag, Share2, Star } from 'lucide-react';
 
 const PAYS_OPTIONS = [
   { value: 'SN', label: '🇸🇳 Sénégal' },
@@ -16,13 +15,10 @@ const PAYS_OPTIONS = [
   { value: 'GN', label: '🇬🇳 Guinée' },
 ];
 
-const fmt = (n: number) =>
+const fmtAudience = (n: number) =>
   n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M' :
   n >= 1000      ? (n / 1000).toFixed(0) + 'K' :
   String(n);
-
-const avatarUrl = (seed: string) =>
-  `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=0b1114,101a1e&radius=0`;
 
 const getImageUrl = (url: string) => {
   if (!url) return '';
@@ -61,153 +57,143 @@ export default function CreateursPage({ embedded = false }: { embedded?: boolean
   };
 
   return (
-    <div className={`relative text-mist ${embedded ? '' : 'min-h-screen bg-afrika-mesh'}`}>
-      {!embedded && <MeshBackground />}
+    <div className={`relative ${embedded ? '' : 'min-h-screen bg-stone-50'}`}>
       
-      <div className={`relative mx-auto max-w-7xl px-5 ${embedded ? 'py-8' : 'py-12 sm:py-20'}`}>
+      <div className={`relative mx-auto max-w-6xl px-5 ${embedded ? '' : 'py-16 sm:py-24'}`}>
         {!embedded && (
-          <div className="mb-12 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan mb-4">Annuaire Public</p>
-            <h1 className="font-display text-4xl font-semibold sm:text-5xl lg:text-6xl text-mist">
-              Découvrez nos <span className="text-gradient-afrika">Créateurs</span>
+          <div className="mb-12 text-center animate-fade-in">
+            <p className="font-eyebrow text-xs font-semibold uppercase tracking-[0.2em] text-brass-600 mb-4">
+              Annuaire Public
+            </p>
+            <h1 className="font-display text-4xl font-medium sm:text-5xl lg:text-6xl text-brand-900">
+              Découvrez nos <span className="italic">Créateurs</span>
             </h1>
-            <p className="mt-6 text-fog max-w-2xl mx-auto text-base sm:text-lg">
+            <p className="mt-6 text-gray-500 max-w-2xl mx-auto text-base sm:text-lg">
               Recherchez et filtrez les talents pour trouver la voix parfaite pour votre prochaine campagne.
             </p>
           </div>
         )}
 
-        {/* Filtres avec design Glassmorphism */}
-        <div className="mb-10 rounded-2xl border border-hairline bg-surface/60 backdrop-blur-md p-4 sm:p-6 shadow-2xl">
+        {/* Filtres avec style clair */}
+        <div className="mb-10 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-fog" size={18} />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
                 type="text" 
                 placeholder="Rechercher par nom..." 
                 value={search} 
                 onChange={e => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-hairline bg-surface-2 pl-10 pr-4 py-3 text-sm text-mist placeholder-fog focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan transition-colors" 
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm text-brand-900 placeholder-gray-400 focus:border-brass-400 focus:outline-none focus:ring-1 focus:ring-brass-400 transition-colors" 
               />
             </div>
             
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-fog pointer-events-none" size={18} />
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
               <select 
                 value={pays} 
                 onChange={e => setPays(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-hairline bg-surface-2 pl-10 pr-4 py-3 text-sm text-mist focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan transition-colors"
+                className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm text-brand-900 focus:border-brass-400 focus:outline-none focus:ring-1 focus:ring-brass-400 transition-colors"
               >
-                <option value="" className="bg-ink">Tous les pays</option>
-                {PAYS_OPTIONS.map(p => <option key={p.value} value={p.value} className="bg-ink">{p.label}</option>)}
+                <option value="">Tous les pays</option>
+                {PAYS_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </div>
             
             <div className="relative">
-              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-fog pointer-events-none" size={18} />
+              <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
               <select 
                 value={niche} 
                 onChange={e => setNiche(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-hairline bg-surface-2 pl-10 pr-4 py-3 text-sm text-mist focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan transition-colors"
+                className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm text-brand-900 focus:border-brass-400 focus:outline-none focus:ring-1 focus:ring-brass-400 transition-colors"
               >
-                <option value="" className="bg-ink">Toutes les niches</option>
-                {NICHES_DISPONIBLES.map(n => <option key={n} value={n} className="bg-ink">{n}</option>)}
+                <option value="">Toutes les niches</option>
+                {NICHES_DISPONIBLES.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
             
             <div className="relative">
-              <Share2 className="absolute left-3 top-1/2 -translate-y-1/2 text-fog pointer-events-none" size={18} />
+              <Share2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
               <select 
                 value={reseau} 
                 onChange={e => setReseau(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-hairline bg-surface-2 pl-10 pr-4 py-3 text-sm text-mist focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan transition-colors"
+                className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm text-brand-900 focus:border-brass-400 focus:outline-none focus:ring-1 focus:ring-brass-400 transition-colors"
               >
-                <option value="" className="bg-ink">Tous les réseaux</option>
-                {RESEAUX.map(r => <option key={r} value={r} className="bg-ink">{r}</option>)}
+                <option value="">Tous les réseaux</option>
+                {RESEAUX.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-400">
+          <div className="mb-8 rounded-xl border border-red-500/30 bg-red-50 p-4 text-center text-sm text-red-600">
             {error}
           </div>
         )}
 
-        {/* Liste défilante des créateurs */}
+        {/* Grille multi-lignes */}
         {loading ? (
-          <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <div key={i} className="h-80 w-[280px] shrink-0 snap-start rounded-2xl border border-hairline bg-surface/40 backdrop-blur-sm animate-pulse" />
+              <div key={i} className="h-44 rounded-2xl border border-gray-100 bg-white p-5 animate-pulse" />
             ))}
           </div>
         ) : createurs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-4 rounded-full bg-surface-2 p-6">
-              <Search className="h-8 w-8 text-fog" />
+            <div className="mb-4 rounded-full bg-gray-100 p-6">
+              <Search className="h-8 w-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-medium text-mist">Aucun créateur trouvé</h3>
-            <p className="mt-2 text-fog">Essayez de modifier vos filtres de recherche.</p>
+            <h3 className="text-xl font-medium text-brand-900">Aucun créateur trouvé</h3>
+            <p className="mt-2 text-gray-500">Essayez de modifier vos filtres de recherche.</p>
           </div>
         ) : (
-          <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {createurs.map((c: any) => (
-              <div 
-                key={c.id} 
-                className="group flex flex-col w-[280px] shrink-0 snap-start overflow-hidden rounded-2xl border border-hairline bg-surface/60 backdrop-blur-md transition-all hover:border-cyan/50 hover:shadow-[0_0_30px_-5px_rgba(45,212,191,0.15)] hover:-translate-y-1"
+              <Link
+                href={`/createurs/${c.id}`}
+                key={c.id}
+                className="group flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft"
               >
-                {/* En-tête / Photo */}
-                <div className="relative h-48 overflow-hidden bg-surface-2">
-                  <img 
-                    src={c.photoProfilUrl ? getImageUrl(c.photoProfilUrl) : avatarUrl(c.nom || c.id)} 
-                    alt={`Photo de ${c.nom}`} 
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent" />
-                  
-                  {/* Badge Audience */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full border border-hairline bg-ink/80 px-2.5 py-1 backdrop-blur-md">
-                    <Users size={12} className="text-cyan" />
-                    <span className="font-mono text-xs font-medium text-mist">{fmt(totalAudience(c))}</span>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-gray-100 bg-brand-50">
+                      {c.photoProfilUrl ? (
+                        <img src={getImageUrl(c.photoProfilUrl)} alt={c.nom} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center font-semibold text-brand-700">
+                          {c.nom?.[0] ?? '?'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-brand-900 transition-colors group-hover:text-brand-700">{c.nom}</p>
+                      <p className="flex items-center gap-1 text-xs text-gray-400">
+                        {c.pays && <MapPin size={11} />} {fmtAudience(totalAudience(c))} abonnés
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {(c.niches ?? []).slice(0, 3).map((n: any) => (
+                      <span key={n.niche} className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] text-brand-700">
+                        {n.niche}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="mb-3">
-                    <h3 className="font-display text-lg font-semibold text-mist line-clamp-1 group-hover:text-cyan transition-colors">{c.nom}</h3>
-                    <p className="font-mono text-xs text-fog line-clamp-1">{c.handle || `@${c.nom.toLowerCase().replace(/\s+/g, '')}`}</p>
-                  </div>
-                  
-                  {/* Informations */}
-                  <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-fog">
-                    {c.pays && (
-                      <span className="flex items-center gap-1.5">
-                        <MapPin size={14} /> {PAYS_OPTIONS.find(p => p.value === c.pays)?.label || c.pays}
-                      </span>
-                    )}
-                    {c.niches && c.niches.length > 0 && (
-                      <span className="flex items-center gap-1.5">
-                        <Tag size={14} /> 
-                        <div className="flex gap-1">
-                          {c.niches.slice(0, 2).map((n: any, i: number) => (
-                            <span key={i} className="rounded-full border border-hairline px-2 py-0.5">{n.niche}</span>
-                          ))}
-                        </div>
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-auto pt-4 border-t border-hairline">
-                    <Link 
-                      href={`/createurs/${c.id}`}
-                      className="block w-full rounded-xl bg-surface-2 py-2.5 text-center text-sm font-medium text-mist transition-colors hover:bg-cyan/10 hover:text-cyan"
-                    >
-                      Voir le profil complet
-                    </Link>
-                  </div>
+                <div className="mt-5 flex items-center justify-between border-t border-gray-50 pt-3 text-sm">
+                  <span className="font-semibold text-brand-900">
+                    {c.tarifMoyen ? `Dès ${formatFCFA(c.tarifMoyen)}` : 'Tarif sur demande'}
+                  </span>
+                  {c.noteMoyenne ? (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <Star size={12} className="fill-brass-500 text-brass-500" /> {c.noteMoyenne}
+                    </span>
+                  ) : null}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

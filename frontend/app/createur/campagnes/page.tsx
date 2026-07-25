@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
-import { getCampagnesPubliques, formatFCFA, favoriApi } from '@/lib/api';
+import { getCampagnesPubliques, formatFCFA, favoriApi, getImageUrl } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
 
 const SECTEURS = ['MODE', 'BEAUTE', 'TECH', 'AGROALIMENTAIRE', 'SANTE', 'FINANCE', 'EDUCATION', 'TOURISME', 'AUTRE'];
@@ -130,7 +130,7 @@ export default function CampagnesCreateurPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold text-emerald-600">Campagnes disponibles</h1>
+            <h1 className="font-display text-3xl font-bold text-brand-600">Campagnes disponibles</h1>
             <p className="text-gray-600 mt-1">Découvrez les opportunités de collaboration avec les entreprises</p>
           </div>
 
@@ -142,13 +142,13 @@ export default function CampagnesCreateurPage() {
                 placeholder="Rechercher par titre ou description..."
                 value={recherche}
                 onChange={e => setRecherche(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
 
               <select
                 value={pays}
                 onChange={e => setPays(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">Tous les pays</option>
                 {PAYS_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -157,7 +157,7 @@ export default function CampagnesCreateurPage() {
               <select
                 value={secteur}
                 onChange={e => setSecteur(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">Tous les secteurs</option>
                 {SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -168,7 +168,7 @@ export default function CampagnesCreateurPage() {
               <span className="text-sm text-gray-500">{campagnes.length} campagne(s) trouvée(s)</span>
               <button
                 onClick={() => { setRecherche(''); setPays(''); setSecteur(''); }}
-                className="text-sm text-emerald-600 hover:underline"
+                className="text-sm text-brand-600 hover:underline"
               >
                 Réinitialiser les filtres
               </button>
@@ -199,7 +199,7 @@ export default function CampagnesCreateurPage() {
                 <Link
                   href={`/createur/campagnes/${campagne.id}`}
                   key={campagne.id}
-                  className="relative bg-white rounded-3xl shadow-bento p-6 hover-lift transition-all cursor-pointer border border-transparent hover:border-emerald-200 block"
+                  className="relative bg-white rounded-3xl shadow-bento p-6 hover-lift transition-all cursor-pointer border border-transparent hover:border-brand-200 block"
                 >
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavori(campagne.id); }}
@@ -212,11 +212,11 @@ export default function CampagnesCreateurPage() {
 
                   {/* Header carte */}
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <div className="w-16 h-16 rounded-2xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center flex-shrink-0">
                       {campagne.entreprise?.logoUrl ? (
-                        <img src={campagne.entreprise.logoUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
+                        <img src={getImageUrl(campagne.entreprise.logoUrl)} alt="" className="w-full h-full object-cover rounded-2xl" />
                       ) : (
-                        <span className="text-2xl font-bold text-emerald-600">{campagne.entreprise?.nom[0] || 'E'}</span>
+                        <span className="text-2xl font-bold text-brand-600">{campagne.entreprise?.nom[0] || 'E'}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -235,8 +235,8 @@ export default function CampagnesCreateurPage() {
 
                   {/* Statistiques */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="bg-emerald-50 rounded-xl p-3 text-center">
-                      <div className="font-display font-bold text-emerald-600">
+                    <div className="bg-brand-50 rounded-xl p-3 text-center">
+                      <div className="font-display font-bold text-brand-600">
                         {campagne.budget !== null ? formatFCFA(campagne.budget) : 'Confidentiel'}
                       </div>
                       <div className="text-xs text-gray-500">Budget</div>
@@ -267,7 +267,7 @@ export default function CampagnesCreateurPage() {
                   </div>
 
                   {/* Bouton */}
-                  <div className="w-full mt-4 py-2.5 bg-gradient-emerald text-white rounded-2xl font-semibold hover:opacity-90 transition-all text-sm text-center">
+                  <div className="w-full mt-4 py-2.5 bg-gradient-brand text-white rounded-2xl font-semibold hover:opacity-90 transition-all text-sm text-center">
                     Voir les détails
                   </div>
                 </Link>

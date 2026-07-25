@@ -13,7 +13,7 @@ export async function initDatabase() {
   console.log('✅ DB connected.');
 
   console.log('📦 Synchronisation des modèles...');
-  await sequelize.sync({ force: false });
+  await sequelize.sync({ alter: true });
   console.log('✅ Tables synchronisées.');
 
   const alreadySeeded = fs.existsSync(MARKER);

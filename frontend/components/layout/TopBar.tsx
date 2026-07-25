@@ -56,7 +56,7 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
               onClick={() => setDropdownOuvert(!dropdownOuvert)}
               className="flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-2 pr-4 py-1.5 transition-colors hover:bg-gray-50"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan to-emerald text-xs font-bold text-ink overflow-hidden">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan to-brand text-xs font-bold text-ink overflow-hidden">
                 {user?.photoProfil || user?.logo || user?.photo ? (
                   <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
                 ) : (

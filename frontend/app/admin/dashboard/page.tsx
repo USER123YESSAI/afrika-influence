@@ -45,25 +45,25 @@ export default function AdminDashboard() {
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="font-display text-lg font-semibold text-gray-900 mb-4">Accès rapides</h2>
             <div className="space-y-3">
-              <Link href="/admin/utilisateurs" className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+              <Link href="/admin/utilisateurs" className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-brand-50 transition-colors">
                 <span className="font-medium text-gray-700">Gestion des Utilisateurs</span>
-                <span className="text-emerald-600">→</span>
+                <span className="text-brand-600">→</span>
               </Link>
-              <Link href="/admin/signalements" className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+              <Link href="/admin/signalements" className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-brand-50 transition-colors">
                 <span className="font-medium text-gray-700">Traitement des Signalements</span>
-                <span className="text-emerald-600">→</span>
+                <span className="text-brand-600">→</span>
               </Link>
-              <Link href="/admin/logs" className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+              <Link href="/admin/logs" className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-brand-50 transition-colors">
                 <span className="font-medium text-gray-700">Consulter le Journal d'Audit</span>
-                <span className="text-emerald-600">→</span>
+                <span className="text-brand-600">→</span>
               </Link>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-gradient-emerald text-white p-6 shadow-sm flex flex-col justify-center items-center text-center">
+          <div className="rounded-2xl border border-gray-100 bg-gradient-brand text-white p-6 shadow-sm flex flex-col justify-center items-center text-center">
             <div className="text-4xl mb-3">🛡️</div>
             <h2 className="font-display text-xl font-semibold mb-2">Espace de Super-Administration</h2>
-            <p className="text-emerald-50 text-sm">
+            <p className="text-brand-50 text-sm">
               Vous avez un contrôle complet sur la plateforme. Toutes les actions de modération sont traçables dans le Journal d'audit pour garantir la transparence.
             </p>
           </div>
