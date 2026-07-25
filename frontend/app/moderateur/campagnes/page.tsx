@@ -4,7 +4,7 @@ import DashboardModerateur from '@/components/layout/DashboardModerateur';
 import { moderateurApi, formatFCFA } from '@/lib/api';
 
 const STATUT_COLOR: Record<string, string> = {
-  PUBLIEE:  'bg-brand-100 text-brand-700',
+  PUBLIEE:  'bg-emerald-100 text-emerald-700',
   EN_COURS: 'bg-blue-100 text-blue-700',
   ANNULEE:  'bg-red-100 text-red-700',
 };
@@ -64,7 +64,7 @@ export default function ModCampagnes() {
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Motif (visible par l'entreprise)</label>
               <textarea value={raison} onChange={e => setRaison(e.target.value)} rows={2}
-                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
                 placeholder="Expliquez pourquoi cette campagne est arrêtée…" />
             </div>
             <div className="flex gap-2">
@@ -87,7 +87,7 @@ export default function ModCampagnes() {
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-brand-600">Campagnes</h1>
+          <h1 className="font-display text-3xl font-bold text-emerald-600">Campagnes</h1>
           <p className="text-gray-600 mt-1">
             {total} campagne{total > 1 ? 's' : ''} actuellement live sur la plateforme — publiées
             directement par les entreprises, sans validation préalable. Vous pouvez intervenir a
@@ -99,7 +99,7 @@ export default function ModCampagnes() {
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold text-gray-900">Campagnes publiées et en cours</h2>
             <select value={filterStatut} onChange={e => setFilter(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
               <option value="">Publiées + En cours</option>
               <option value="PUBLIEE">Publiées</option>
               <option value="EN_COURS">En cours</option>
@@ -124,7 +124,7 @@ export default function ModCampagnes() {
                   </div>
                   {c.statut !== 'ANNULEE' && (
                     <button onClick={() => setModal(c)}
-                      className="ml-3 text-xs px-3 py-1.5 bg-gradient-brand text-white rounded-xl hover:opacity-90 font-medium hover-lift transition-all flex-shrink-0">
+                      className="ml-3 text-xs px-3 py-1.5 bg-gradient-emerald text-white rounded-xl hover:opacity-90 font-medium hover-lift transition-all flex-shrink-0">
                       Intervenir
                     </button>
                   )}

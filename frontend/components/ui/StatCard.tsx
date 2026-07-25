@@ -22,7 +22,7 @@ export default function StatCard({ title, value, icon, trend, className = '' }: 
           <p className="text-2xl font-bold text-gray-900">{value}</p>
           {trend && (
             <div className={`flex items-center gap-1 mt-2 text-sm ${
-              trend.isPositive ? 'text-brand-600' : 'text-red-600'
+              trend.isPositive ? 'text-emerald-600' : 'text-red-600'
             }`}>
               <span>{trend.isPositive ? '↑' : '↓'}</span>
               <span>{Math.abs(trend.value)}%</span>
@@ -30,7 +30,7 @@ export default function StatCard({ title, value, icon, trend, className = '' }: 
             </div>
           )}
         </div>
-        <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center">
+        <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
           {icon}
         </div>
       </div>

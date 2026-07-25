@@ -55,7 +55,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Collaborations en cours', value: stats.enCours },
-              { label: 'Campagnes en cours', value: stats.enCours },
+              { label: 'Campagnes en cours', value: 0 },
               { label: 'Invitations reçues', value: stats.invitations },
               { label: 'Contenus en attente', value: stats.aValider },
               { label: 'Revenus perçus', value: formatFCFA(stats.gains), href: '/paiements' },

@@ -49,7 +49,7 @@ export default function PaiementsPage() {
     <AuthGuard roles={['ENTREPRISE', 'PARTICULIER', 'CREATEUR']}>
       <TopBar profileHref={profileHref} />
       <div className="p-8">
-        <h1 className="font-display text-2xl font-bold text-brand-600 mb-6">Historique des paiements</h1>
+        <h1 className="font-display text-2xl font-bold text-emerald-600 mb-6">Historique des paiements</h1>
 
         {error && <p className="mb-4 text-red-700 bg-red-50 px-4 py-3 rounded-2xl text-sm">{error}</p>}
 

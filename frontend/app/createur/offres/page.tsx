@@ -76,24 +76,24 @@ export default function OffresPage() {
         </div>
       )}
 
-      <div className="w-full">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-display text-3xl font-bold text-brand-600">
+            <h1 className="font-display text-3xl font-bold text-emerald-600">
               Mes offres
             </h1>
             <p className="text-gray-600 mt-1">Définissez vos tarifs par format et réseau</p>
           </div>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-brand hover:opacity-90 text-white text-sm font-semibold rounded-2xl transition-all shadow-bento hover-lift"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-emerald hover:opacity-90 text-white text-sm font-semibold rounded-2xl transition-all shadow-bento hover-lift"
           >
             + Nouvelle offre
           </button>
         </div>
 
-        {/* Liste des offres */}
+        {/* Grille des offres */}
         {offres.length === 0 ? (
           <div className="bg-white rounded-3xl border border-gray-100 shadow-bento p-16 text-center">
             <div className="text-5xl mb-4">🏷️</div>
@@ -101,65 +101,50 @@ export default function OffresPage() {
             <p className="text-gray-400 text-sm mb-6">Créez votre grille tarifaire pour recevoir des propositions de collaboration.</p>
             <button
               onClick={openCreate}
-              className="px-6 py-3 bg-gradient-brand text-white font-semibold rounded-2xl hover:opacity-90 transition-all hover-lift"
+              className="px-6 py-3 bg-gradient-emerald text-white font-semibold rounded-2xl hover:opacity-90 transition-all hover-lift"
             >
               Créer ma première offre
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl shadow-card border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50/50 text-gray-500 font-medium whitespace-nowrap">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Réseau</th>
-                    <th className="px-6 py-4 font-medium">Type</th>
-                    <th className="px-6 py-4 font-medium">Prix</th>
-                    <th className="px-6 py-4 font-medium">Délai</th>
-                    <th className="px-6 py-4 font-medium w-1/3">Description</th>
-                    <th className="px-6 py-4 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {offres.map((offre) => (
-                    <tr key={offre.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{RESEAU_EMOJI[offre.reseau] || '📱'}</span>
-                          <span className="font-medium text-gray-900">{offre.reseau}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
-                        {offre.typeContenu}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-semibold text-brand-600">{formatFCFA(offre.prix)}</span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
-                        {offre.delaiLivraison} jour{offre.delaiLivraison > 1 ? 's' : ''}
-                      </td>
-                      <td className="px-6 py-4 text-gray-500 min-w-[200px]" title={offre.description}>
-                        {offre.description || '—'}
-                      </td>
-                      <td className="px-6 py-4 flex items-center justify-end gap-2 whitespace-nowrap">
-                        <button
-                          onClick={() => openEdit(offre)}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
-                        >
-                          Modifier
-                        </button>
-                        <button
-                          onClick={() => handleDelete(offre.id)}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-medium transition-colors"
-                        >
-                          Supprimer
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {offres.map((offre) => (
+              <div
+                key={offre.id}
+                className="bg-white rounded-3xl border border-gray-100 shadow-bento p-5 hover-lift transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{RESEAU_EMOJI[offre.reseau] || '📱'}</span>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">{offre.reseau}</div>
+                      <div className="text-xs text-gray-400">{offre.typeContenu}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => openEdit(offre)}
+                      className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                      title="Modifier"
+                    >✏️</button>
+                    <button
+                      onClick={() => handleDelete(offre.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                      title="Supprimer"
+                    >🗑️</button>
+                  </div>
+                </div>
+                {offre.description && (
+                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{offre.description}</p>
+                )}
+                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                  <span className="font-display text-lg font-bold text-emerald-600">{formatFCFA(offre.prix)}</span>
+                  <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                    ⏱ {offre.delaiLivraison} jour{offre.delaiLivraison > 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -169,7 +154,7 @@ export default function OffresPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-soft w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-lg font-bold text-brand-600">
+              <h2 className="font-display text-lg font-bold text-emerald-600">
                 {editing ? 'Modifier l\'offre' : 'Nouvelle offre'}
               </h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
@@ -182,7 +167,7 @@ export default function OffresPage() {
                   <select
                     value={form.reseau}
                     onChange={e => setF('reseau', e.target.value)}
-                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   >
                     {RESEAUX.map(r => <option key={r}>{r}</option>)}
                   </select>
@@ -192,7 +177,7 @@ export default function OffresPage() {
                   <select
                     value={form.typeContenu}
                     onChange={e => setF('typeContenu', e.target.value)}
-                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   >
                     {TYPES_CONTENU.map(t => <option key={t}>{t}</option>)}
                   </select>
@@ -207,7 +192,7 @@ export default function OffresPage() {
                     value={form.prix}
                     onChange={e => setF('prix', e.target.value)}
                     onWheel={e => (e.target as HTMLInputElement).blur()}
-                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="50000"
                     min="0"
                   />
@@ -219,7 +204,7 @@ export default function OffresPage() {
                     value={form.delaiLivraison}
                     onChange={e => setF('delaiLivraison', e.target.value)}
                     onWheel={e => (e.target as HTMLInputElement).blur()}
-                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="5"
                     min="1"
                   />
@@ -232,7 +217,7 @@ export default function OffresPage() {
                   value={form.description}
                   onChange={e => setF('description', e.target.value)}
                   rows={3}
-                  className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+                  className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
                   placeholder="Décrivez ce qui est inclus dans cette offre…"
                 />
               </div>
@@ -248,7 +233,7 @@ export default function OffresPage() {
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="flex-1 py-3 bg-gradient-brand hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all hover-lift"
+                className="flex-1 py-3 bg-gradient-emerald hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all hover-lift"
               >
                 {saving ? 'Enregistrement…' : editing ? 'Modifier' : 'Créer'}
               </button>

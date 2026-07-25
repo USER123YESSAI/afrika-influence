@@ -2,9 +2,7 @@ import * as authService from '../services/authService.js';
 
 const ok  = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const err = (res, e) => {
-  // Log complet dans la console backend pour debug
-  console.error('[authController] ERREUR INSCRIPTION:', e.message);
-  console.error('[authController] STACK:', e.stack);
+  console.error('[authController] ERREUR:', e.message);
   return res.status(e.status || 500).json({ success: false, message: e.message || 'Erreur serveur.' });
 };
 
@@ -33,11 +31,20 @@ export async function profil(req, res) {
   } catch (e) { err(res, e); }
 }
 
-// POST /api/auth/reinitialiser-mdp
+// POST /api/auth/reinitialiser-mdp — étape 1 : demande d'un lien par email
 export async function reinitialiserMdp(req, res) {
   try {
-    const { email, nouveauMotDePasse } = req.body;
-    const data = await authService.reinitialiserMotDePasse(email, nouveauMotDePasse);
+    const { email } = req.body;
+    const data = await authService.demanderResetMotDePasse(email);
+    ok(res, data);
+  } catch (e) { err(res, e); }
+}
+
+// POST /api/auth/reinitialiser-mdp/confirmer — étape 2 : confirmation avec le jeton reçu par email
+export async function confirmerReinitialisationMdp(req, res) {
+  try {
+    const { email, token, nouveauMotDePasse } = req.body;
+    const data = await authService.confirmerResetMotDePasse(email, token, nouveauMotDePasse);
     ok(res, data);
   } catch (e) { err(res, e); }
 }
@@ -51,9 +58,10 @@ export async function changerMdp(req, res) {
   } catch (e) { err(res, e); }
 }
 
-
-
 // POST /api/auth/deconnexion
 export async function deconnexion(req, res) {
-  ok(res, { message: 'Déconnexion réussie.' });
+  try {
+    const data = await authService.deconnecter(req.user?.jti, req.user?.exp);
+    ok(res, data);
+  } catch (e) { err(res, e); }
 }

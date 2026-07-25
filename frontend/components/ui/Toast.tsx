@@ -42,7 +42,7 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
             <div
               key={toast.id}
               className={`px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${
-                toast.type === 'success' ? 'bg-brand-600 text-white' :
+                toast.type === 'success' ? 'bg-emerald-600 text-white' :
                 toast.type === 'error' ? 'bg-red-600 text-white' :
                 'bg-gray-900 text-white'
               }`}

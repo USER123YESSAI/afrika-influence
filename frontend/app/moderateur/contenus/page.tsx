@@ -6,7 +6,7 @@ import { moderateurApi } from '@/lib/api';
 
 const STATUT_BADGE: Record<string, { label: string; className: string }> = {
   EN_ATTENTE: { label: 'En attente de la marque', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
-  VALIDEE:    { label: 'Validée · payée',         className: 'bg-brand-50 text-brand-700 border border-brand-200' },
+  VALIDEE:    { label: 'Validée · payée',         className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
   REFUSEE:    { label: 'Refusée',                 className: 'bg-red-50 text-red-700 border border-red-200' },
 };
 
@@ -38,7 +38,7 @@ export default function ModContenus() {
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-brand-600">Contenus livrés</h1>
+          <h1 className="font-display text-3xl font-bold text-emerald-600">Contenus livrés</h1>
           <p className="text-gray-600 mt-1">
             {total} soumission{total > 1 ? 's' : ''} — validées directement par les entreprises,
             avec paiement automatique au créateur. Cette page est une vue de visibilité ; en cas de
@@ -50,7 +50,7 @@ export default function ModContenus() {
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold text-gray-900">Soumissions des créateurs</h2>
             <select value={filter} onChange={e => setFilter(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
               <option value="">Toutes</option>
               <option value="EN_ATTENTE">En attente</option>
               <option value="VALIDEE">Validées</option>
@@ -81,7 +81,7 @@ export default function ModContenus() {
                         </p>
                         {s.contenuUrl && (
                           <button onClick={() => setViewingUrl(s.contenuUrl)}
-                            className="text-xs text-brand-600 hover:underline truncate block mt-1 text-left">
+                            className="text-xs text-emerald-600 hover:underline truncate block mt-1 text-left">
                             {s.contenuUrl.startsWith('/uploads') ? '📎 Voir le fichier joint' : `🔗 ${s.contenuUrl}`}
                           </button>
                         )}

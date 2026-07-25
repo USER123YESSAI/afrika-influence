@@ -9,7 +9,6 @@ import {
 import { Footer } from "@/components/layout/Footer";
 import Reveal from "@/components/ui/Reveal";
 import { createurApi, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from "@/lib/api";
-import CreateursPage from "../createurs/page";
 import EntreprisesPage from "../entreprises/page";
 
 const PAYS_OPTIONS = [
@@ -457,19 +456,6 @@ export default function Accueil() {
             </div>
           </Reveal>
         </div>
-      </section>
-
-      {/* ANNUAIRE PUBLIC — CRÉATEURS (embarqué) */}
-      <section className="border-t border-gray-100 bg-white py-16">
-        <div className="mx-auto max-w-6xl px-5 text-center mb-6">
-          <h2 className="font-display text-2xl font-semibold text-brand-900 sm:text-3xl">
-            Découvrez nos créateurs
-          </h2>
-          <p className="mt-3 text-sm text-gray-500 max-w-xl mx-auto">
-            Recherchez et filtrez les talents pour trouver la voix parfaite pour votre prochaine campagne.
-          </p>
-        </div>
-        <CreateursPage embedded={true} />
       </section>
 
       {/* ANNUAIRE PUBLIC — ENTREPRISES (embarqué) */}

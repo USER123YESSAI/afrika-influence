@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { getCampagnesPubliques, getCampagne, formatFCFA, collabApi, favoriApi, getImageUrl, type Campagne } from '@/lib/api';
+import { getCampagnesPubliques, getCampagne, formatFCFA, collabApi, favoriApi, type Campagne } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
 
 const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
@@ -113,18 +113,18 @@ export default function CampagneImmersivePage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-8 py-10">
           {/* En-tête entreprise */}
           <div className="flex items-start gap-5 mb-8">
-            <div className="w-20 h-20 rounded-3xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
               {campagne.entreprise?.logoUrl ? (
-                <img src={getImageUrl(campagne.entreprise.logoUrl)} alt="" className="w-full h-full object-cover" />
+                <img src={campagne.entreprise.logoUrl} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-3xl font-bold text-brand-600">{campagne.entreprise?.nom?.[0] || 'E'}</span>
+                <span className="text-3xl font-bold text-emerald-600">{campagne.entreprise?.nom?.[0] || 'E'}</span>
               )}
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="font-display text-3xl font-bold text-gray-900">{campagne.titre}</h1>
               <p className="text-gray-500 mt-1">{campagne.entreprise?.nom}</p>
               {campagne.entreprise?.secteur && (
-                <span className="inline-block mt-2 px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-xs font-medium">
+                <span className="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
                   {campagne.entreprise.secteur}
                 </span>
               )}
@@ -142,7 +142,7 @@ export default function CampagneImmersivePage() {
           {/* Statistiques clés */}
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
-              <div className="font-display text-xl font-bold text-brand-600">
+              <div className="font-display text-xl font-bold text-emerald-600">
                 {campagne.budget !== null ? formatFCFA(campagne.budget) : 'Confidentiel'}
               </div>
               <div className="text-xs text-gray-400 mt-1">Budget</div>
@@ -195,7 +195,7 @@ export default function CampagneImmersivePage() {
               <h3 className="font-semibold text-gray-900 mb-3">Plateformes concernées</h3>
               <div className="flex flex-wrap gap-2">
                 {campagne.plateformes.map((p) => (
-                  <span key={p.id} className="px-4 py-2 bg-brand-100 text-brand-700 rounded-full text-sm font-medium">
+                  <span key={p.id} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
                     {p.plateforme}
                   </span>
                 ))}
@@ -217,7 +217,7 @@ export default function CampagneImmersivePage() {
 
           {/* Action */}
           {postule ? (
-            <div className="bg-brand-50 border border-brand-200 rounded-2xl p-5 text-center text-brand-800 font-medium">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center text-emerald-800 font-medium">
               ✓ Candidature envoyée — vous serez notifié de la réponse de la marque.
             </div>
           ) : campagne.statut !== 'PUBLIEE' && campagne.statut !== 'EN_COURS' ? (
@@ -228,7 +228,7 @@ export default function CampagneImmersivePage() {
             <button
               onClick={handlePostuler}
               disabled={postulating}
-              className="w-full py-4 bg-gradient-brand text-white rounded-2xl font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-bento text-lg"
+              className="w-full py-4 bg-gradient-emerald text-white rounded-2xl font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-bento text-lg"
             >
               {postulating ? 'Envoi…' : 'Postuler à cette campagne'}
             </button>

@@ -45,16 +45,26 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   const json = await res.json().catch(() => ({ message: res.statusText }));
 
   if (!res.ok) {
+    // CORRECTION : un 401 sur un appel qui envoyait déjà un token
+    // (contrairement à /auth/connexion, qui échoue aussi en 401 mais sans
+    // token — mauvais identifiants, pas une session cassée) signifie que
+    // le token est manquant/invalide/expiré/révoqué côté serveur. Avant,
+    // ce cas laissait juste un toast d'erreur pendant qu'une page
+    // "authentifiée" restait affichée à moitié vide (sidebar + données non
+    // chargées) — déroutant. On nettoie maintenant la session et on
+    // renvoie proprement vers la connexion, comme le ferait n'importe quel
+    // logout explicite.
+    if (res.status === 401 && token) {
+      logout();
+    }
     throw new Error(json.message || `Erreur ${res.status}`);
   }
 
-  // Toutes les réponses ont la forme { success, data } ou { success, message }
   if (json && typeof json === 'object' && 'success' in json) {
     if (!json.success) throw new Error(json.message || 'Erreur serveur.');
     return json.data as T;
   }
 
-  // Fallback pour réponses sans wrapper (webhook PayTech, etc.)
   return json as T;
 }
 
@@ -185,8 +195,15 @@ export const authApi = {
     logout();
   },
 
-  reinitialiserMdp: (data: unknown) =>
+  // Étape 1 : demande d'un lien de réinitialisation (email uniquement — le
+  // mot de passe ne se change qu'à l'étape de confirmation, une fois le
+  // jeton reçu par email vérifié côté serveur).
+  reinitialiserMdp: (data: { email: string }) =>
     apiFetch('/api/auth/reinitialiser-mdp', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Étape 2 : confirmation avec le jeton reçu par email
+  confirmerResetMdp: (data: { email: string; token: string; nouveauMotDePasse: string }) =>
+    apiFetch('/api/auth/reinitialiser-mdp/confirmer', { method: 'POST', body: JSON.stringify(data) }),
 
   profil: () => request('/auth/profil'),
 };
@@ -543,7 +560,7 @@ export const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   CANDIDATURE_ENVOYEE:{ label: 'Candidature envoyée', color: 'bg-amber-100 text-amber-800' },
   TRAVAIL_EN_COURS:   { label: 'En cours',           color: 'bg-blue-100 text-blue-800' },
   CONTENU_SOUMIS:     { label: 'Contenu soumis',     color: 'bg-purple-100 text-purple-800' },
-  CONTENU_VALIDE:     { label: 'Validé ✓',           color: 'bg-brand-100 text-brand-800' },
+  CONTENU_VALIDE:     { label: 'Validé ✓',           color: 'bg-emerald-100 text-emerald-800' },
   PAIEMENT_EFFECTUE:  { label: 'Payé',               color: 'bg-green-100 text-green-800' },
   TERMINEE:           { label: 'Terminée',           color: 'bg-gray-100 text-gray-700' },
   REFUSEE:            { label: 'Refusée',            color: 'bg-red-100 text-red-700' },
@@ -551,7 +568,7 @@ export const STATUT_LABELS: Record<string, { label: string; color: string }> = {
 
 export const STATUT_USER_LABELS: Record<string, { label: string; color: string }> = {
   pending:   { label: 'En attente',  color: 'bg-amber-100 text-amber-800' },
-  validated: { label: 'Validé',      color: 'bg-brand-100 text-brand-800' },
+  validated: { label: 'Validé',      color: 'bg-emerald-100 text-emerald-800' },
   rejected:  { label: 'Rejeté',      color: 'bg-red-100 text-red-700' },
   suspended: { label: 'Suspendu',    color: 'bg-gray-100 text-gray-700' },
   banned:    { label: 'Banni',       color: 'bg-red-900 text-white' },

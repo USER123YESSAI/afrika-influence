@@ -12,22 +12,6 @@ interface Props {
   onError: (message: string) => void;
 }
 
-const renderReseaux = (reseaux: any) => {
-  if (!reseaux) return '—';
-  if (typeof reseaux === 'string') {
-    try {
-      const parsed = JSON.parse(reseaux);
-      if (Array.isArray(parsed)) return parsed.map(r => r.plateforme || r).join(', ');
-      if (typeof parsed === 'object') return Object.keys(parsed).join(', ');
-    } catch (e) {
-      return reseaux;
-    }
-  }
-  if (Array.isArray(reseaux)) return reseaux.map(r => r.plateforme || r).join(', ');
-  if (typeof reseaux === 'object') return Object.keys(reseaux).join(', ');
-  return String(reseaux);
-};
-
 export default function CreateursInvitationTable({ campagneId, invitedIds, onInvited, onError }: Props) {
   const [createurs, setCreateurs]       = useState<any[]>([]);
   const [search, setSearch]             = useState('');
@@ -99,7 +83,7 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
         <h2 className="font-semibold text-gray-900">Tous les créateurs</h2>
         {selectedIds.size > 0 && (
           <button onClick={handleInviterSelection} disabled={invitingBulk}
-            className="text-sm px-4 py-2 bg-gradient-brand text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift">
+            className="text-sm px-4 py-2 bg-gradient-emerald text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift">
             {invitingBulk ? 'Envoi…' : `Inviter la sélection (${selectedIds.size})`}
           </button>
         )}
@@ -111,7 +95,7 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Rechercher un créateur par nom ou handle…"
-        className="w-full mb-4 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        className="w-full mb-4 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
       />
 
       <div className="overflow-x-auto">
@@ -140,15 +124,15 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
             {filtered.length === 0 ? (
               <tr><td colSpan={8} className="px-3 py-10 text-center text-gray-400">Aucun créateur trouvé.</td></tr>
             ) : filtered.map((c: any) => (
-              <tr key={c.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.has(c.id) ? 'bg-brand-50/50' : ''}`}>
+              <tr key={c.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.has(c.id) ? 'bg-emerald-50/50' : ''}`}>
                 <td className="px-3 py-3">
                   <input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleSelection(c.id)}
                     disabled={invitedIds.has(c.id)}
-                    className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
+                    className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-700 flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700 flex-shrink-0">
                       {c.nom?.[0] ?? '?'}
                     </div>
                     <div className="min-w-0">
@@ -161,18 +145,18 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
                 <td className="px-3 py-3">
                   <div className="flex flex-wrap gap-1 max-w-[160px]">
                     {(c.niches || []).slice(0, 2).map((n: any) => (
-                      <span key={n.niche} className="text-[10px] px-2 py-0.5 bg-brand-100 text-brand-700 rounded-full">{n.niche}</span>
+                      <span key={n.niche} className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">{n.niche}</span>
                     ))}
                     {(c.niches?.length || 0) === 0 && <span className="text-gray-300">—</span>}
                   </div>
                 </td>
-                <td className="px-3 py-3 text-gray-500">{renderReseaux(c.reseaux)}</td>
+                <td className="px-3 py-3 text-gray-500">{Object.keys(c.reseaux || {}).join(', ') || '—'}</td>
                 <td className="px-3 py-3 text-gray-700">{c.tarifMoyen ? `${c.tarifMoyen.toLocaleString('fr-FR')} FCFA` : '—'}</td>
                 <td className="px-3 py-3 text-gray-700">{c.noteMoyenne ? `★ ${c.noteMoyenne}` : '—'}</td>
                 <td className="px-3 py-3 text-right">
                   <button onClick={() => handleInviter(c.id)}
                     disabled={inviting === c.id || invitedIds.has(c.id)}
-                    className="text-xs px-3 py-1.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-400 disabled:opacity-50 transition-colors">
+                    className="text-xs px-3 py-1.5 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-400 disabled:opacity-50 transition-colors">
                     {inviting === c.id ? '…' : invitedIds.has(c.id) ? '✓ Invité' : 'Inviter'}
                   </button>
                 </td>

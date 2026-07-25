@@ -37,10 +37,10 @@ export default function AvisForm({ cibleId, onReviewSubmitted }: Props) {
 
   if (success) {
     return (
-      <div className="bg-brand-50 border border-brand-200 rounded-2xl p-6 text-center">
+      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center">
         <div className="text-4xl mb-2">⭐</div>
-        <h3 className="font-semibold text-brand-800 mb-1">Avis envoyé !</h3>
-        <p className="text-sm text-brand-600">Merci pour votre retour.</p>
+        <h3 className="font-semibold text-emerald-800 mb-1">Avis envoyé !</h3>
+        <p className="text-sm text-emerald-600">Merci pour votre retour.</p>
       </div>
     );
   }
@@ -79,14 +79,14 @@ export default function AvisForm({ cibleId, onReviewSubmitted }: Props) {
             onChange={(e) => setCommentaire(e.target.value)}
             rows={3}
             placeholder="Partagez votre expérience..."
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-brand text-white py-3 rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift"
+          className="w-full bg-gradient-emerald text-white py-3 rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift"
         >
           {loading ? 'Envoi en cours...' : 'Envoyer mon avis'}
         </button>

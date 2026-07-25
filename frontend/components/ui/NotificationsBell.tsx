@@ -113,7 +113,7 @@ export default function NotificationsBell() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
               >
                 Tout marquer comme lu
               </button>
@@ -130,13 +130,13 @@ export default function NotificationsBell() {
                 <div
                   key={notif.id}
                   className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !notif.lue ? 'bg-brand-50' : ''
+                    !notif.lue ? 'bg-emerald-50' : ''
                   }`}
                   onClick={() => !notif.lue && markAsRead(notif.id)}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                      !notif.lue ? 'bg-brand-600' : 'bg-gray-300'
+                      !notif.lue ? 'bg-emerald-600' : 'bg-gray-300'
                     }`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-900">{getMessageFromType(notif.type)}</p>

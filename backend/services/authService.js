@@ -1,33 +1,27 @@
 import bcrypt from 'bcrypt';
+import { randomBytes, createHash } from 'crypto';
 import { Op } from 'sequelize';
-import { Utilisateur, Entreprise, Createur } from '../models/index.js';
+import { Utilisateur, Entreprise, Createur, ResetToken, TokenRevoque } from '../models/index.js';
 import { generateToken } from '../middlewares/auth.js';
 import { creerLog } from './logService.js';
+import { sendPasswordResetEmail } from './emailService.js';
 
 const SALT_ROUNDS = 12;
+const RESET_TOKEN_VALIDITE_MS = 30 * 60 * 1000; // 30 minutes
 
 export async function inscrire({ nom, email, password, role }) {
-  console.log('[authService.inscrire] START', { nom, email, role });
-
   const existant = await Utilisateur.findOne({ where: { email } });
   if (existant) throw { status: 409, message: 'Un compte existe déjà avec cet email.' };
 
-  console.log('[authService.inscrire] Hashing password...');
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  console.log('[authService.inscrire] Creating utilisateur...');
   const utilisateur = await Utilisateur.create({
     nom, email, motDePasse: hash, role, statut: 'validated',
   });
-  console.log('[authService.inscrire] Utilisateur created:', utilisateur.id);
 
   if (role === 'ENTREPRISE' || role === 'PARTICULIER') {
-    console.log('[authService.inscrire] Creating entreprise profile...');
     await Entreprise.create({ utilisateurId: utilisateur.id, nom });
-    console.log('[authService.inscrire] Entreprise profile created.');
   } else if (role === 'CREATEUR') {
-    console.log('[authService.inscrire] Generating handle...');
-
     const base = '@' + (nom || 'createur')
       .toLowerCase()
       .normalize('NFD')
@@ -35,26 +29,16 @@ export async function inscrire({ nom, email, password, role }) {
       .replace(/[^a-z0-9]/g, '')
       .slice(0, 20) || 'createur';
 
-    console.log('[authService.inscrire] Base handle:', base);
-    console.log('[authService.inscrire] Counting existing handles with Op.like...');
-
     const count = await Createur.count({
       where: { handle: { [Op.like]: `${base}%` } },
     });
 
-    console.log('[authService.inscrire] Handle count:', count);
     const handle = count > 0 ? `${base}${count + 1}` : base;
-    console.log('[authService.inscrire] Final handle:', handle);
-
-    console.log('[authService.inscrire] Creating createur profile...');
     await Createur.create({ utilisateurId: utilisateur.id, nom, handle });
-    console.log('[authService.inscrire] Createur profile created.');
   }
 
-  console.log('[authService.inscrire] Creating log...');
   await creerLog(utilisateur.id, 'INSCRIPTION', 'Utilisateur', utilisateur.id);
 
-  console.log('[authService.inscrire] DONE.');
   const { motDePasse: _, ...data } = utilisateur.toJSON();
   const token = generateToken(utilisateur);
   return { token, utilisateur: data };
@@ -108,28 +92,88 @@ export async function getProfil(utilisateurId) {
     const createur = await Createur.findOne({ where: { utilisateurId } });
     if (createur) {
       data.photoProfil = createur.photoProfilUrl;
-      data.profilComplet = !!createur.nom && !!createur.pays; // par exemple
+      data.profilComplet = !!createur.nom && !!createur.pays;
     }
   } else if (data.role === 'ENTREPRISE' || data.role === 'PARTICULIER') {
     const entreprise = await Entreprise.findOne({ where: { utilisateurId } });
     if (entreprise) {
       data.logo = entreprise.logoUrl;
-      data.profilComplet = !!entreprise.nom && !!entreprise.secteur; // par exemple
+      data.profilComplet = !!entreprise.nom && !!entreprise.secteur;
     }
   }
 
   return data;
 }
 
+// ─── Déconnexion : révocation du JWT en cours ─────────────────────────────────
+// CORRECTION SÉCURITÉ : jusqu'ici la déconnexion ne faisait rien côté serveur,
+// le token restait valide jusqu'à son expiration naturelle (24h) même après
+// "déconnexion". On enregistre désormais son jti dans la liste noire.
+export async function deconnecter(jti, exp) {
+  if (jti && exp) {
+    await TokenRevoque.findOrCreate({
+      where: { jti },
+      defaults: { dateExpiration: new Date(exp * 1000) },
+    });
+  }
+  return { message: 'Déconnexion réussie.' };
+}
 
-
-export async function reinitialiserMotDePasse(email, nouveauMotDePasse) {
+// ─── Réinitialisation de mot de passe — demande ───────────────────────────────
+// CORRECTION SÉCURITÉ CRITIQUE : l'ancienne version changeait le mot de passe
+// directement à partir de l'email fourni, sans aucune preuve que la personne
+// qui fait la demande possède réellement cette boîte mail. N'importe qui
+// connaissant l'email d'un utilisateur pouvait donc prendre le contrôle de
+// son compte. Le flux correct est en deux temps :
+//   1. demanderResetMotDePasse(email)          → génère un jeton à usage
+//      unique, l'envoie par email (jamais dans la réponse HTTP), et répond
+//      toujours le même message que le compte existe ou non (on ne révèle
+//      jamais quels emails sont enregistrés — énumération de comptes).
+//   2. confirmerResetMotDePasse(email, token, nouveauMotDePasse) → vérifie le
+//      jeton (hashé en base, comparé au hash du jeton reçu) avant de changer
+//      le mot de passe.
+export async function demanderResetMotDePasse(email) {
   const utilisateur = await Utilisateur.findOne({ where: { email } });
-  if (!utilisateur)
-    throw { status: 404, message: 'Aucun compte associé à cet email.' };
+
+  if (utilisateur) {
+    const tokenBrut = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(tokenBrut).digest('hex');
+    const dateExpiration = new Date(Date.now() + RESET_TOKEN_VALIDITE_MS);
+
+    // Invalide les demandes précédentes non utilisées avant d'en créer une nouvelle
+    await ResetToken.destroy({ where: { utilisateurId: utilisateur.id } });
+    await ResetToken.create({ utilisateurId: utilisateur.id, tokenHash, dateExpiration });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const lien = `${frontendUrl}/reinitialiser-mdp/confirmer?token=${tokenBrut}&email=${encodeURIComponent(email)}`;
+
+    await sendPasswordResetEmail(email, lien);
+    await creerLog(utilisateur.id, 'DEMANDE_RESET_MDP', 'Utilisateur', utilisateur.id);
+  }
+
+  // Réponse identique que le compte existe ou non, volontairement.
+  return { message: 'Si un compte existe avec cet email, un lien de réinitialisation vient de lui être envoyé.' };
+}
+
+// ─── Réinitialisation de mot de passe — confirmation ──────────────────────────
+export async function confirmerResetMotDePasse(email, tokenBrut, nouveauMotDePasse) {
+  const generique = { status: 400, message: 'Lien invalide ou expiré. Merci de refaire une demande.' };
+
+  const utilisateur = await Utilisateur.findOne({ where: { email } });
+  if (!utilisateur) throw generique;
+
+  const tokenHash = createHash('sha256').update(tokenBrut).digest('hex');
+  const entree = await ResetToken.findOne({ where: { utilisateurId: utilisateur.id, tokenHash } });
+  if (!entree) throw generique;
+  if (entree.dateExpiration < new Date()) {
+    await entree.destroy();
+    throw generique;
+  }
 
   const hash = await bcrypt.hash(nouveauMotDePasse, SALT_ROUNDS);
   await utilisateur.update({ motDePasse: hash });
+  await entree.destroy(); // jeton à usage unique
+
   await creerLog(utilisateur.id, 'RESET_MDP', 'Utilisateur', utilisateur.id);
   return { message: 'Mot de passe réinitialisé avec succès.' };
 }

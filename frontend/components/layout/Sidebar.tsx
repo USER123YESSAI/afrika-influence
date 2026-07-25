@@ -1,86 +1,33 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { logout, getUser, getImageUrl } from '@/lib/api';
-import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 import { getSidebarConfig } from '@/lib/navigation';
-
-function UserMenu() {
-  const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => { setUser(getUser()); }, []);
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl hover:bg-white/10 transition-all">
-        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-          {user?.nom?.[0]?.toUpperCase() ?? '?'}
-        </div>
-        <div className="flex-1 text-left min-w-0">
-          <p className="text-white text-sm font-medium truncate">{user?.nom ?? 'Utilisateur'}</p>
-          <p className="text-white/50 text-xs truncate">{user?.email ?? ''}</p>
-        </div>
-        <svg className={`w-4 h-4 text-white/50 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden animate-fade-in z-50">
-          <div className="px-4 py-3 border-b border-gray-50">
-            <p className="text-sm font-semibold text-gray-900 truncate">{user?.nom}</p>
-            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-          </div>
-          <div className="p-1.5 space-y-0.5">
-            <button onClick={logout}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-red-600 hover:bg-red-50 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Déconnexion
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+import { Logo } from '@/components/Logo';
 
 export default function Sidebar() {
   const path = usePathname();
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   if (!user) return null;
 
   const { nav, roleLabel, roleColor } = getSidebarConfig(user.role || '');
 
   return (
-    <aside className="w-64 bg-gradient-brand-sidebar flex flex-col fixed h-full z-20 shadow-soft">
-      {/* User Info / Logo */}
-      <div className="px-5 py-6 border-b border-white/10">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur overflow-hidden flex-shrink-0">
-            {user?.photoProfil || user?.logo || user?.photo ? (
-              <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-white font-bold text-lg">{user?.nom?.[0]?.toUpperCase() ?? '?'}</span>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-sm leading-tight truncate">{user.nom || 'Utilisateur'}</p>
-            <p className="text-white/50 text-xs truncate">{user.email || ''}</p>
-          </div>
-        </div>
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${roleColor}`}>
+    <aside className="w-64 bg-gradient-sidebar flex flex-col fixed h-full z-20 shadow-soft">
+      {/* Logo — ramène vers l'espace de landing tout en restant connecté */}
+      <div className="px-5 py-6 border-b border-[rgba(255,255,255,0.1)]">
+        <Link
+          href="/"
+          className="flex items-center rounded-xl transition-opacity hover:opacity-80"
+          aria-label="Retour à l'accueil Afrika Influence Hub"
+        >
+          <Logo variant="light" />
+        </Link>
+        <span className={`mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${roleColor}`}>
           {roleLabel}
         </span>
       </div>
@@ -94,12 +41,36 @@ export default function Sidebar() {
               className={`sidebar-link ${active ? 'active' : ''}`}>
               <span className="w-5 h-5 flex items-center justify-center flex-shrink-0">{item.icon}</span>
               <span>{item.label}</span>
-              {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-400" />}
+              {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />}
             </Link>
           );
         })}
       </nav>
 
+      {/* Bascule clair/sombre — la sidebar reste sombre en permanence (voir
+          globals.css / tailwind.config.js), donc les couleurs ici sont en
+          blanc littéral (arbitraire) plutôt qu'en `text-white`/`bg-white`
+          Tailwind, qui elles SUIVENT le thème (--c-surface) et deviennent
+          quasi-noires en mode sombre — c'est ce qui rendait ce bouton
+          invisible. Fond + bordure visibles au repos (pas seulement au
+          survol) pour bien lire un bouton, pas juste du texte. */}
+      <div className="px-3 py-4 border-t border-[rgba(255,255,255,0.1)]">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+            text-[rgba(255,255,255,0.85)]
+            bg-[rgba(255,255,255,0.06)]
+            border border-[rgba(255,255,255,0.14)]
+            shadow-sm
+            hover:bg-[rgba(255,255,255,0.16)] hover:text-[#ffffff] hover:border-[rgba(255,255,255,0.24)]
+            active:bg-[rgba(255,255,255,0.22)]
+            transition-all duration-200"
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5 flex-shrink-0" strokeWidth={2} /> : <Moon className="w-5 h-5 flex-shrink-0" strokeWidth={2} />}
+          <span>{theme === 'dark' ? 'Mode clair' : 'Mode sombre'}</span>
+        </button>
+      </div>
     </aside>
   );
 }

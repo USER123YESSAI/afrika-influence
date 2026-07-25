@@ -1,62 +1,156 @@
 /** @type {import('tailwindcss').Config} */
+//
+// REFONTE DESIGN (couleurs + arrière-plan) — juillet 2026.
+//
+// Stratégie volontairement choisie pour ce changement : au lieu de modifier
+// les classNames dans les ~90 fichiers du frontend (ce qui aurait généré des
+// conflits de merge avec toute l'équipe sur quasiment chaque page), on
+// redéfinit ici ce que les tokens de couleur DÉSIGNENT, via des variables CSS
+// (voir app/globals.css). Un `bg-gray-50` ou un `text-emerald-600` existant
+// continue de s'utiliser exactement pareil dans le code — c'est sa valeur
+// réelle qui change, et qui peut varier entre mode sombre (par défaut) et
+// mode clair sans aucune classe supplémentaire à ajouter.
+//
+// Conséquences pratiques :
+//  - `gray-*` est inversé entre les deux modes (gray-50 = fond de page,
+//    gray-900 = texte principal ; en clair c'est la lecture standard
+//    Tailwind, en sombre c'est l'inverse — ça matche exactement l'usage déjà
+//    fait dans tout le code : bg-gray-50 pour un fond de section, text-gray-900
+//    pour un texte lisible).
+//  - `emerald-*` ET `cyan-*` pointent vers la MÊME famille de teintes
+//    (cyan) : la marque n'a plus qu'un seul accent, mais aucune des deux
+//    anciennes conventions utilisées dans le code n'a besoin d'être changée.
+//  - `white`/`black` sont également redéfinis (jamais de blanc pur / noir
+//    pur, comme demandé) sur les tokens `surface`/`text`.
+//  - `ink`, `surface`, `surface-2`, `hairline`, `fog`, `mist` : les tokens
+//    sémantiques déjà utilisés dans les pages les plus récentes du projet
+//    (Navbar, Sidebar, landing, dashboards...) sont désormais correctement
+//    définis (ils ne l'étaient pas encore, ce qui les rendait invisibles).
 module.exports = {
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       fontFamily: {
-        display: ['Fraunces', 'DM Serif Display', 'Georgia', 'serif'],
+        display: ['Outfit', 'DM Serif Display', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['Fira Code', 'monospace'],
         eyebrow: ['var(--font-outfit)', 'Inter', 'sans-serif'],
       },
       colors: {
-        emerald: {
-          50:  '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
-          400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
-          800: '#065f46', 900: '#064e3b',
+        // ── Tokens sémantiques (déjà utilisés par une partie du code) ──────
+        ink:        'rgb(var(--c-ink) / <alpha-value>)',
+        surface:    'rgb(var(--c-surface) / <alpha-value>)',
+        'surface-2': 'rgb(var(--c-surface-2) / <alpha-value>)',
+        hairline:   'rgb(var(--c-hairline) / <alpha-value>)',
+        fog:        'rgb(var(--c-fog) / <alpha-value>)',
+        mist:       'rgb(var(--c-mist) / <alpha-value>)',
+
+        // ── white / black : jamais de valeur pure, toujours liées au thème ─
+        white: 'rgb(var(--c-surface) / <alpha-value>)',
+        black: 'rgb(var(--c-text) / <alpha-value>)',
+
+        // ── gray : inversé entre les deux modes (voir globals.css) ─────────
+        gray: {
+          50:  'rgb(var(--c-gray-50)  / <alpha-value>)',
+          100: 'rgb(var(--c-gray-100) / <alpha-value>)',
+          200: 'rgb(var(--c-gray-200) / <alpha-value>)',
+          300: 'rgb(var(--c-gray-300) / <alpha-value>)',
+          400: 'rgb(var(--c-gray-400) / <alpha-value>)',
+          500: 'rgb(var(--c-gray-500) / <alpha-value>)',
+          600: 'rgb(var(--c-gray-600) / <alpha-value>)',
+          700: 'rgb(var(--c-gray-700) / <alpha-value>)',
+          800: 'rgb(var(--c-gray-800) / <alpha-value>)',
+          900: 'rgb(var(--c-gray-900) / <alpha-value>)',
         },
+
+        // ── accent unique (cyan) exposé sous les deux anciens noms ─────────
+        cyan: {
+          DEFAULT: 'rgb(var(--c-accent-500) / <alpha-value>)',
+          50:  'rgb(var(--c-accent-50)  / <alpha-value>)',
+          100: 'rgb(var(--c-accent-100) / <alpha-value>)',
+          200: 'rgb(var(--c-accent-200) / <alpha-value>)',
+          300: 'rgb(var(--c-accent-300) / <alpha-value>)',
+          400: 'rgb(var(--c-accent-400) / <alpha-value>)',
+          500: 'rgb(var(--c-accent-500) / <alpha-value>)',
+          600: 'rgb(var(--c-accent-600) / <alpha-value>)',
+          700: 'rgb(var(--c-accent-700) / <alpha-value>)',
+          800: 'rgb(var(--c-accent-800) / <alpha-value>)',
+          900: 'rgb(var(--c-accent-900) / <alpha-value>)',
+        },
+        emerald: {
+          DEFAULT: 'rgb(var(--c-accent-500) / <alpha-value>)',
+          50:  'rgb(var(--c-accent-50)  / <alpha-value>)',
+          100: 'rgb(var(--c-accent-100) / <alpha-value>)',
+          200: 'rgb(var(--c-accent-200) / <alpha-value>)',
+          300: 'rgb(var(--c-accent-300) / <alpha-value>)',
+          400: 'rgb(var(--c-accent-400) / <alpha-value>)',
+          500: 'rgb(var(--c-accent-500) / <alpha-value>)',
+          600: 'rgb(var(--c-accent-600) / <alpha-value>)',
+          700: 'rgb(var(--c-accent-700) / <alpha-value>)',
+          800: 'rgb(var(--c-accent-800) / <alpha-value>)',
+          900: 'rgb(var(--c-accent-900) / <alpha-value>)',
+        },
+
+        // Accents secondaires ponctuels (badges), laissés tels quels — ils
+        // restent lisibles sur le nouveau fond sombre comme sur le clair.
         violet: { 100: '#ede9fe', 400: '#a78bfa', 700: '#6d28d9' },
         purple: { 50: '#faf5ff', 100: '#f3e8ff', 400: '#c084fc', 700: '#7e22ce' },
         teal:   { 300: '#5eead4' },
-        // ─── Identité "Indigo & Laiton" — palette validée, remplace progressivement emerald ───
+
+        // ── Palette "Indigo & Laiton" (reprise du zip afrika-influence-aminata) ──
+        // `brand` est un ALIAS de l'accent unique ci-dessus (rgb(var(--c-accent-*)))
+        // : il suit donc lui aussi le thème sombre/clair, sans configuration
+        // supplémentaire. `brass` (laiton, accent CTA ponctuel) et `stone`
+        // (fond chaud de la landing) restent volontairement statiques — ce
+        // sont des touches d'identité de marque, pas des tokens de thème.
         brand: {
-          // Indigo — couleur principale (confiance, portefeuille/paiement)
-          50: '#EEF1F8', 100: '#DCE1F0', 200: '#B7C0DE', 300: '#8E9BC9',
-          400: '#5F6EA3', 500: '#3B4A7D', 600: '#26355F', 700: '#1B2A56',
-          800: '#141F42', 900: '#0D1530',
+          50:  'rgb(var(--c-accent-50)  / <alpha-value>)',
+          100: 'rgb(var(--c-accent-100) / <alpha-value>)',
+          200: 'rgb(var(--c-accent-200) / <alpha-value>)',
+          300: 'rgb(var(--c-accent-300) / <alpha-value>)',
+          400: 'rgb(var(--c-accent-400) / <alpha-value>)',
+          500: 'rgb(var(--c-accent-500) / <alpha-value>)',
+          600: 'rgb(var(--c-accent-600) / <alpha-value>)',
+          700: 'rgb(var(--c-accent-700) / <alpha-value>)',
+          800: 'rgb(var(--c-accent-800) / <alpha-value>)',
+          900: 'rgb(var(--c-accent-900) / <alpha-value>)',
         },
         brass: {
-          // Laiton — accent CTA (référence aux poids/bijoux en laiton)
           50: '#FBF3E2', 100: '#F5E4C0', 200: '#EACB86', 300: '#DEB158',
           400: '#D19E3C', 500: '#C08A28', 600: '#A3721F', 700: '#825A19',
           800: '#614213', 900: '#402C0D',
         },
         ember: {
-          // Corail brûlé — accent secondaire, réservé aux alertes/notifications
           400: '#F27A62', 500: '#E8583D', 600: '#C8432A', 700: '#9E331F',
         },
         stone: {
-          // Fond clair chaud — remplace le blanc/crème par défaut
           50: '#FBFAF7', 100: '#F5F3EE', 200: '#EDE7DD', 300: '#DED5C4',
           400: '#C2B49B', 500: '#A69672',
         },
       },
       backgroundImage: {
-        'gradient-emerald': 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-        'gradient-hero':    'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f8faff 100%)',
-        'gradient-sidebar': 'linear-gradient(180deg, #064e3b 0%, #065f46 60%, #047857 100%)',
-        'gradient-brand':   'linear-gradient(135deg, #26355F 0%, #1B2A56 100%)',
-        'gradient-brand-hero':    'linear-gradient(135deg, #EEF1F8 0%, #F5F3EE 50%, #FBFAF7 100%)',
-        'gradient-brand-sidebar': 'linear-gradient(180deg, #0D1530 0%, #141F42 60%, #1B2A56 100%)',
+        'gradient-emerald': 'linear-gradient(135deg, rgb(var(--c-accent-600)) 0%, rgb(var(--c-accent-700)) 100%)',
+        'gradient-brand':    'linear-gradient(135deg, rgb(var(--c-accent-600)) 0%, rgb(var(--c-accent-700)) 100%)',
+        'gradient-hero':    'linear-gradient(135deg, rgb(var(--c-ink)) 0%, rgb(var(--c-surface-2)) 50%, rgb(var(--c-ink)) 100%)',
+        // gradient-sidebar : volontairement PAS lié aux variables de thème
+        // (--c-ink/--c-surface changent entre clair/sombre) — Sidebar.tsx
+        // superpose du texte en `text-white`/`bg-white/10` en dur sur ce
+        // gradient, en partant du principe qu'il reste sombre en permanence
+        // (comme la sidebar de la plupart des back-offices). --c-sidebar-*
+        // n'est défini qu'une fois dans :root et jamais redéfini pour le
+        // mode clair, donc il ne bouge pas quand on bascule le thème.
+        'gradient-sidebar': 'linear-gradient(180deg, rgb(var(--c-sidebar-1)) 0%, rgb(var(--c-sidebar-2)) 60%, rgb(var(--c-sidebar-3)) 100%)',
+        'gradient-card':    'linear-gradient(135deg, rgb(var(--c-surface)) 0%, rgb(var(--c-surface-2)) 100%)',
       },
       boxShadow: {
-        bento: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06)',
-        soft:  '0 12px 40px rgba(0,0,0,0.10)',
-        card:  '0 0 0 1px rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.06)',
+        bento: '0 1px 3px rgba(0,0,0,0.20), 0 4px 16px rgba(0,0,0,0.20)',
+        soft:  '0 12px 40px rgba(0,0,0,0.28)',
+        card:  '0 0 0 1px rgb(var(--c-hairline)), 0 4px 24px rgba(0,0,0,0.20)',
       },
       borderRadius: { '3xl': '1.5rem' },
     },

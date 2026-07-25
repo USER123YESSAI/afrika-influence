@@ -35,7 +35,7 @@ image: '/images/afrika-content.jpg',
     description: 'Tableaux de bord et rapports pour suivre la performance.',
     highlight: 'Décisions data-driven',
     badge: 'Analytics',
-    accent: 'from-brand-500 to-teal-500',
+    accent: 'from-emerald-500 to-teal-500',
     image: 'https://picsum.photos/800/1000?random=4',
   },
   {

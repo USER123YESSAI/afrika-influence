@@ -19,7 +19,7 @@ export async function getUtilisateurs(req, res) {
 export async function changerStatut(req, res) {
   try {
     const { statut } = req.body;
-    const data = await adminService.changerStatutUtilisateur(req.params.id, statut, req.user.id);
+    const data = await adminService.changerStatutUtilisateur(req.params.id, statut, req.user);
     ok(res, data);
   } catch (e) { err(res, e); }
 }

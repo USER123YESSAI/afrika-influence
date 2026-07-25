@@ -32,7 +32,7 @@ router.delete('/:id', verifyToken, requireRole('ENTREPRISE'), deleteCampagne);
 router.patch('/:id/publier', verifyToken, requireRole('ENTREPRISE'), publierCampagne);
 router.patch('/:id/annuler', verifyToken, requireRole('ENTREPRISE'), annulerCampagne);
 router.patch('/:id/terminer', verifyToken, requireRole('ENTREPRISE'), terminerCampagne);
-router.post('/:id/medias', verifyToken, requireRole('ENTREPRISE'), mediaUpload.single('media'), addMedia);
+router.post('/:id/medias', verifyToken, requireRole('ENTREPRISE'), ...mediaUpload, addMedia);
 router.get('/:id/recommandations', verifyToken, requireRole('ENTREPRISE'), getRecommandations);
 router.get('/:id/progression', verifyToken, requireRole('ENTREPRISE'), getProgressionCampagne);
 

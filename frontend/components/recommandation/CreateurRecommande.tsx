@@ -54,12 +54,12 @@ export default function CreateurRecommande({ recommandation, rank, actionButton 
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
       </Link>
 
-      <div className="absolute top-3 left-3 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-brand-500 text-white font-bold text-sm shadow-lg">
+      <div className="absolute top-3 left-3 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500 text-white font-bold text-sm shadow-lg">
         {rank}
       </div>
       
       <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-        <span className="text-brand-400 font-bold text-xs">{score}%</span>
+        <span className="text-emerald-400 font-bold text-xs">{score}%</span>
       </div>
 
       <div className="absolute inset-x-0 bottom-0 p-4 z-10 pointer-events-none">
@@ -72,7 +72,7 @@ export default function CreateurRecommande({ recommandation, rank, actionButton 
         </p>
         
         <div className="w-full bg-white/20 rounded-full h-1 mb-2">
-          <div className="bg-brand-400 h-1 rounded-full" style={{ width: `${score}%` }} />
+          <div className="bg-emerald-400 h-1 rounded-full" style={{ width: `${score}%` }} />
         </div>
         <p className="text-[9px] text-gray-400 leading-tight line-clamp-2">
           {raisonnement}

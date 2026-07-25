@@ -26,7 +26,7 @@ export default function CampagneCard({ campagne, onRefresh }: Props) {
   return (
     <div className="bg-white rounded-xl shadow p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
-        <Link href={`/campagnes/${campagne.id}`} className="font-semibold text-gray-900 hover:text-brand-600 line-clamp-2">
+        <Link href={`/campagnes/${campagne.id}`} className="font-semibold text-gray-900 hover:text-emerald-600 line-clamp-2">
           {campagne.titre}
         </Link>
         <CampagneStatut statut={campagne.statut} />
@@ -52,7 +52,7 @@ export default function CampagneCard({ campagne, onRefresh }: Props) {
         )}
         {campagne.statut === 'BROUILLON' && (
           <button onClick={() => action(publierCampagne)}
-            className="text-xs px-3 py-1 rounded bg-brand-100 hover:bg-brand-200 text-brand-700">
+            className="text-xs px-3 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-700">
             Publier
           </button>
         )}
@@ -64,7 +64,7 @@ export default function CampagneCard({ campagne, onRefresh }: Props) {
         )}
         {['PUBLIEE', 'EN_COURS'].includes(campagne.statut) && (
           <button onClick={() => action(terminerCampagne)}
-            className="text-xs px-3 py-1 rounded bg-brand-100 hover:bg-brand-200 text-brand-700">
+            className="text-xs px-3 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-700">
             Terminer
           </button>
         )}

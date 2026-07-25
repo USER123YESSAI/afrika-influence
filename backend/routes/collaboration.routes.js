@@ -3,7 +3,7 @@ import * as ctrl from '../controllers/collaborationController.js';
 import { validate } from '../middlewares/validate.js';
 import { schemas } from '../middlewares/schemas.js';
 import { verifyToken, requireRole } from '../middlewares/auth.js';
-import { soumissionUpload, handleUploadError } from '../middlewares/upload.js';
+import { soumissionUpload } from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -46,8 +46,7 @@ router.patch(
   '/lignes/:ligneId/soumettre',
   verifyToken,
   requireRole('CREATEUR'),
-  soumissionUpload,
-  handleUploadError,
+  ...soumissionUpload,
   validate(schemas.soumettreLigne),
   ctrl.soumettreLigne
 );
@@ -63,8 +62,7 @@ router.put(
   '/soumissions/:soumissionId',
   verifyToken,
   requireRole('CREATEUR'),
-  soumissionUpload,
-  handleUploadError,
+  ...soumissionUpload,
   validate(schemas.modifierSoumission),
   ctrl.modifierSoumission
 );

@@ -11,6 +11,14 @@ const fmt = (n: number) =>
   n >= 1000      ? (n / 1000).toFixed(0) + 'K' :
   String(n);
 
+// Même table que app/createur/offres/page.tsx — l'offre n'a pas de champ
+// "titre" (voir models/Offre.js : reseau + typeContenu + prix +
+// delaiLivraison + description), donc l'ancien code affichait un titre vide.
+const RESEAU_EMOJI: Record<string, string> = {
+  Instagram: '📸', TikTok: '🎵', YouTube: '▶️',
+  Facebook: '👥', Twitter: '🐦', LinkedIn: '💼',
+};
+
 const avatarUrl = (seed: string) =>
   `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=0b1114,101a1e&radius=0`;
 
@@ -80,7 +88,7 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
 
         {/* Header Profile */}
         <div className="rounded-3xl border border-hairline bg-surface/60 backdrop-blur-md overflow-hidden shadow-2xl mb-8">
-          <div className="h-32 sm:h-48 bg-gradient-to-r from-cyan/20 to-brand/20 relative">
+          <div className="h-32 sm:h-48 bg-gradient-to-r from-cyan/20 to-emerald/20 relative">
             <div className="absolute inset-0 bg-surface/20" />
           </div>
           <div className="px-5 sm:px-10 pb-8 relative">
@@ -107,7 +115,7 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
               <div className="w-full sm:w-auto flex flex-col gap-3 shrink-0">
                 <Link 
                   href={`/inscription?role=ENTREPRISE`}
-                  className="w-full sm:w-auto text-center px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan to-brand text-ink font-semibold hover:opacity-90 transition-opacity"
+                  className="w-full sm:w-auto text-center px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan to-emerald text-ink font-semibold hover:opacity-90 transition-opacity"
                 >
                   Proposer une collaboration
                 </Link>
@@ -166,15 +174,23 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
                   {offres.map((offre: any) => (
                     <div key={offre.id} className="p-5 rounded-xl border border-hairline bg-surface-2 hover:border-cyan/30 transition-colors">
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-mist">{offre.titre}</h4>
-                        <span className="px-2 py-1 bg-cyan/10 text-cyan text-xs font-mono rounded-lg border border-cyan/20">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl leading-none">{RESEAU_EMOJI[offre.reseau] || '📱'}</span>
+                          <div>
+                            <h4 className="font-semibold text-mist leading-tight">{offre.typeContenu}</h4>
+                            <p className="text-xs text-fog">{offre.reseau}</p>
+                          </div>
+                        </div>
+                        <span className="px-2 py-1 bg-cyan/10 text-cyan text-xs font-mono rounded-lg border border-cyan/20 whitespace-nowrap">
                           {formatFCFA(offre.prix)}
                         </span>
                       </div>
-                      <p className="text-sm text-fog line-clamp-3 mb-4">{offre.description}</p>
+                      {offre.description && (
+                        <p className="text-sm text-fog line-clamp-3 mb-4">{offre.description}</p>
+                      )}
                       {offre.delaiLivraison && (
                         <p className="text-xs text-fog flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           Livraison estimée : {offre.delaiLivraison} jours
                         </p>
                       )}

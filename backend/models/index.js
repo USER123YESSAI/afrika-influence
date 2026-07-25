@@ -8,6 +8,8 @@ import utilisateurModel        from './utilisateur.js';
 import notificationModel       from './notification.js';
 import logModel                from './log.js';
 import signalementModel        from './signalement.js';
+import resetTokenModel         from './ResetToken.js';
+import tokenRevoqueModel       from './TokenRevoque.js';
 
 import entrepriseModel         from './Entreprise.js';
 import campagneModel           from './Campagne.js';
@@ -32,6 +34,8 @@ const Utilisateur  = utilisateurModel(sequelize);
 const Notification = notificationModel(sequelize);
 const Log          = logModel(sequelize);
 const Signalement  = signalementModel(sequelize);
+const ResetToken    = resetTokenModel(sequelize);
+const TokenRevoque  = tokenRevoqueModel(sequelize);
 
 const Entreprise         = entrepriseModel(sequelize);
 const Campagne           = campagneModel(sequelize);
@@ -53,7 +57,7 @@ const Message              = messageModel(sequelize);
 
 // ─── Dictionnaire complet ─────────────────────────────────────────────────────
 const allModels = {
-  Utilisateur, Notification, Log, Signalement,
+  Utilisateur, Notification, Log, Signalement, ResetToken, TokenRevoque,
   Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis, Transaction,
   Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Soumission, Favori, Message,
 };
@@ -66,7 +70,7 @@ Object.values(allModels).forEach((m) => {
 // ─── Exports nommés ───────────────────────────────────────────────────────────
 export {
   sequelize,
-  Utilisateur, Notification, Log, Signalement,
+  Utilisateur, Notification, Log, Signalement, ResetToken, TokenRevoque,
   Entreprise, Campagne, CampagnePlateforme, CampagneMedia, Recommandation, Paiement, Avis, Transaction,
   Createur, CreateurNiche, Offre, Collaboration, CollaborationContenu, Soumission, Favori, Message,
 };

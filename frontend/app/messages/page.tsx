@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { collabApi, getImageUrl, getUser } from '@/lib/api';
+import { collabApi, getUser } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 interface ConvItem {
@@ -43,7 +43,7 @@ export default function MessagesPage() {
         <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-brand-600">
+          <h1 className="font-display text-3xl font-bold text-emerald-600">
             Messages
           </h1>
           <p className="text-gray-600 mt-1">Vos conversations actives</p>
@@ -69,12 +69,12 @@ export default function MessagesPage() {
               <Link
                 key={conv.id}
                 href={`/collaborations/${conv.id}#messages`}
-                className="flex items-center gap-4 bg-white rounded-3xl border border-gray-100 shadow-bento p-4 hover:border-brand-200 hover:shadow-md transition-all hover-lift"
+                className="flex items-center gap-4 bg-white rounded-3xl border border-gray-100 shadow-bento p-4 hover:border-emerald-200 hover:shadow-md transition-all hover-lift"
               >
                 {/* Avatar */}
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0 text-xl">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 text-xl">
                   {conv.createur?.photoProfilUrl ? (
-                    <img src={getImageUrl(conv.createur.photoProfilUrl)} alt="" className="w-full h-full rounded-2xl object-cover" />
+                    <img src={conv.createur.photoProfilUrl} alt="" className="w-full h-full rounded-2xl object-cover" />
                   ) : '🤝'}
                 </div>
 
@@ -90,7 +90,7 @@ export default function MessagesPage() {
 
                 {/* Badge non lus */}
                 {conv.nbNonLus && conv.nbNonLus > 0 ? (
-                  <div className="w-5 h-5 rounded-full bg-brand-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">
                     {conv.nbNonLus}
                   </div>
                 ) : (

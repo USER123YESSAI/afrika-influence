@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import { usePathname } from 'next/navigation';
 
 export function GlobalAppLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const pathname = usePathname();
 
   const isAuthPage = pathname.startsWith('/connexion') || pathname.startsWith('/inscription') || pathname.startsWith('/reinitialiser-mdp');
@@ -14,7 +14,22 @@ export function GlobalAppLayout({ children }: { children: React.ReactNode }) {
   const isLandingPage = pathname === '/';
   const isPublicList = pathname.startsWith('/createurs') || pathname.startsWith('/entreprises');
 
-  const showSidebar = user && !isAuthPage && !isOnboardingPage && !isLegalPage && !isLandingPage && !isPublicList;
+  const isPublicRoute = isAuthPage || isOnboardingPage || isLegalPage || isLandingPage || isPublicList;
+
+  // Pendant la validation du token au chargement initial (AuthContext.loading),
+  // on ne sait pas encore si l'utilisateur est connecté. Sur une route qui
+  // n'est pas publique, on affiche un écran neutre plutôt que la Navbar
+  // publique — sinon les boutons Connexion/Inscription apparaissent une
+  // fraction de seconde avant que la Sidebar ne prenne le relais.
+  if (loading && !isPublicRoute) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-ink">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan/30 border-t-cyan" />
+      </div>
+    );
+  }
+
+  const showSidebar = user && !isPublicRoute;
 
   if (!showSidebar) {
     return (
@@ -25,7 +40,7 @@ export function GlobalAppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If user is logged in, show Sidebar, and offset the rest of the layout by ml-64
+  // Utilisateur connecté : Sidebar, contenu décalé de ml-64
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />

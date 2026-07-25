@@ -112,7 +112,7 @@ export default function ProfilCreateurPage() {
 
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="mb-2">
-            <h1 className="font-display text-3xl font-bold text-brand-600">Mon profil</h1>
+            <h1 className="font-display text-3xl font-bold text-emerald-600">Mon profil</h1>
             <p className="text-gray-500 mt-1 text-sm">Complétez votre profil pour attirer plus de marques</p>
           </div>
 
@@ -121,7 +121,7 @@ export default function ProfilCreateurPage() {
             <h2 className="font-semibold text-gray-900 mb-2">Informations générales</h2>
             <div className="flex items-start gap-5">
               <button onClick={() => fileRef.current?.click()}
-                className="relative group w-20 h-20 rounded-2xl overflow-hidden bg-brand-50 border-2 border-brand-200 flex-shrink-0">
+                className="relative group w-20 h-20 rounded-2xl overflow-hidden bg-emerald-50 border-2 border-emerald-200 flex-shrink-0">
                 {(previewUrl || profil.photoProfilUrl)
                   ? <img src={previewUrl || getImageUrl(profil.photoProfilUrl)} alt="" className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center text-3xl">👤</div>}
@@ -133,13 +133,13 @@ export default function ProfilCreateurPage() {
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Nom complet</label>
                   <input value={profil.nom || ''} onChange={e => set('nom', e.target.value)}
-                    className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="Votre nom" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Handle</label>
                   <input value={profil.handle || ''} onChange={e => set('handle', e.target.value)}
-                    className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="@votre.handle" />
                 </div>
               </div>
@@ -148,14 +148,14 @@ export default function ProfilCreateurPage() {
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bio</label>
               <textarea rows={3} value={profil.bio || ''} onChange={e => set('bio', e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
                 placeholder="Décrivez votre univers créatif…" />
             </div>
 
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Pays</label>
               <select value={profil.pays || 'SN'} onChange={e => set('pays', e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
                 {PAYS_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </div>
@@ -171,7 +171,7 @@ export default function ProfilCreateurPage() {
                 return (
                   <button key={niche} onClick={() => toggleNiche(niche)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all hover-lift ${
-                      active ? 'bg-brand-600 text-white shadow-bento' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      active ? 'bg-emerald-600 text-white shadow-bento' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}>
                     {niche}
                   </button>
@@ -193,14 +193,14 @@ export default function ProfilCreateurPage() {
                       onChange={e => setProfil((p: any) => ({
                         ...p, reseaux: { ...p.reseaux, [reseau]: { ...val, handle: e.target.value } }
                       }))}
-                      className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                       placeholder="@handle" />
                     <input type="number" value={val.audience || ''}
                       onChange={e => setProfil((p: any) => ({
                         ...p, reseaux: { ...p.reseaux, [reseau]: { ...val, audience: parseInt(e.target.value) || 0 } }
                       }))}
                       onWheel={e => (e.target as HTMLInputElement).blur()}
-                      className="w-28 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      className="w-28 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                       placeholder="Audience" min={0} />
                   </div>
                 );
@@ -231,7 +231,7 @@ export default function ProfilCreateurPage() {
           <ChangePasswordForm />
 
           <button onClick={handleSave} disabled={saving || !createurId}
-            className="w-full py-3.5 bg-gradient-brand hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all shadow-bento hover-lift">
+            className="w-full py-3.5 bg-gradient-emerald hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all shadow-bento hover-lift">
             {saving ? 'Enregistrement…' : 'Enregistrer le profil'}
           </button>
         </div>

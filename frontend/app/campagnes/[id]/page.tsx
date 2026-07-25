@@ -85,12 +85,12 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             <div className="flex items-center gap-3 mb-1">
               <Link
                 href="/campagnes"
-                className="text-sm text-gray-400 hover:text-brand-600"
+                className="text-sm text-gray-400 hover:text-emerald-600"
               >
                 ← Mes campagnes
               </Link>
             </div>
-            <h1 className="font-display text-2xl font-bold text-brand-600">{campagne.titre}</h1>
+            <h1 className="font-display text-2xl font-bold text-emerald-600">{campagne.titre}</h1>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <CampagneStatut statut={campagne.statut} />
@@ -132,7 +132,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             </div>
             <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden mb-5">
               <div
-                className="h-3 rounded-full bg-brand-500 transition-all"
+                className="h-3 rounded-full bg-emerald-500 transition-all"
                 style={{ width: `${progression.totalPrevu > 0 ? (progression.totalLivre / progression.totalPrevu) * 100 : 0}%` }}
               />
             </div>
@@ -140,7 +140,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             <div className="space-y-3">
               {progression.parCreateur.map((p) => (
                 <div key={p.collaborationId} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-700 shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700 shrink-0">
                     {p.createur?.nom?.[0] ?? '?'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -152,7 +152,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="h-1.5 rounded-full bg-brand-400"
+                        className="h-1.5 rounded-full bg-emerald-400"
                         style={{ width: `${p.quantitePrevue > 0 ? (p.quantiteLivree / p.quantitePrevue) * 100 : 0}%` }}
                       />
                     </div>
@@ -171,7 +171,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
               {campagne.plateformes.map((p) => (
                 <span
                   key={p.id}
-                  className="px-3 py-1 bg-brand-100 text-brand-700 text-sm rounded-full font-medium"
+                  className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm rounded-full font-medium"
                 >
                   {p.plateforme}
                 </span>
@@ -208,7 +208,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
             <button
               onClick={chargerRecommandations}
               disabled={loadingReco}
-              className="text-sm px-4 py-2 bg-gradient-brand text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift"
+              className="text-sm px-4 py-2 bg-gradient-emerald text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-all shadow-bento hover-lift"
             >
               {loadingReco
                 ? 'Analyse…'
@@ -229,7 +229,7 @@ export default function CampagneDetailPage({ params }: { params: { id: string } 
                     <button
                       onClick={() => handleInviter(r.createurId)}
                       disabled={inviting === r.createurId || invitedIds.has(r.createurId)}
-                      className="w-full py-2 bg-brand-500 text-white rounded-lg text-sm font-semibold hover:bg-brand-400 disabled:opacity-50 transition-colors"
+                      className="w-full py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-400 disabled:opacity-50 transition-colors"
                     >
                       {inviting === r.createurId ? 'Envoi…' : invitedIds.has(r.createurId) ? '✓ Invité' : 'Inviter'}
                     </button>

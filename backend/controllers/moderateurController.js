@@ -57,7 +57,7 @@ export async function getContenus(req, res) {
 export async function appliquerSanction(req, res) {
   try {
     const { action, raison } = req.body;
-    const data = await modService.appliquerSanction(req.params.id, action, raison, req.user.id);
+    const data = await modService.appliquerSanction(req.params.id, action, raison, req.user);
     await creerLog(req.user.id, `COMPTE_${action.toUpperCase()}`, 'Utilisateur', req.params.id, { raison }, req.ip);
     ok(res, data);
   } catch (e) { err(res, e); }

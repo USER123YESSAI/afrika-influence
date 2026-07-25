@@ -57,9 +57,9 @@ export default function CampagnesPage() {
     <DashboardEntreprise>
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="font-display text-2xl font-bold text-brand-600">Mes campagnes</h1>
+          <h1 className="font-display text-2xl font-bold text-emerald-600">Mes campagnes</h1>
           <Link href="/campagnes/nouvelle"
-            className="bg-gradient-brand text-white px-4 py-2 rounded-2xl text-sm font-semibold hover:opacity-90 transition-all shadow-bento hover-lift">
+            className="bg-gradient-emerald text-white px-4 py-2 rounded-2xl text-sm font-semibold hover:opacity-90 transition-all shadow-bento hover-lift">
             + Nouvelle
           </Link>
         </div>
@@ -70,8 +70,8 @@ export default function CampagnesPage() {
             <button key={s.value} onClick={() => handleFiltre(s.value)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all hover-lift ${
                 filtre === s.value
-                  ? 'bg-gradient-brand text-white shadow-bento'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-400'
+                  ? 'bg-gradient-emerald text-white shadow-bento'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-emerald-400'
               }`}>
               {s.label}
             </button>
@@ -85,7 +85,7 @@ export default function CampagnesPage() {
         ) : campagnes.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-card border border-gray-100">
             <p className="text-gray-400 mb-4">Aucune campagne trouvée</p>
-            <Link href="/campagnes/nouvelle" className="text-brand-600 hover:underline text-sm font-medium">
+            <Link href="/campagnes/nouvelle" className="text-emerald-600 hover:underline text-sm font-medium">
               Créer ma première campagne →
             </Link>
           </div>
@@ -107,7 +107,7 @@ export default function CampagnesPage() {
                   {campagnes.map(c => (
                     <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
-                        <Link href={`/campagnes/${c.id}`} className="font-medium text-gray-900 hover:text-brand-600">
+                        <Link href={`/campagnes/${c.id}`} className="font-medium text-gray-900 hover:text-emerald-600">
                           {c.titre}
                         </Link>
                       </td>
@@ -133,7 +133,7 @@ export default function CampagnesPage() {
                           </Link>
                         )}
                         {c.statut === 'BROUILLON' && (
-                          <button onClick={() => action(publierCampagne, c.id)} className="text-xs px-3 py-1.5 rounded-lg bg-brand-100 hover:bg-brand-200 text-brand-800 font-medium transition-colors">
+                          <button onClick={() => action(publierCampagne, c.id)} className="text-xs px-3 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium transition-colors">
                             Publier
                           </button>
                         )}
@@ -143,7 +143,7 @@ export default function CampagnesPage() {
                           </Link>
                         )}
                         {['PUBLIEE', 'EN_COURS'].includes(c.statut) && (
-                          <button onClick={() => action(terminerCampagne, c.id)} className="text-xs px-3 py-1.5 rounded-lg bg-brand-100 hover:bg-brand-200 text-brand-800 font-medium transition-colors">
+                          <button onClick={() => action(terminerCampagne, c.id)} className="text-xs px-3 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium transition-colors">
                             Terminer
                           </button>
                         )}

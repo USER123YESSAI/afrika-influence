@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { getUser, collabApi, getImageUrl, STATUT_LABELS } from '@/lib/api';
+import { getUser } from '@/lib/api';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { collabApi, STATUT_LABELS } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
 import AuthGuard from '@/components/auth/AuthGuard';
 
@@ -85,7 +86,7 @@ export default function CollaborationsPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-brand-600">
+          <h1 className="font-display text-3xl font-bold text-emerald-600">
             Collaborations
           </h1>
           <p className="text-gray-600 mt-1">{collabs.length} collaboration{collabs.length !== 1 ? 's' : ''} au total</p>
@@ -99,7 +100,7 @@ export default function CollaborationsPage() {
               onClick={() => handleFiltre(f.value)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all hover-lift ${
                 filtre === f.value
-                  ? 'bg-brand-600 text-white shadow-bento'
+                  ? 'bg-emerald-600 text-white shadow-bento'
                   : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -140,7 +141,7 @@ export default function CollaborationsPage() {
                   {collabs.map(c => (
                     <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
-                        <Link href={`/collaborations/${c.id}`} className="font-medium text-gray-900 hover:text-brand-600 block">
+                        <Link href={`/collaborations/${c.id}`} className="font-medium text-gray-900 hover:text-emerald-600 block">
                           {c.campagne?.titre || 'Campagne sans nom'}
                         </Link>
                       </td>
@@ -149,13 +150,13 @@ export default function CollaborationsPage() {
                           <div className="flex items-center gap-2">
                             {c.createur?.photoProfilUrl && !imgError[c.id] ? (
                               <img 
-                                src={getImageUrl(c.createur.photoProfilUrl)}
+                                src={c.createur.photoProfilUrl.startsWith('http') ? c.createur.photoProfilUrl : `http://localhost:3001${c.createur.photoProfilUrl}`}
                                 alt="" 
                                 className="w-6 h-6 rounded-full object-cover" 
                                 onError={() => setImgError(prev => ({ ...prev, [c.id]: true }))}
                               />
                             ) : (
-                              <div className="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xs">
+                              <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
                                 {c.createur?.nom?.[0] || '?'}
                               </div>
                             )}
@@ -188,7 +189,7 @@ export default function CollaborationsPage() {
                             </button>
                             <button
                               onClick={(e) => handleAccepter(c.id, e)}
-                              className="px-3 py-1.5 bg-gradient-brand text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-colors"
+                              className="px-3 py-1.5 bg-gradient-emerald text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-colors"
                             >
                               Accepter
                             </button>

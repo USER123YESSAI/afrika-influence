@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import RetourNav from '@/components/nav/RetourNav';
 
 
 const OPTIONS = [
@@ -14,8 +15,8 @@ const OPTIONS = [
     href: '/inscription/marque',
     title: 'Marque',
     subtitle: 'Créez et pilotez vos campagnes d’influence en Afrique.',
-    accent: 'bg-brand-50',
-    border: 'border-brand-100',
+    accent: 'bg-emerald-50',
+    border: 'border-emerald-100',
   },
 ];
 
@@ -24,6 +25,7 @@ export default function InscriptionChoixPage() {
     <div className="min-h-screen bg-ink">
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-16 lg:grid-cols-[1.1fr_minmax(360px,0.9fr)] lg:px-8">
         <div className="space-y-8">
+          <RetourNav theme="dark" />
           <div className="max-w-2xl">
             <span className="badge bg-cyan/20 text-cyan">Rejoindre Afrika Influence</span>
             <h1 className="font-display text-5xl text-mist mt-6 mb-4">Choisissez votre espace</h1>
@@ -58,18 +60,18 @@ export default function InscriptionChoixPage() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             {/* Overlay masquant la partie basse "Afrika Nova" */}
-            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-brand-900 p-10 flex flex-col justify-end">
+            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-[#064e3b] p-10 flex flex-col justify-end">
               {/* Dégradé de transition vers les photos du haut */}
-              <div className="absolute top-0 left-0 w-full h-32 -translate-y-full bg-gradient-to-t from-brand-900 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-32 -translate-y-full bg-gradient-to-t from-[#064e3b] to-transparent"></div>
               
               <div className="relative z-10">
                 <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium mb-4 border border-white/20 backdrop-blur-md">
                   Rejoignez le mouvement
                 </span>
                 <h2 className="text-3xl font-display text-white leading-tight mb-3">
-                  L'influence en <span className="text-brand-300">Afrique</span>
+                  L'influence en <span className="text-emerald-300">Afrique</span>
                 </h2>
-                <p className="text-brand-50/90 text-sm leading-relaxed mb-6 max-w-sm">
+                <p className="text-emerald-50/90 text-sm leading-relaxed mb-6 max-w-sm">
                   Connectez-vous avec les meilleurs créateurs de contenu et les marques les plus prestigieuses.
                 </p>
                

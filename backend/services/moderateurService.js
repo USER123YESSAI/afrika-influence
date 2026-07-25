@@ -218,13 +218,23 @@ export async function getContenus({ statut, page = 1, limit = 20 }) {
 }
 
 // ─── SANCTIONS ────────────────────────────────────────────────────────────────
-export async function appliquerSanction(utilisateurId, action, raison, moderateurId) {
+// CORRECTION RBAC : même règle que changerStatutUtilisateur (adminService.js)
+// — cette route est un second chemin permettant de suspendre/bannir un
+// compte, elle doit donc respecter la même limite : un modérateur ne peut
+// pas sanctionner un compte ADMINISTRATEUR ou MODERATEUR, ni son propre compte.
+export async function appliquerSanction(utilisateurId, action, raison, acteur) {
   const actionsValides = ['AVERTIR', 'SUSPENDRE', 'BLOQUER', 'BANNIR'];
   if (!actionsValides.includes(action))
     throw { status: 400, message: `Action invalide. Valeurs : ${actionsValides.join(', ')}.` };
 
   const utilisateur = await Utilisateur.findByPk(utilisateurId);
   if (!utilisateur) throw { status: 404, message: 'Utilisateur introuvable.' };
+
+  if (utilisateur.id === acteur.id)
+    throw { status: 400, message: 'Vous ne pouvez pas sanctionner votre propre compte.' };
+
+  if (acteur.role === 'MODERATEUR' && ['ADMINISTRATEUR', 'MODERATEUR'].includes(utilisateur.role))
+    throw { status: 403, message: 'Seul un administrateur peut sanctionner un compte administrateur ou modérateur.' };
 
   if (action === 'SUSPENDRE') await utilisateur.update({ statut: 'suspended' });
   if (action === 'BLOQUER')   await utilisateur.update({ statut: 'rejected' });

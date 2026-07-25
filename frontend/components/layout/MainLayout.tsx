@@ -41,7 +41,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 
                 {/* Profile */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {user?.nom?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="hidden md:block">

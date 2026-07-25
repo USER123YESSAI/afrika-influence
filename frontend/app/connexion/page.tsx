@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import RetourNav from '@/components/nav/RetourNav';
 
 export default function ConnexionPage() {
   const router = useRouter();
@@ -48,17 +49,17 @@ export default function ConnexionPage() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             {/* Overlay masquant la partie basse "Afrika Nova" */}
-            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-brand-900 p-10 flex flex-col justify-end">
+            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-[#064e3b] p-10 flex flex-col justify-end">
               {/* Dégradé de transition vers les photos du haut */}
-              <div className="absolute top-0 left-0 w-full h-32 -translate-y-full bg-gradient-to-t from-brand-900 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-32 -translate-y-full bg-gradient-to-t from-[#064e3b] to-transparent"></div>
               
               <div className="relative z-10">
                
                 <h2 className="text-3xl font-display text-white leading-tight mb-3">
                   L'Afrique a du talent, <br />
-                  <span className="text-brand-300">faites-le rayonner.</span>
+                  <span className="text-emerald-300">faites-le rayonner.</span>
                 </h2>
-                <p className="text-brand-50/90 text-sm leading-relaxed mb-6 max-w-sm">
+                <p className="text-emerald-50/90 text-sm leading-relaxed mb-6 max-w-sm">
                   Reprenez le contrôle de vos campagnes et de votre communauté d'influenceurs en un clin d'œil.
                 </p>
                 
@@ -69,10 +70,7 @@ export default function ConnexionPage() {
 
         <div className="flex items-center justify-center p-4 sm:p-6 lg:p-0">
           <div className="w-full max-w-sm animate-fade-in">
-            <Link href="/landing" className="inline-flex items-center gap-2 text-sm text-fog hover:text-cyan mb-8 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Retour à l'accueil
-            </Link>
+            <RetourNav theme="dark" />
 
             <h1 className="font-display text-3xl text-mist mb-2">Connexion</h1>
             <p className="text-fog mb-8">Accédez à votre espace Afrika Influence Hub.</p>

@@ -24,9 +24,24 @@ export async function listerUtilisateurs({ role, statut, page = 1, limit = 20 })
   return { total: count, page, totalPages: Math.ceil(count / limit), utilisateurs: rows };
 }
 
-export async function changerStatutUtilisateur(utilisateurId, statut, adminId) {
+// CORRECTION RBAC : jusqu'ici un MODERATEUR pouvait suspendre/bannir N'IMPORTE
+// QUEL compte, y compris un ADMINISTRATEUR ou un autre MODERATEUR — la route
+// et le service ne faisaient aucune distinction selon le rôle de la cible.
+// Règle métier confirmée : le modérateur a les mêmes pouvoirs que
+// l'administrateur sur les comptes CREATEUR / ENTREPRISE / PARTICULIER, mais
+// seul l'administrateur a autorité sur les comptes ADMINISTRATEUR et
+// MODERATEUR. On ajoute également un garde-fou simple : personne ne modifie
+// le statut de son propre compte par cette route (évite un
+// auto-bannissement accidentel).
+export async function changerStatutUtilisateur(utilisateurId, statut, acteur) {
   const utilisateur = await Utilisateur.findByPk(utilisateurId);
   if (!utilisateur) throw { status: 404, message: 'Utilisateur introuvable.' };
+
+  if (utilisateur.id === acteur.id)
+    throw { status: 400, message: 'Vous ne pouvez pas modifier le statut de votre propre compte.' };
+
+  if (acteur.role === 'MODERATEUR' && ['ADMINISTRATEUR', 'MODERATEUR'].includes(utilisateur.role))
+    throw { status: 403, message: 'Seul un administrateur peut modifier le statut d\'un compte administrateur ou modérateur.' };
 
   const statutsValides = ['validated', 'rejected', 'suspended', 'banned'];
   if (!statutsValides.includes(statut))
@@ -38,7 +53,7 @@ export async function changerStatutUtilisateur(utilisateurId, statut, adminId) {
                 : statut === 'rejected'  ? 'PROFIL_REJETE'
                 : statut === 'banned'    ? 'PROFIL_BANNI'
                 : 'PROFIL_SUSPENDU';
-  await creerLog(adminId, typeLog, 'Utilisateur', utilisateurId);
+  await creerLog(acteur.id, typeLog, 'Utilisateur', utilisateurId);
 
   const { motDePasse: _, ...data } = utilisateur.toJSON();
   return data;

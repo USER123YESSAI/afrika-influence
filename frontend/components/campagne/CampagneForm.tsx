@@ -122,7 +122,7 @@ export default function CampagneForm({
         onWheel={type === 'number' ? (e => (e.target as HTMLInputElement).blur()) : undefined}
         required={required}
         min={min}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
       />
     </div>
   );
@@ -134,7 +134,7 @@ export default function CampagneForm({
         rows={3}
         value={(form[key] as string) ?? ''}
         onChange={e => set(key, e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
       />
     </div>
   );
@@ -164,7 +164,7 @@ export default function CampagneForm({
                 type="checkbox"
                 checked={form.budgetVisible !== false}
                 onChange={e => set('budgetVisible', e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
               />
               Afficher le budget aux créateurs (sinon masqué, campagne quand même visible)
             </label>
@@ -181,7 +181,7 @@ export default function CampagneForm({
                   value={(form.dateDebut as string) ?? ''}
                   onChange={e => set('dateDebut', e.target.value)}
                   min={today()}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <div>
@@ -191,7 +191,7 @@ export default function CampagneForm({
                   value={(form.dateFin as string) ?? ''}
                   onChange={e => set('dateFin', e.target.value)}
                   min={form.dateDebut ? lendemain(form.dateDebut as string) : today()}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function CampagneForm({
                 return (
                   <button key={p} type="button" onClick={() => togglePlateforme(p)}
                     className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                      active ? 'bg-brand-600 text-white border-brand-600' : 'border-gray-300 text-gray-600 hover:border-brand-400'
+                      active ? 'bg-emerald-600 text-white border-emerald-600' : 'border-gray-300 text-gray-600 hover:border-emerald-400'
                     }`}>
                     {p}
                   </button>
@@ -236,7 +236,7 @@ export default function CampagneForm({
           </button>
         )}
         <button type="submit" disabled={isLoading}
-          className="flex-1 bg-brand-600 text-white py-3 rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors">
+          className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors">
           {isLoading ? 'Enregistrement…' : isWizard && currentStep === 0 ? 'Continuer →' : submitLabel}
         </button>
       </div>

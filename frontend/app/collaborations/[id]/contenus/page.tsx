@@ -13,7 +13,7 @@ interface Offre { id: string; reseau: string; typeContenu: string; prix: number;
 const STATUT_BADGE: Record<string, { label: string; className: string }> = {
   PROPOSEE: { label: 'En attente de la marque', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
   REFUSEE:  { label: 'Refusée',                 className: 'bg-red-50 text-red-700 border border-red-200' },
-  ACCEPTEE: { label: 'Acceptée',                className: 'bg-brand-50 text-brand-700 border border-brand-200' },
+  ACCEPTEE: { label: 'Acceptée',                className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
 };
 
 export default function ContenusPage() {
@@ -154,9 +154,9 @@ export default function ContenusPage() {
 
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-            <Link href="/collaborations" className="hover:text-brand-600">Collaborations</Link>
+            <Link href="/collaborations" className="hover:text-emerald-600">Collaborations</Link>
             <span>›</span>
-            <Link href={`/collaborations/${id}`} className="hover:text-brand-600">{collab.campagne?.titre}</Link>
+            <Link href={`/collaborations/${id}`} className="hover:text-emerald-600">{collab.campagne?.titre}</Link>
             <span>›</span>
             <span className="text-gray-700">Lignes de contenu</span>
           </div>
@@ -180,13 +180,13 @@ export default function ContenusPage() {
             </div>
             <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
               <div
-                className={`h-3 rounded-full transition-all ${pctUtilise > 85 ? 'bg-red-500' : 'bg-brand-500'}`}
+                className={`h-3 rounded-full transition-all ${pctUtilise > 85 ? 'bg-red-500' : 'bg-emerald-500'}`}
                 style={{ width: `${pctUtilise}%` }}
               />
             </div>
             <div className="flex justify-between mt-1">
               <span className="text-xs text-gray-400">{pctUtilise.toFixed(0)}% engagé</span>
-              <span className="text-xs text-brand-600 font-medium">{formatFCFA(budgetDisponible)} disponible</span>
+              <span className="text-xs text-emerald-600 font-medium">{formatFCFA(budgetDisponible)} disponible</span>
             </div>
           </div>
 
@@ -198,7 +198,7 @@ export default function ContenusPage() {
               {offres.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
                   <p className="mb-3">Aucune offre créée.</p>
-                  <Link href="/createur/offres" className="text-sm text-brand-600 hover:underline font-medium">
+                  <Link href="/createur/offres" className="text-sm text-emerald-600 hover:underline font-medium">
                     → Créer mes offres d'abord
                   </Link>
                 </div>
@@ -210,7 +210,7 @@ export default function ContenusPage() {
                       <select
                         value={selectedOffre}
                         onChange={e => handleSelectOffre(e.target.value)}
-                        className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                        className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                       >
                         {offres.map(o => (
                           <option key={o.id} value={o.id}>{o.reseau} – {o.typeContenu} ({formatFCFA(o.prix)})</option>
@@ -224,7 +224,7 @@ export default function ContenusPage() {
                         value={quantite}
                         onChange={e => setQuantite(Math.max(1, parseInt(e.target.value) || 1))}
                         onWheel={e => (e.target as HTMLInputElement).blur()}
-                        className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                        className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                       />
                     </div>
                   </div>
@@ -238,7 +238,7 @@ export default function ContenusPage() {
                       value={prixUnitaire}
                       onChange={e => setPrixUnitaire(e.target.value ? Number(e.target.value) : '')}
                       onWheel={e => (e.target as HTMLInputElement).blur()}
-                      className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     />
                     {offre && Number(prixUnitaire) !== offre.prix && (
                       <p className="text-xs text-amber-600 mt-1">Différent de votre tarif catalogue ({formatFCFA(offre.prix)})</p>
@@ -246,10 +246,10 @@ export default function ContenusPage() {
                   </div>
 
                   <div className={`flex items-center justify-between p-4 rounded-2xl mb-4 ${
-                    depassement ? 'bg-red-50 border border-red-200' : 'bg-brand-50 border border-brand-100'
+                    depassement ? 'bg-red-50 border border-red-200' : 'bg-emerald-50 border border-emerald-100'
                   }`}>
                     <div className="text-sm text-gray-600">{quantite} × {formatFCFA(Number(prixUnitaire) || 0)}</div>
-                    <div className={`text-lg font-bold ${depassement ? 'text-red-600' : 'text-brand-700'}`}>
+                    <div className={`text-lg font-bold ${depassement ? 'text-red-600' : 'text-emerald-700'}`}>
                       {formatFCFA(previewSousTotal)}
                     </div>
                   </div>
@@ -260,7 +260,7 @@ export default function ContenusPage() {
                   <button
                     onClick={handleProposer}
                     disabled={proposing || !selectedOffre}
-                    className="w-full py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-semibold rounded-2xl transition-all"
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold rounded-2xl transition-all"
                   >
                     {proposing ? 'Envoi…' : '+ Proposer cette ligne'}
                   </button>
@@ -301,7 +301,7 @@ export default function ContenusPage() {
                             Refuser
                           </button>
                           <button onClick={() => handleTraiter(ligne.id, 'ACCEPTER')}
-                            className="flex-1 py-2 text-sm font-semibold bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors">
+                            className="flex-1 py-2 text-sm font-semibold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors">
                             Accepter
                           </button>
                         </div>
@@ -336,7 +336,7 @@ export default function ContenusPage() {
                       {!isEntreprise && ligne.statut === 'REFUSEE' && editingId !== ligne.id && (
                         <div className="flex gap-2 mt-3">
                           <button onClick={() => startEdit(ligne)}
-                            className="flex-1 py-2 text-sm font-medium border border-brand-200 text-brand-700 rounded-xl hover:bg-brand-50 transition-colors">
+                            className="flex-1 py-2 text-sm font-medium border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-50 transition-colors">
                             Ajuster et re-proposer
                           </button>
                           <button onClick={() => handleRetirer(ligne.id)}
@@ -361,7 +361,7 @@ export default function ContenusPage() {
                             <button onClick={() => setEditingId(null)}
                               className="flex-1 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100">Annuler</button>
                             <button onClick={() => handleReproposer(ligne.id)}
-                              className="flex-1 py-2 text-sm font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">
+                              className="flex-1 py-2 text-sm font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
                               Re-proposer
                             </button>
                           </div>
@@ -374,7 +374,7 @@ export default function ContenusPage() {
                         const validees = soumissions.filter(s => s.dateValidation).length;
                         return (
                           <Link href={`/collaborations/${id}`}
-                            className="mt-3 flex items-center justify-between text-xs bg-brand-50 text-brand-700 border border-brand-100 rounded-xl px-3 py-2 hover:bg-brand-100 transition-colors">
+                            className="mt-3 flex items-center justify-between text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl px-3 py-2 hover:bg-emerald-100 transition-colors">
                             <span>{validees}/{ligne.quantite} livrée(s) et validée(s)</span>
                             <span className="font-medium">Gérer la livraison →</span>
                           </Link>
@@ -388,7 +388,7 @@ export default function ContenusPage() {
           </div>
 
           <div className="mt-6">
-            <Link href={`/collaborations/${id}`} className="text-sm text-gray-400 hover:text-brand-600 transition-colors">
+            <Link href={`/collaborations/${id}`} className="text-sm text-gray-400 hover:text-emerald-600 transition-colors">
               ← Retour à la collaboration
             </Link>
           </div>

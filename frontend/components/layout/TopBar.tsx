@@ -12,7 +12,7 @@ interface TopBarProps {
   profileHref?: string;
 }
 
-export default function TopBar({ title, subtitle }: TopBarProps) {
+export default function TopBar({ title, subtitle, profileHref }: TopBarProps) {
   const { user, logout } = useAuth();
   const [dropdownOuvert, setDropdownOuvert] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -29,6 +29,10 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
 
   const getProfileLink = () => {
     if (!user) return "/connexion";
+    // Priorité à la destination explicitement fournie par le DashboardXxx
+    // appelant (ex: Admin/Modérateur n'ont pas de page "profil", ils sont
+    // renvoyés vers leur propre tableau de bord).
+    if (profileHref) return profileHref;
     switch (user.role) {
       case "CREATEUR": return "/createur/profil";
       case "ENTREPRISE":
@@ -49,14 +53,14 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
       </div>
       <div className="flex items-center gap-4">
         <NotificationsBell />
-        
+
         {user && (
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOuvert(!dropdownOuvert)}
               className="flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-2 pr-4 py-1.5 transition-colors hover:bg-gray-50"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan to-brand text-xs font-bold text-ink overflow-hidden">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan to-emerald text-xs font-bold text-ink overflow-hidden">
                 {user?.photoProfil || user?.logo || user?.photo ? (
                   <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
                 ) : (

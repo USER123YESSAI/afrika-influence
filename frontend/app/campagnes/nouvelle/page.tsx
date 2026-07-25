@@ -47,22 +47,22 @@ export default function NouvelleCampagnePage() {
     <DashboardEntreprise>
       <div className="max-w-2xl mx-auto">
 
-      <h1 className="font-display text-2xl font-bold text-brand-600 mb-6">Nouvelle campagne</h1>
+      <h1 className="font-display text-2xl font-bold text-emerald-600 mb-6">Nouvelle campagne</h1>
 
       {/* Barre de progression */}
       <div className="flex items-center mb-8">
         {ETAPES.map((label, i) => (
           <div key={label} className="flex items-center flex-1">
             <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium border-2 ${
-              i <= etape ? 'bg-gradient-brand border-brand-600 text-white' : 'border-gray-300 text-gray-400'
+              i <= etape ? 'bg-gradient-emerald border-emerald-600 text-white' : 'border-gray-300 text-gray-400'
             }`}>
               {i + 1}
             </div>
-            <span className={`ml-2 text-xs font-medium hidden sm:block ${i <= etape ? 'text-brand-600' : 'text-gray-400'}`}>
+            <span className={`ml-2 text-xs font-medium hidden sm:block ${i <= etape ? 'text-emerald-600' : 'text-gray-400'}`}>
               {label}
             </span>
             {i < ETAPES.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-3 ${i < etape ? 'bg-gradient-brand' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-0.5 mx-3 ${i < etape ? 'bg-gradient-emerald' : 'bg-gray-200'}`} />
             )}
           </div>
         ))}
@@ -115,12 +115,12 @@ export default function NouvelleCampagnePage() {
               ← Modifier
             </button>
             <button onClick={() => handleCreer(false)} disabled={loading}
-              className="flex-1 border border-brand-200 text-brand-600 py-2.5 rounded-2xl text-sm font-medium hover:bg-brand-50 disabled:opacity-50 hover-lift">
+              className="flex-1 border border-emerald-200 text-emerald-600 py-2.5 rounded-2xl text-sm font-medium hover:bg-emerald-50 disabled:opacity-50 hover-lift">
               Sauvegarder en brouillon
             </button>
             <button onClick={() => handleCreer(true)} disabled={loading || budgetDepasseSolde}
               title={budgetDepasseSolde ? 'Solde insuffisant pour publier — enregistrez en brouillon ou rechargez votre compte.' : undefined}
-              className="flex-1 bg-gradient-brand text-white py-2.5 rounded-2xl text-sm font-semibold hover:opacity-90 disabled:opacity-50 shadow-bento hover-lift">
+              className="flex-1 bg-gradient-emerald text-white py-2.5 rounded-2xl text-sm font-semibold hover:opacity-90 disabled:opacity-50 shadow-bento hover-lift">
               {loading ? 'Création…' : 'Créer et publier'}
             </button>
           </div>

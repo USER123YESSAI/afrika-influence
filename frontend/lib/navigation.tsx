@@ -16,7 +16,7 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
     case 'ADMINISTRATEUR':
       return {
         roleLabel: 'Administrateur',
-        roleColor: 'bg-red-500/20 text-red-100',
+        roleColor: 'bg-red-400/20 text-red-100',
         nav: [
           { href: '/admin/dashboard',     label: 'Tableau de bord', icon: <IconHome /> },
           { href: '/admin/utilisateurs',  label: 'Utilisateurs',    icon: <IconUsers /> },
@@ -28,7 +28,7 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
     case 'MODERATEUR':
       return {
         roleLabel: 'Modérateur',
-        roleColor: 'bg-brand-400/20 text-brand-100',
+        roleColor: 'bg-violet-400/20 text-violet-100',
         nav: [
           { href: '/moderateur/dashboard',    label: 'Tableau de bord',     icon: <IconHome /> },
           { href: '/moderateur/campagnes',    label: 'Campagnes',           icon: <IconCampaign /> },
@@ -40,7 +40,7 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
     case 'CREATEUR':
       return {
         roleLabel: 'Créateur',
-        roleColor: 'bg-brass-500/20 text-brass-300',
+        roleColor: 'bg-purple-400/20 text-purple-100',
         nav: [
           { href: '/createur/dashboard', label: 'Tableau de bord', icon: <IconHome /> },
           { href: '/createur/campagnes', label: 'Campagnes',       icon: <IconCampaign /> },
@@ -49,12 +49,13 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
           { href: '/collaborations',     label: 'Collaborations',  icon: <IconCollab /> },
           { href: '/messages',           label: 'Messages',        icon: <IconMsg /> },
           { href: '/paiements',          label: 'Paiements',       icon: <IconPayment /> },
+          { href: '/createur/profil',    label: 'Mon profil',      icon: <IconProfile /> },
         ]
       };
     case 'ENTREPRISE':
       return {
         roleLabel: 'Entreprise',
-        roleColor: 'bg-white/10 text-white',
+        roleColor: 'bg-emerald-400/20 text-emerald-100',
         nav: [
           { href: '/entreprise/dashboard', label: 'Tableau de bord', icon: <IconHome /> },
           { href: '/campagnes',            label: 'Mes campagnes',   icon: <IconCampaign /> },
@@ -68,7 +69,7 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
     case 'PARTICULIER':
       return {
         roleLabel: 'Particulier',
-        roleColor: 'bg-white/10 text-white',
+        roleColor: 'bg-emerald-400/20 text-emerald-100', // Match entreprise theme
         nav: [
           { href: '/entreprise/dashboard', label: 'Tableau de bord', icon: <IconHome /> },
           { href: '/campagnes',            label: 'Mes campagnes',   icon: <IconCampaign /> },

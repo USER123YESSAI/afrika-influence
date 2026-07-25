@@ -1,6 +1,6 @@
 // backend/controllers/entrepriseController.js
 import Joi from 'joi';
-import { Entreprise, Campagne } from '../models/index.js';
+import { Entreprise, Campagne, Utilisateur } from '../models/index.js';
 import { Op } from 'sequelize';
 import { creerLog } from '../services/logService.js';
 import { crediterSolde, getHistorique } from '../services/soldeService.js';
@@ -20,28 +20,45 @@ const updateSchema = Joi.object({
 }).min(1);
 
 // GET /api/entreprises — liste publique pour l'annuaire
+//
+// CORRECTION : le compte "Particulier" (comme "Entreprise") crée bien une
+// ligne Entreprise à l'inscription (voir authService.inscrire), mais rien
+// dans cette requête ne remontait le type de compte associé (le rôle vit sur
+// Utilisateur, pas sur Entreprise) : impossible pour le frontend de les
+// distinguer ou de les filtrer, et un secteur vide (jamais renseigné pour un
+// particulier) les faisait passer inaperçus dans la grille. On joint
+// désormais Utilisateur pour exposer `type` (ENTREPRISE|PARTICULIER) et
+// permettre le filtre demandé, et on n'affiche que les comptes validés (un
+// compte suspendu par un admin ne doit pas rester visible publiquement).
 export const getEntreprisesPubliques = async (req, res) => {
   try {
-    const { secteur, pays, recherche } = req.query;
+    const { secteur, pays, recherche, type } = req.query;
     const where = {};
     if (secteur) where.secteur = secteur;
     if (pays) where.pays = pays;
     if (recherche) where.nom = { [Op.iLike]: `%${recherche}%` };
 
+    const utilisateurWhere = { statut: 'validated' };
+    if (type === 'ENTREPRISE' || type === 'PARTICULIER') utilisateurWhere.role = type;
+
     const entreprises = await Entreprise.findAll({
       where,
       attributes: ['id', 'nom', 'secteur', 'secteurPersonnalise', 'logoUrl', 'pays', 'description'],
       include: [
-        { model: Campagne, as: 'campagnes', attributes: ['id', 'statut'] }
+        { model: Campagne, as: 'campagnes', attributes: ['id', 'statut'] },
+        { model: Utilisateur, as: 'utilisateur', attributes: ['role'], where: utilisateurWhere },
       ],
       order: [['nom', 'ASC']]
     });
 
-    // Transformer pour renvoyer un nombre de campagnes plutôt que le détail
+    // Transformer pour renvoyer un nombre de campagnes plutôt que le détail,
+    // et exposer `type` à plat plutôt que l'objet utilisateur complet.
     const resultat = entreprises.map(e => {
       const data = e.toJSON();
       data.nombreCampagnes = data.campagnes ? data.campagnes.filter(c => c.statut === 'PUBLIEE' || c.statut === 'EN_COURS').length : 0;
+      data.type = data.utilisateur?.role || 'ENTREPRISE';
       delete data.campagnes;
+      delete data.utilisateur;
       return data;
     });
 
