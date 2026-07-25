@@ -83,7 +83,7 @@ export default function AdminUtilisateursPage() {
           <div className="bg-white rounded-3xl shadow-soft p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto scrollbar-thin space-y-5">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-xl font-bold text-emerald-700">
+                <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center text-xl font-bold text-brand-700">
                   {selected.nom?.[0]}
                 </div>
                 <div>
@@ -133,7 +133,7 @@ export default function AdminUtilisateursPage() {
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Motif d'intervention (Optionnel sauf Avertissement)</label>
                 <textarea value={raison} onChange={e => setRaison(e.target.value)} rows={2}
-                  className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
+                  className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
                   placeholder="Justifiez la sanction..." />
               </div>
               <div className="flex gap-2">
@@ -160,7 +160,7 @@ export default function AdminUtilisateursPage() {
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              tab === t.key ? 'bg-gradient-emerald text-white shadow-bento' : 'text-gray-500 hover:bg-gray-50'
+              tab === t.key ? 'bg-gradient-brand text-white shadow-bento' : 'text-gray-500 hover:bg-gray-50'
             }`}>
             <span>{t.icon}</span>{t.label}
           </button>
@@ -182,7 +182,7 @@ export default function AdminUtilisateursPage() {
               return (
                 <button key={u.id} onClick={() => openProfile(u)}
                   className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors text-left">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center font-bold text-emerald-700 text-sm flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center font-bold text-brand-700 text-sm flex-shrink-0">
                     {u.nom?.[0]}
                   </div>
                   <div className="flex-1 min-w-0">

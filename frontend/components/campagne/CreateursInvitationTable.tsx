@@ -12,6 +12,22 @@ interface Props {
   onError: (message: string) => void;
 }
 
+const renderReseaux = (reseaux: any) => {
+  if (!reseaux) return '—';
+  if (typeof reseaux === 'string') {
+    try {
+      const parsed = JSON.parse(reseaux);
+      if (Array.isArray(parsed)) return parsed.map(r => r.plateforme || r).join(', ');
+      if (typeof parsed === 'object') return Object.keys(parsed).join(', ');
+    } catch (e) {
+      return reseaux;
+    }
+  }
+  if (Array.isArray(reseaux)) return reseaux.map(r => r.plateforme || r).join(', ');
+  if (typeof reseaux === 'object') return Object.keys(reseaux).join(', ');
+  return String(reseaux);
+};
+
 export default function CreateursInvitationTable({ campagneId, invitedIds, onInvited, onError }: Props) {
   const [createurs, setCreateurs]       = useState<any[]>([]);
   const [search, setSearch]             = useState('');
@@ -150,7 +166,7 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
                     {(c.niches?.length || 0) === 0 && <span className="text-gray-300">—</span>}
                   </div>
                 </td>
-                <td className="px-3 py-3 text-gray-500">{Object.keys(c.reseaux || {}).join(', ') || '—'}</td>
+                <td className="px-3 py-3 text-gray-500">{renderReseaux(c.reseaux)}</td>
                 <td className="px-3 py-3 text-gray-700">{c.tarifMoyen ? `${c.tarifMoyen.toLocaleString('fr-FR')} FCFA` : '—'}</td>
                 <td className="px-3 py-3 text-gray-700">{c.noteMoyenne ? `★ ${c.noteMoyenne}` : '—'}</td>
                 <td className="px-3 py-3 text-right">

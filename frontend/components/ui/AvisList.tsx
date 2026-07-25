@@ -70,7 +70,7 @@ export default function AvisList({ cibleId }: Props) {
         <h3 className="font-semibold text-gray-900">Avis reçus ({avis.length})</h3>
         {avis.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-emerald-600">{averageNote.toFixed(1)}</span>
+            <span className="text-2xl font-bold text-brand-600">{averageNote.toFixed(1)}</span>
             <span className="text-yellow-500">⭐</span>
           </div>
         )}
@@ -85,7 +85,7 @@ export default function AvisList({ cibleId }: Props) {
           {avis.map((a) => (
             <div key={a.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
                   {a.auteur?.photoProfilUrl ? (
                     <img
                       src={a.auteur.photoProfilUrl}
@@ -93,7 +93,7 @@ export default function AvisList({ cibleId }: Props) {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-emerald-600 font-semibold">
+                    <span className="text-brand-600 font-semibold">
                       {a.auteur?.nom?.[0] || '?'}
                     </span>
                   )}

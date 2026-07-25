@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { getUser } from '@/lib/api';
+import { getUser, collabApi, getImageUrl, STATUT_LABELS } from '@/lib/api';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { collabApi, STATUT_LABELS } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
 import AuthGuard from '@/components/auth/AuthGuard';
 
@@ -150,7 +149,7 @@ export default function CollaborationsPage() {
                           <div className="flex items-center gap-2">
                             {c.createur?.photoProfilUrl && !imgError[c.id] ? (
                               <img 
-                                src={c.createur.photoProfilUrl.startsWith('http') ? c.createur.photoProfilUrl : `http://localhost:3001${c.createur.photoProfilUrl}`}
+                                src={getImageUrl(c.createur.photoProfilUrl)}
                                 alt="" 
                                 className="w-6 h-6 rounded-full object-cover" 
                                 onError={() => setImgError(prev => ({ ...prev, [c.id]: true }))}

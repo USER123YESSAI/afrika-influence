@@ -93,7 +93,7 @@ export default function EntreprisePublicProfile({ params }: { params: { id: stri
               <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                 <Link 
                   href="/connexion"
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan to-emerald text-ink font-semibold hover:opacity-90 transition-opacity"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan to-brand text-ink font-semibold hover:opacity-90 transition-opacity"
                 >
                   Voir les campagnes
                 </Link>

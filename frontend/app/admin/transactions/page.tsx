@@ -12,8 +12,8 @@ const TYPES: { value: TypeTransaction | ''; label: string }[] = [
 ];
 
 const TYPE_STYLE: Record<string, string> = {
-  RECHARGE:          'bg-emerald-50 text-emerald-700',
-  REMBOURSEMENT:      'bg-emerald-50 text-emerald-700',
+  RECHARGE:          'bg-brand-50 text-brand-700',
+  REMBOURSEMENT:      'bg-brand-50 text-brand-700',
   DEBIT_CAMPAGNE:      'bg-red-50 text-red-700',
   PAIEMENT_CREATEUR:  'bg-red-50 text-red-700',
 };
@@ -54,7 +54,7 @@ export default function AdminTransactionsPage() {
             <select
               value={type}
               onChange={(e) => { setType(e.target.value as TypeTransaction | ''); setPage(1); }}
-              className="w-full mt-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full mt-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>

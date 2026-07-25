@@ -64,7 +64,7 @@ export default function InscriptionMarquePage() {
               <div className="grid gap-3">
                 {CATEGORIES.map((c) => (
                   <button key={c.value} type="button" onClick={() => setCat(c.value)}
-                    className={`w-full rounded-3xl p-5 text-left border transition-all ${categorie === c.value ? 'border-emerald-500 bg-emerald-50 shadow-bento' : 'border-gray-200 bg-white hover:border-emerald-300 hover:shadow-soft'}`}>
+                    className={`w-full rounded-3xl p-5 text-left border transition-all ${categorie === c.value ? 'border-brand-500 bg-brand-50 shadow-bento' : 'border-gray-200 bg-white hover:border-brand-300 hover:shadow-soft'}`}>
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{c.icon}</span>
                       <div>
@@ -110,13 +110,13 @@ export default function InscriptionMarquePage() {
                   type="checkbox"
                   checked={acceptTerms}
                   onChange={e => setAcceptTerms(e.target.checked)}
-                  className="mt-1 h-5 w-5 rounded border-gray-200 text-emerald-600 focus:ring-emerald-500"
+                  className="mt-1 h-5 w-5 rounded border-gray-200 text-brand-600 focus:ring-brand-500"
                 />
                 <span className="text-sm text-gray-500 leading-relaxed">
                   J'ai lu et j'accepte les{" "}
-                  <Link href="/conditions-utilisation" className="text-emerald-600 hover:underline">Conditions d'utilisation</Link>
+                  <Link href="/conditions-utilisation" className="text-brand-600 hover:underline">Conditions d'utilisation</Link>
                   {" "}ainsi que la{" "}
-                  <Link href="/politique-confidentialite" className="text-emerald-600 hover:underline">Politique de confidentialité</Link>.
+                  <Link href="/politique-confidentialite" className="text-brand-600 hover:underline">Politique de confidentialité</Link>.
                 </span>
               </label>
 
@@ -127,7 +127,7 @@ export default function InscriptionMarquePage() {
           )}
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Vous êtes créateur ? <Link href="/inscription/createur" className="text-emerald-600 hover:underline">Inscription créateur →</Link>
+            Vous êtes créateur ? <Link href="/inscription/createur" className="text-brand-600 hover:underline">Inscription créateur →</Link>
           </p>
         </div>
       </div>

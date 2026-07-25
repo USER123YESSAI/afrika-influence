@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
-import { createurApi, collabApi, getMesCampagnes, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from '@/lib/api';
+import { createurApi, collabApi, getMesCampagnes, NICHES_DISPONIBLES, RESEAUX, formatFCFA, getImageUrl } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showToast } from '@/components/ui/Toast';
 
@@ -259,7 +259,7 @@ export default function CreateursEntreprisePage() {
                             <div className="w-10 h-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {createur.photoProfilUrl && !imgError[createur.id] ? (
                                 <img 
-                                  src={createur.photoProfilUrl.startsWith('http') ? createur.photoProfilUrl : `http://localhost:3001${createur.photoProfilUrl}`}
+                                  src={getImageUrl(createur.photoProfilUrl)}
                                   alt="" 
                                   className="w-full h-full object-cover"
                                   onError={() => setImgError(prev => ({ ...prev, [createur.id]: true }))}
@@ -332,7 +332,7 @@ export default function CreateursEntreprisePage() {
                     <div className="w-12 h-12 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {selectedCreateur.photoProfilUrl && !imgError[selectedCreateur.id] ? (
                         <img 
-                          src={selectedCreateur.photoProfilUrl.startsWith('http') ? selectedCreateur.photoProfilUrl : `http://localhost:3001${selectedCreateur.photoProfilUrl}`}
+                          src={getImageUrl(selectedCreateur.photoProfilUrl)}
                           alt="" 
                           className="w-full h-full object-cover"
                           onError={() => setImgError(prev => ({ ...prev, [selectedCreateur.id]: true }))}

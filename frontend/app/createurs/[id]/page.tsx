@@ -80,7 +80,7 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
 
         {/* Header Profile */}
         <div className="rounded-3xl border border-hairline bg-surface/60 backdrop-blur-md overflow-hidden shadow-2xl mb-8">
-          <div className="h-32 sm:h-48 bg-gradient-to-r from-cyan/20 to-emerald/20 relative">
+          <div className="h-32 sm:h-48 bg-gradient-to-r from-cyan/20 to-brand/20 relative">
             <div className="absolute inset-0 bg-surface/20" />
           </div>
           <div className="px-5 sm:px-10 pb-8 relative">
@@ -107,7 +107,7 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
               <div className="w-full sm:w-auto flex flex-col gap-3 shrink-0">
                 <Link 
                   href={`/inscription?role=ENTREPRISE`}
-                  className="w-full sm:w-auto text-center px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan to-emerald text-ink font-semibold hover:opacity-90 transition-opacity"
+                  className="w-full sm:w-auto text-center px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan to-brand text-ink font-semibold hover:opacity-90 transition-opacity"
                 >
                   Proposer une collaboration
                 </Link>
@@ -174,7 +174,7 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
                       <p className="text-sm text-fog line-clamp-3 mb-4">{offre.description}</p>
                       {offre.delaiLivraison && (
                         <p className="text-xs text-fog flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
                           Livraison estimée : {offre.delaiLivraison} jours
                         </p>
                       )}
