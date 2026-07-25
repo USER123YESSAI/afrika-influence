@@ -8,8 +8,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['DM Serif Display', 'Georgia', 'serif'],
+        display: ['Fraunces', 'DM Serif Display', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        eyebrow: ['var(--font-outfit)', 'Inter', 'sans-serif'],
       },
       colors: {
         emerald: {

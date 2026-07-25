@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&display=swap');
 
 @layer base {
 
@@ -27,7 +27,8 @@
 
   /* ── Typographie ─────────────────────────── */
   .font-display {
-    font-family: 'DM Serif Display', Georgia, serif;
+    font-family: 'Fraunces', 'DM Serif Display', Georgia, serif;
+    font-optical-sizing: auto;
   }
 
   .font-sans {
@@ -226,5 +227,68 @@
   }
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ── Texture de fond (hero) ──────────────── */
+  .bg-dot-grid {
+    background-image: radial-gradient(circle, rgba(27, 42, 86, 0.14) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* ── Reveal au scroll ────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  .reveal.is-visible {
+    animation: revealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes revealUp {
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ── Entrée du hero, en cascade ──────────── */
+  .hero-in {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: heroUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes heroUp {
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ── Panneau d'étape (onglets "comment ça marche") ── */
+  .step-fade {
+    animation: stepFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes stepFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── Bandeau créateurs défilant ──────────── */
+  .marquee-row {
+    display: flex;
+    width: max-content;
+    animation: marqueeScroll 42s linear infinite;
+  }
+  .marquee-row:hover {
+    animation-play-state: paused;
+  }
+  @keyframes marqueeScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .hero-in, .step-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .marquee-row {
+    animation: none !important;
   }
 }
