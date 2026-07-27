@@ -107,6 +107,7 @@ export default function OffresPage() {
             </button>
           </div>
         ) : (
+<<<<<<< Updated upstream
           <div className="bg-white rounded-3xl shadow-card border border-gray-100 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -160,6 +161,46 @@ export default function OffresPage() {
                 </tbody>
               </table>
             </div>
+=======
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {offres.map((offre) => (
+              <div
+                key={offre.id}
+                className="bg-white rounded-3xl border border-gray-100 shadow-bento p-5 hover-lift transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{RESEAU_EMOJI[offre.reseau] || '📱'}</span>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">{offre.reseau}</div>
+                      <div className="text-xs text-gray-400">{offre.typeContenu}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => openEdit(offre)}
+                      className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors"
+                      title="Modifier"
+                    >✏️</button>
+                    <button
+                      onClick={() => handleDelete(offre.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                      title="Supprimer"
+                    >🗑️</button>
+                  </div>
+                </div>
+                {offre.description && (
+                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{offre.description}</p>
+                )}
+                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                  <span className="font-display text-lg font-bold text-brand-600">{formatFCFA(offre.prix)}</span>
+                  <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                    ⏱ {offre.delaiLivraison} jour{offre.delaiLivraison > 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+            ))}
+>>>>>>> Stashed changes
           </div>
         )}
       </div>

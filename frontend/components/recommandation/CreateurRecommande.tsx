@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Recommandation } from '@/lib/api';
+import { formatReseaux } from '@/lib/utils';
 
 const getImageUrl = (url: string) => {
   if (!url) return '';
@@ -23,24 +24,7 @@ export default function CreateurRecommande({ recommandation, rank, actionButton 
   const nom = createur?.nom || `Créateur #${createurId.slice(0, 8)}`;
   const photo = createur?.photoProfilUrl ? getImageUrl(createur.photoProfilUrl) : avatarUrl(nom);
   
-  const getReseaux = (c: any) => {
-    if (!c?.reseaux) return "-";
-    let res = c.reseaux;
-    if (typeof res === 'string') {
-      try { res = JSON.parse(res); } catch(e) {}
-    }
-    if (Array.isArray(res)) {
-      if (res.length === 0) return "-";
-      return res.map((r: any) => {
-        const name = r.plateforme || r.nom || '';
-        return name.charAt(0).toUpperCase() + name.slice(1);
-      }).filter(Boolean).join(', ') || "-";
-    } else if (typeof res === 'object') {
-      if (Object.keys(res).length === 0) return "-";
-      return Object.keys(res).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join(', ');
-    }
-    return "-";
-  };
+  const getReseaux = (c: any) => formatReseaux(c?.reseaux);
   
   return (
     <div className={`group relative block aspect-[4/5] w-full overflow-hidden rounded-2xl border border-hairline bg-surface ${estConsultee ? 'opacity-90' : ''}`}>

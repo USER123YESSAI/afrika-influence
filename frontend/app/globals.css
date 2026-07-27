@@ -2,7 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< Updated upstream
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&display=swap');
+=======
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THÈME — variables CSS
+   ═══════════════════════════════════════════════════════════════════════
+   Toutes les couleurs de l'app (tailwind.config.js) sont dérivées d'ici.
+   Format "R G B" (sans virgules, sans rgb()) pour être compatible avec la
+   syntaxe Tailwind `rgb(var(--x) / <alpha-value>)`, qui permet de garder
+   les modificateurs d'opacité (`bg-cyan/20`, `bg-surface/70`...) déjà
+   utilisés dans le code.
+
+   Mode SOMBRE = valeurs par défaut sur :root (c'est le thème de base
+   demandé : dégradé noir / bleu cyan). Mode CLAIR = tout ce qui est
+   redéfini sous [data-theme="light"] (voir contexts/ThemeContext.tsx pour
+   la bascule). Aucune valeur n'est un noir pur (#000) ni un blanc pur
+   (#fff), pour préserver le confort visuel demandé.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: dark;
+
+  /* Tokens sémantiques */
+  --c-ink: 7 11 16;              /* #070b10 — fond de page */
+  --c-surface: 14 21 28;         /* #0e151c — cartes */
+  --c-surface-2: 20 30 39;       /* #141e27 — cartes imbriquées / hover */
+  --c-hairline: 30 43 54;        /* #1e2b36 — bordures discrètes */
+  --c-fog: 141 157 167;          /* #8d9da7 — texte secondaire */
+  --c-mist: 197 212 219;         /* #c5d4db — texte secondaire, plus clair (hover) */
+  --c-text: 232 241 244;         /* #e8f1f4 — texte principal (jamais blanc pur) */
+
+  /* Chrome toujours sombre (sidebar) — jamais redéfini en mode clair */
+  --c-sidebar-1: 7 11 16;
+  --c-sidebar-2: 13 22 29;
+  --c-sidebar-3: 15 28 36;
+
+  /* gray-* inversé : gray-50 = fond de section (sombre), gray-900 = texte
+     principal (clair) — ça correspond à l'usage déjà fait dans tout le code
+     (bg-gray-50 pour un fond, text-gray-900 pour un texte lisible). */
+  --c-gray-50:  10 15 20;
+  --c-gray-100: 16 24 31;
+  --c-gray-200: 26 38 47;
+  --c-gray-300: 41 57 68;
+  --c-gray-400: 92 108 117;
+  --c-gray-500: 127 143 152;
+  --c-gray-600: 159 173 181;
+  --c-gray-700: 185 197 205;
+  --c-gray-800: 210 220 226;
+  --c-gray-900: 236 244 247;
+
+  /* Accent unique (indigo "brand") — utilisé par les tokens cyan-*, brand-*
+     ET brand-*. Palette "Indigo & Laiton" (voir tailwind.config.js), version
+     éclaircie pour rester lisible sur fond sombre (même logique que l'ancien
+     accent cyan qu'elle remplace). */
+  --c-accent-50:  14 18 32;
+  --c-accent-100: 20 26 47;
+  --c-accent-200: 29 38 68;
+  --c-accent-300: 45 59 108;
+  --c-accent-400: 118 136 198;
+  --c-accent-500: 90 112 186;
+  --c-accent-600: 69 91 165;
+  --c-accent-700: 60 79 144;
+  --c-accent-800: 51 67 122;
+  --c-accent-900: 42 55 101;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --c-ink: 244 249 250;          /* #f4f9fa — fond de page, légèrement teinté cyan, pas blanc pur */
+  --c-surface: 252 253 254;      /* #fcfdfe — cartes */
+  --c-surface-2: 246 250 251;    /* #f6fafb — cartes imbriquées / hover */
+  --c-hairline: 224 232 235;     /* #e0e8eb */
+  --c-fog: 100 116 124;          /* #64747c */
+  --c-mist: 55 68 74;            /* #37444a texte secondaire plus appuyé au survol */
+  --c-text: 15 27 32;            /* #0f1b20 — texte principal, jamais noir pur */
+
+  --c-gray-50:  248 250 251;
+  --c-gray-100: 240 244 246;
+  --c-gray-200: 224 231 234;
+  --c-gray-300: 200 210 214;
+  --c-gray-400: 148 163 168;
+  --c-gray-500: 107 123 128;
+  --c-gray-600: 75 90 95;
+  --c-gray-700: 51 64 69;
+  --c-gray-800: 30 41 44;
+  --c-gray-900: 15 27 32;
+
+  --c-accent-50:  238 241 248;
+  --c-accent-100: 220 225 240;
+  --c-accent-200: 183 192 222;
+  --c-accent-300: 142 155 201;
+  --c-accent-400: 95 110 163;
+  --c-accent-500: 59 74 125;
+  --c-accent-600: 38 53 95;
+  --c-accent-700: 27 42 86;
+  --c-accent-800: 20 31 66;
+  --c-accent-900: 13 21 48;
+}
+>>>>>>> Stashed changes
 
 @layer base {
 
@@ -59,7 +159,14 @@
   }
 
   /* ── Gradients ───────────────────────────── */
+<<<<<<< Updated upstream
 
+=======
+  .bg-gradient-brand,
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, rgb(var(--c-accent-600)) 0%, rgb(var(--c-accent-700)) 100%);
+  }
+>>>>>>> Stashed changes
 
   .bg-gradient-hero {
     background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f8faff 100%);
@@ -149,6 +256,10 @@
   /* ── Inputs ──────────────────────────────── */
   .input-base {
     @apply w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent placeholder:text-gray-400 transition-all;
+<<<<<<< Updated upstream
+=======
+    color: rgb(var(--c-text));
+>>>>>>> Stashed changes
   }
 
   .input-base:focus {

@@ -59,9 +59,15 @@ export default function DashboardPage() {
           {/* KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             {[
+<<<<<<< Updated upstream
               { label: 'Solde disponible', value: solde !== null ? fmt(solde) : '—', color: 'text-brand-600', href: '/entreprise/solde' },
               { label: 'Campagnes totales', value: campagnes.length, color: 'text-brand-600' },
               { label: 'En cours', value: countByStatut('EN_COURS'), color: 'text-brand-600' },
+=======
+              { label: 'Solde disponible', value: solde !== null ? fmt(solde) : '—', color: 'text-brand', href: '/entreprise/solde' },
+              { label: 'Campagnes totales', value: campagnes.length, color: 'text-brand' },
+              { label: 'En cours', value: countByStatut('EN_COURS'), color: 'text-brand' },
+>>>>>>> Stashed changes
               { label: 'Budget total', value: fmt(budgetTotal), color: 'text-mist' },
               { label: 'Budget dépensé', value: fmt(budgetDepense), color: 'text-amber-400' },
             ].map((kpi) => {

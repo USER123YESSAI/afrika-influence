@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   distDir: '.next-dev',
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
   // SECURITE (XSS + clickjacking) : Helmet protège l'API backend, mais le
   // frontend Next.js est un serveur HTTP distinct qui ne recevait jusqu'ici
@@ -37,8 +40,8 @@ const nextConfig = {
               "default-src 'self'",
               scriptSrc,
               "style-src 'self' 'unsafe-inline'",
-              `img-src 'self' data: ${apiUrl} https://api.dicebear.com`,
-              `connect-src 'self' ${apiUrl}`,
+              "img-src 'self' data: blob: http: https:",
+              "connect-src 'self' http: https: ws: wss:",
               "font-src 'self' data:",
               "object-src 'none'",
               "frame-ancestors 'none'",

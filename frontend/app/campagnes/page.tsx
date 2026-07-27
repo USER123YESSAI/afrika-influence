@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
@@ -21,10 +21,10 @@ const STATUTS: { value: string; label: string }[] = [
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' CFA';
 const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
 
-export default function CampagnesPage() {
+function CampagnesContent() {
   const [campagnes, setCampagnes] = useState<Campagne[]>([]);
   const searchParams = useSearchParams();
-  const [filtre, setFiltre] = useState(searchParams.get('statut') || '');
+  const [filtre, setFiltre] = useState(searchParams?.get('statut') || '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -36,7 +36,7 @@ export default function CampagnesPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(searchParams.get('statut') || ''); }, []);
+  useEffect(() => { load(searchParams?.get('statut') || ''); }, []);
 
   const handleFiltre = (val: string) => {
     setFiltre(val);
@@ -162,5 +162,13 @@ export default function CampagnesPage() {
         )}
       </div>
     </DashboardEntreprise>
+  );
+}
+
+export default function CampagnesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-mist">Chargement...</div>}>
+      <CampagnesContent />
+    </Suspense>
   );
 }

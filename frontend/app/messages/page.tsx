@@ -6,6 +6,7 @@ import DashboardCreateur from '@/components/layout/DashboardCreateur';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
 import { collabApi, getImageUrl, getUser } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+import SafeAvatar from '@/components/ui/SafeAvatar';
 
 interface ConvItem {
   id: string;
@@ -72,11 +73,20 @@ export default function MessagesPage() {
                 className="flex items-center gap-4 bg-white rounded-3xl border border-gray-100 shadow-bento p-4 hover:border-brand-200 hover:shadow-md transition-all hover-lift"
               >
                 {/* Avatar */}
+<<<<<<< Updated upstream
                 <div className="w-12 h-12 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0 text-xl">
                   {conv.createur?.photoProfilUrl ? (
                     <img src={getImageUrl(conv.createur.photoProfilUrl)} alt="" className="w-full h-full rounded-2xl object-cover" />
                   ) : '🤝'}
                 </div>
+=======
+                <SafeAvatar
+                  src={conv.createur?.photoProfilUrl}
+                  name={conv.createur?.nom || 'C'}
+                  className="w-12 h-12 rounded-2xl"
+                  textClassName="text-xl font-bold text-brand-600"
+                />
+>>>>>>> Stashed changes
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">

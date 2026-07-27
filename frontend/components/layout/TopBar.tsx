@@ -5,6 +5,7 @@ import { User as UserIcon, LogOut } from 'lucide-react';
 import NotificationsBell from '@/components/ui/NotificationsBell';
 import { useAuth } from '@/contexts/AuthContext';
 import { getImageUrl } from '@/lib/api';
+import SafeAvatar from '@/components/ui/SafeAvatar';
 
 interface TopBarProps {
   title?: string;
@@ -56,6 +57,7 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
               onClick={() => setDropdownOuvert(!dropdownOuvert)}
               className="flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-2 pr-4 py-1.5 transition-colors hover:bg-gray-50"
             >
+<<<<<<< Updated upstream
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan to-brand text-xs font-bold text-ink overflow-hidden">
                 {user?.photoProfil || user?.logo || user?.photo ? (
                   <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
@@ -63,6 +65,14 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
                   user.nom?.charAt(0).toUpperCase() || 'U'
                 )}
               </div>
+=======
+              <SafeAvatar
+                src={user?.photoProfil || user?.logo || user?.photo}
+                name={user.nom}
+                className="h-8 w-8 rounded-full"
+                textClassName="text-xs font-bold text-brand-700"
+              />
+>>>>>>> Stashed changes
               <span className="text-sm font-medium text-gray-700">{user.nom}</span>
             </button>
 

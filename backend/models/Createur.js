@@ -37,7 +37,13 @@ export default (sequelize) => {
     reseaux: {
       type: DataTypes.JSON,
       defaultValue: {},
-    
+      get() {
+        const val = this.getDataValue('reseaux');
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch { return {}; }
+        }
+        return val || {};
+      },
     },
     audience: {
       type: DataTypes.INTEGER,

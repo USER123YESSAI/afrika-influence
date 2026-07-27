@@ -54,7 +54,11 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
     case 'ENTREPRISE':
       return {
         roleLabel: 'Entreprise',
+<<<<<<< Updated upstream
         roleColor: 'bg-white/10 text-white',
+=======
+        roleColor: 'bg-brand-400/20 text-brand-100',
+>>>>>>> Stashed changes
         nav: [
           { href: '/entreprise/dashboard', label: 'Tableau de bord', icon: <IconHome /> },
           { href: '/campagnes',            label: 'Mes campagnes',   icon: <IconCampaign /> },
@@ -68,7 +72,11 @@ export function getSidebarConfig(role: string): { nav: NavItem[], roleLabel: str
     case 'PARTICULIER':
       return {
         roleLabel: 'Particulier',
+<<<<<<< Updated upstream
         roleColor: 'bg-white/10 text-white',
+=======
+        roleColor: 'bg-brand-400/20 text-brand-100', // Match entreprise theme
+>>>>>>> Stashed changes
         nav: [
           { href: '/entreprise/dashboard', label: 'Tableau de bord', icon: <IconHome /> },
           { href: '/campagnes',            label: 'Mes campagnes',   icon: <IconCampaign /> },

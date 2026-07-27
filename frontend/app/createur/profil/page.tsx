@@ -23,6 +23,7 @@ export default function ProfilCreateurPage() {
   const [toast, setToast]     = useState('');
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [imgError, setImgError] = useState<boolean>(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { refreshUser } = useAuth();
 
@@ -33,7 +34,11 @@ export default function ProfilCreateurPage() {
   useEffect(() => {
     createurApi.getMonProfil()
       .then((data: any) => {
-        setProfil(data);
+        let res = data.reseaux;
+        if (typeof res === 'string') {
+          try { res = JSON.parse(res); } catch { res = {}; }
+        }
+        setProfil({ ...data, reseaux: res || {} });
         setId(data.id); // PK du modèle Createur
       })
       .catch(e => showToast('❌ Profil introuvable : ' + e.message));
@@ -44,6 +49,7 @@ export default function ProfilCreateurPage() {
     if (!file) return;
     setSelectedPhotoFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+    setImgError(false);
   };
 
   const handleSave = async () => {
@@ -122,8 +128,18 @@ export default function ProfilCreateurPage() {
             <div className="flex items-start gap-5">
               <button onClick={() => fileRef.current?.click()}
                 className="relative group w-20 h-20 rounded-2xl overflow-hidden bg-brand-50 border-2 border-brand-200 flex-shrink-0">
+<<<<<<< Updated upstream
                 {(previewUrl || profil.photoProfilUrl)
                   ? <img src={previewUrl || getImageUrl(profil.photoProfilUrl)} alt="" className="w-full h-full object-cover" />
+=======
+                {(previewUrl || profil.photoProfilUrl) && !imgError
+                  ? <img
+                      src={previewUrl || getImageUrl(profil.photoProfilUrl)}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      onError={() => setImgError(true)}
+                    />
+>>>>>>> Stashed changes
                   : <div className="w-full h-full flex items-center justify-center text-3xl">👤</div>}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                   <span className="text-white text-xs">Modifier</span>

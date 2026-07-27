@@ -17,7 +17,8 @@ const STATUT_BADGE: Record<string, { label: string; className: string }> = {
 };
 
 export default function ContenusPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = (params?.id || '') as string;
   const role = typeof window !== 'undefined' ? (getUser()?.role ?? '') : '';
   const isEntreprise = role === 'ENTREPRISE' || role === 'PARTICULIER';
   const Shell = isEntreprise ? DashboardEntreprise : DashboardCreateur;

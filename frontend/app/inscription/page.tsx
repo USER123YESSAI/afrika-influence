@@ -21,13 +21,13 @@ const OPTIONS = [
 
 export default function InscriptionChoixPage() {
   return (
-    <div className="min-h-screen bg-ink">
+    <div className="min-h-screen bg-stone-50">
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-16 lg:grid-cols-[1.1fr_minmax(360px,0.9fr)] lg:px-8">
         <div className="space-y-8">
           <div className="max-w-2xl">
-            <span className="badge bg-cyan/20 text-cyan">Rejoindre Afrika Influence</span>
-            <h1 className="font-display text-5xl text-mist mt-6 mb-4">Choisissez votre espace</h1>
-            <p className="text-fog text-lg leading-relaxed">
+            <span className="badge bg-brass-500/20 text-brass-700">Rejoindre Afrika Influence</span>
+            <h1 className="font-display text-5xl text-brand-900 mt-6 mb-4">Choisissez votre espace</h1>
+            <p className="text-gray-500 text-lg leading-relaxed">
               Que vous soyez créateur ou marque, démarrez avec un espace personnalisé, des outils dédiés et des campagnes plus impactantes.
             </p>
           </div>
@@ -35,18 +35,18 @@ export default function InscriptionChoixPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             {OPTIONS.map((option) => (
               <Link key={option.href} href={option.href}
-                className={`group block rounded-[28px] border border-hairline bg-surface p-8 transition-all shadow-card hover:-translate-y-1 hover:shadow-bento hover:border-cyan`}>
-                <h2 className="text-xl font-semibold text-mist mb-3">{option.title}</h2>
-                <p className="text-sm text-fog leading-relaxed mb-6">{option.subtitle}</p>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-cyan">
+                className={`group block rounded-[28px] border border-gray-200 bg-white p-8 transition-all shadow-card hover:-translate-y-1 hover:shadow-bento hover:border-brand-400`}>
+                <h2 className="text-xl font-semibold text-brand-900 mb-3">{option.title}</h2>
+                <p className="text-sm text-gray-500 leading-relaxed mb-6">{option.subtitle}</p>
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700">
                   Commencer <span aria-hidden="true">→</span>
                 </span>
               </Link>
             ))}
           </div>
 
-          <p className="text-sm text-fog">
-            Déjà inscrit ? <Link href="/connexion" className="text-cyan font-semibold hover:underline">Se connecter</Link>
+          <p className="text-sm text-gray-500">
+            Déjà inscrit ? <Link href="/connexion" className="text-brand-700 font-semibold hover:underline">Se connecter</Link>
           </p>
         </div>
 
@@ -67,7 +67,11 @@ export default function InscriptionChoixPage() {
                   Rejoignez le mouvement
                 </span>
                 <h2 className="text-3xl font-display text-white leading-tight mb-3">
+<<<<<<< Updated upstream
                   L'influence en <span className="text-brand-300">Afrique</span>
+=======
+                  L'influence en <span className="text-brass-400">Afrique</span>
+>>>>>>> Stashed changes
                 </h2>
                 <p className="text-brand-50/90 text-sm leading-relaxed mb-6 max-w-sm">
                   Connectez-vous avec les meilleurs créateurs de contenu et les marques les plus prestigieuses.

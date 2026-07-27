@@ -54,6 +54,14 @@ export default function InscriptionMarquePage() {
               <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Marque</p>
               <h2 className="text-2xl font-semibold text-gray-900">Démarrez avec votre profil</h2>
             </div>
+<<<<<<< Updated upstream
+=======
+            {/* Repère d'étape simple : rassure sur la progression et la cohérence du parcours */}
+            <div className="flex items-center gap-1.5">
+              <span className={`h-1.5 w-6 rounded-full transition-colors ${draft.step === 1 ? 'bg-brand-500' : 'bg-brand-200'}`} />
+              <span className={`h-1.5 w-6 rounded-full transition-colors ${draft.step === 2 ? 'bg-brand-500' : 'bg-gray-200'}`} />
+            </div>
+>>>>>>> Stashed changes
           </div>
 
           {erreur && <div className="mb-5 p-4 rounded-3xl bg-red-50 border border-red-100 text-sm text-red-700">{erreur}</div>}
@@ -63,10 +71,19 @@ export default function InscriptionMarquePage() {
               <p className="text-gray-500">Sélectionnez votre type de compte :</p>
               <div className="grid gap-3">
                 {CATEGORIES.map((c) => (
+<<<<<<< Updated upstream
                   <button key={c.value} type="button" onClick={() => setCat(c.value)}
                     className={`w-full rounded-3xl p-5 text-left border transition-all ${categorie === c.value ? 'border-brand-500 bg-brand-50 shadow-bento' : 'border-gray-200 bg-white hover:border-brand-300 hover:shadow-soft'}`}>
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{c.icon}</span>
+=======
+                  <button key={c.value} type="button" onClick={() => set('categorie', c.value)}
+                    className={`w-full rounded-3xl p-5 text-left border transition-all ${draft.categorie === c.value ? 'border-brand-500 bg-brand-50 shadow-bento' : 'border-gray-200 bg-white hover:border-brand-300 hover:shadow-soft'}`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${draft.categorie === c.value ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                        <c.Icon size={20} />
+                      </span>
+>>>>>>> Stashed changes
                       <div>
                         <p className="font-semibold text-gray-900">{c.label}</p>
                         <p className="text-sm text-gray-500">{c.desc}</p>
@@ -82,6 +99,12 @@ export default function InscriptionMarquePage() {
             </div>
           ) : (
             <div className="space-y-5">
+<<<<<<< Updated upstream
+=======
+              <button type="button" onClick={() => set('step', 1)} className="text-sm text-gray-400 hover:text-brand-600 transition-colors">
+                ← Changer de type de compte
+              </button>
+>>>>>>> Stashed changes
               <div className="grid gap-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">{categorie === 'PARTICULIER' ? 'Nom complet' : 'Nom de l\'entreprise'}</label>
@@ -108,8 +131,13 @@ export default function InscriptionMarquePage() {
               <label className="flex items-start gap-3 cursor-pointer mt-4">
                 <input
                   type="checkbox"
+<<<<<<< Updated upstream
                   checked={acceptTerms}
                   onChange={e => setAcceptTerms(e.target.checked)}
+=======
+                  checked={draft.acceptTerms}
+                  onChange={e => set('acceptTerms', e.target.checked)}
+>>>>>>> Stashed changes
                   className="mt-1 h-5 w-5 rounded border-gray-200 text-brand-600 focus:ring-brand-500"
                 />
                 <span className="text-sm text-gray-500 leading-relaxed">

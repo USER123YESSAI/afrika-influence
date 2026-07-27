@@ -1,7 +1,7 @@
 // frontend/lib/api.ts
 // Client HTTP unifié — Afrika Influence Hub (P1 + P2 + P3)
 
-const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
 
 // ─── Auth helpers ──────────────────────────────────────────────────────────────
 export function getToken(): string {
@@ -21,8 +21,8 @@ export function logout(): void {
 }
 
 export function getImageUrl(url: string | null | undefined): string {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
+  if (!url || url === 'null' || url === 'undefined') return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) return url;
   return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
@@ -319,7 +319,7 @@ export const initierPaiement = (data: { collaborationId: string; methode?: strin
 
 // ─── AVIS (P2) ────────────────────────────────────────────────────────────────
 export const avisApi = {
-  creer:    (data: { collaborationId: string; cibleId: string; note: number; commentaire?: string }) =>
+  creer:    (data: { collaborationId?: string; cibleId: string; note: number; commentaire?: string }) =>
     request('/avis', { method: 'POST', body: JSON.stringify(data) }),
   getRecus: (cibleId: string) => request(`/avis/${cibleId}`),
 };

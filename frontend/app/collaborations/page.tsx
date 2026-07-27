@@ -8,6 +8,7 @@ import { getUser, collabApi, getImageUrl, STATUT_LABELS } from '@/lib/api';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { showToast } from '@/components/ui/Toast';
 import AuthGuard from '@/components/auth/AuthGuard';
+import SafeAvatar from '@/components/ui/SafeAvatar';
 
 interface Collab {
   id: string;
@@ -147,6 +148,7 @@ export default function CollaborationsPage() {
                       {userRole !== 'CREATEUR' && (
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
+<<<<<<< Updated upstream
                             {c.createur?.photoProfilUrl && !imgError[c.id] ? (
                               <img 
                                 src={getImageUrl(c.createur.photoProfilUrl)}
@@ -159,6 +161,14 @@ export default function CollaborationsPage() {
                                 {c.createur?.nom?.[0] || '?'}
                               </div>
                             )}
+=======
+                            <SafeAvatar
+                              src={c.createur?.photoProfilUrl}
+                              name={c.createur?.nom || '?'}
+                              className="w-6 h-6 rounded-full"
+                              textClassName="text-xs font-bold text-brand-700"
+                            />
+>>>>>>> Stashed changes
                             <div>
                               <div className="font-medium text-gray-900">{c.createur?.nom || 'Inconnu'}</div>
                               <div className="text-xs text-gray-400">{c.createur?.handle || ''}</div>

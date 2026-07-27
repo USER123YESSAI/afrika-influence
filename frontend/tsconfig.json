@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
+<<<<<<< Updated upstream
     "ignoreDeprecations": "5.0",
+=======
+>>>>>>> Stashed changes
     "target": "ES2017",
     "lib": [
       "dom",

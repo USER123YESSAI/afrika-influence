@@ -5,8 +5,13 @@ import Sidebar from './Sidebar';
 import { usePathname } from 'next/navigation';
 
 export function GlobalAppLayout({ children }: { children: React.ReactNode }) {
+<<<<<<< Updated upstream
   const { user } = useAuth();
   const pathname = usePathname();
+=======
+  const { user, loading } = useAuth();
+  const pathname = usePathname() || '';
+>>>>>>> Stashed changes
 
   const isAuthPage = pathname.startsWith('/connexion') || pathname.startsWith('/inscription') || pathname.startsWith('/reinitialiser-mdp');
   const isOnboardingPage = pathname.startsWith('/onboarding');

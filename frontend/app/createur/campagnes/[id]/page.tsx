@@ -6,11 +6,13 @@ import Link from 'next/link';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { getCampagnesPubliques, getCampagne, formatFCFA, collabApi, favoriApi, getImageUrl, type Campagne } from '@/lib/api';
 import { showToast } from '@/components/ui/Toast';
+import SafeAvatar from '@/components/ui/SafeAvatar';
 
 const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
 
 export default function CampagneImmersivePage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = (params?.id || '') as string;
   const router = useRouter();
 
   const [campagne, setCampagne] = useState<Campagne | null>(null);
@@ -113,6 +115,7 @@ export default function CampagneImmersivePage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-8 py-10">
           {/* En-tête entreprise */}
           <div className="flex items-start gap-5 mb-8">
+<<<<<<< Updated upstream
             <div className="w-20 h-20 rounded-3xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
               {campagne.entreprise?.logoUrl ? (
                 <img src={getImageUrl(campagne.entreprise.logoUrl)} alt="" className="w-full h-full object-cover" />
@@ -120,6 +123,14 @@ export default function CampagneImmersivePage() {
                 <span className="text-3xl font-bold text-brand-600">{campagne.entreprise?.nom?.[0] || 'E'}</span>
               )}
             </div>
+=======
+            <SafeAvatar
+              src={campagne.entreprise?.logoUrl}
+              name={campagne.entreprise?.nom}
+              className="w-20 h-20 rounded-3xl"
+              textClassName="text-3xl font-bold text-brand-600"
+            />
+>>>>>>> Stashed changes
             <div className="flex-1 min-w-0">
               <h1 className="font-display text-3xl font-bold text-gray-900">{campagne.titre}</h1>
               <p className="text-gray-500 mt-1">{campagne.entreprise?.nom}</p>

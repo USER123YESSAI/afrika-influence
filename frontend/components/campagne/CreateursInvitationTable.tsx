@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collabApi, createurApi } from '@/lib/api';
+import { formatReseaux, getTotalAudience } from '@/lib/utils';
 
 type SortKey = 'nom' | 'audience' | 'tarifMoyen' | 'noteMoyenne';
 
@@ -157,7 +158,7 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
                     </div>
                   </div>
                 </td>
-                <td className="px-3 py-3 text-gray-700">{c.audience?.toLocaleString('fr-FR') ?? '—'}</td>
+                <td className="px-3 py-3 text-gray-700">{getTotalAudience(c.reseaux, c.audience).toLocaleString('fr-FR')}</td>
                 <td className="px-3 py-3">
                   <div className="flex flex-wrap gap-1 max-w-[160px]">
                     {(c.niches || []).slice(0, 2).map((n: any) => (
@@ -166,7 +167,11 @@ export default function CreateursInvitationTable({ campagneId, invitedIds, onInv
                     {(c.niches?.length || 0) === 0 && <span className="text-gray-300">—</span>}
                   </div>
                 </td>
+<<<<<<< Updated upstream
                 <td className="px-3 py-3 text-gray-500">{renderReseaux(c.reseaux)}</td>
+=======
+                <td className="px-3 py-3 text-gray-500">{formatReseaux(c.reseaux)}</td>
+>>>>>>> Stashed changes
                 <td className="px-3 py-3 text-gray-700">{c.tarifMoyen ? `${c.tarifMoyen.toLocaleString('fr-FR')} FCFA` : '—'}</td>
                 <td className="px-3 py-3 text-gray-700">{c.noteMoyenne ? `★ ${c.noteMoyenne}` : '—'}</td>
                 <td className="px-3 py-3 text-right">

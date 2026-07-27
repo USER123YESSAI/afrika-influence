@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< Updated upstream
 import { useState, useEffect } from 'react';
 import { getEntreprisesPubliques } from '@/lib/api';
 import Link from 'next/link';
@@ -175,4 +176,10 @@ export default function EntreprisesPage({ embedded = false }: { embedded?: boole
       </div>
     </div>
   );
+=======
+import EntreprisesContent from '@/components/entreprises/EntreprisesContent';
+
+export default function EntreprisesPage() {
+  return <EntreprisesContent embedded={false} />;
+>>>>>>> Stashed changes
 }

@@ -56,7 +56,7 @@ function UserMenu() {
 }
 
 export default function Sidebar() {
-  const path = usePathname();
+  const path = usePathname() || '';
   const { user } = useAuth();
 
   if (!user) return null;

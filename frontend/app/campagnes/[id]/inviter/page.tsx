@@ -9,7 +9,8 @@ import CreateurRecommande from '@/components/recommandation/CreateurRecommande';
 import CreateursInvitationTable from '@/components/campagne/CreateursInvitationTable';
 
 export default function InviterPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = (params?.id || '') as string;
   const [campagne, setCampagne]           = useState<Campagne | null>(null);
   const [recommandations, setReco]        = useState<Recommandation[]>([]);
   const [loadingReco, setLoadingReco]     = useState(false);

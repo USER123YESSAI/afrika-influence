@@ -46,7 +46,11 @@ function ConfirmerReinitialisationForm() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4 font-sans">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+<<<<<<< Updated upstream
           <h1 className="font-display text-4xl font-bold text-brand-600">Afrika Influence Hub</h1>
+=======
+          <h1 className="font-display text-4xl font-bold text-brand-900">Afrika Influence Hub</h1>
+>>>>>>> Stashed changes
           <p className="text-gray-600 mt-2">Choisissez un nouveau mot de passe</p>
         </div>
 
@@ -86,14 +90,22 @@ function ConfirmerReinitialisationForm() {
               </div>
 
               <button onClick={handleSubmit} disabled={loading}
+<<<<<<< Updated upstream
                 className="w-full py-3.5 bg-gradient-brand hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all shadow-bento hover-lift">
+=======
+                className="w-full py-3.5 bg-brand-900 hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all shadow-bento hover-lift">
+>>>>>>> Stashed changes
                 {loading ? 'Réinitialisation…' : 'Réinitialiser le mot de passe'}
               </button>
             </>
           )}
 
           <p className="text-center text-sm text-gray-400 pt-2">
+<<<<<<< Updated upstream
             <Link href="/connexion" className="text-brand-600 hover:underline font-medium">← Retour à la connexion</Link>
+=======
+            <Link href="/connexion" className="text-brand-700 hover:underline font-medium">← Retour à la connexion</Link>
+>>>>>>> Stashed changes
           </p>
         </div>
       </div>

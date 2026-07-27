@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import DashboardEntreprise from '@/components/layout/DashboardEntreprise';
+<<<<<<< Updated upstream
 import { createurApi, collabApi, getMesCampagnes, NICHES_DISPONIBLES, RESEAUX, formatFCFA, getImageUrl } from '@/lib/api';
+=======
+import { createurApi, collabApi, getMesCampagnes, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from '@/lib/api';
+import { getReseauxList, getTotalAudience, getReseauxEntries } from '@/lib/utils';
+>>>>>>> Stashed changes
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showToast } from '@/components/ui/Toast';
 
@@ -119,22 +124,12 @@ export default function CreateursEntreprisePage() {
     }
   };
 
-  const totalAudience = (createur: Createur) => {
-    let reseaux = createur.reseaux as any;
-    if (typeof reseaux === 'string') {
-      try { reseaux = JSON.parse(reseaux); } catch(e) { reseaux = null; }
-    }
-    if (!reseaux || Object.keys(reseaux).length === 0) return createur.audience || 0;
-    return Object.values(reseaux).reduce((sum: number, r: any) => sum + (r.audience || 0), 0);
+  const totalAudience = (createur: Createur): number => {
+    return getTotalAudience(createur.reseaux, Number(createur.audience) || 0);
   };
 
-  const getReseauxActifs = (createur: Createur) => {
-    let reseaux = createur.reseaux as any;
-    if (typeof reseaux === 'string') {
-      try { reseaux = JSON.parse(reseaux); } catch(e) { reseaux = null; }
-    }
-    if (!reseaux) return [];
-    return Object.keys(reseaux);
+  const getReseauxActifs = (createur: Createur): string[] => {
+    return getReseauxList(createur.reseaux);
   };
 
   const formatAudience = (n: number) => {
@@ -425,7 +420,7 @@ export default function CreateursEntreprisePage() {
                     <div>
                       <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Présence en ligne</h4>
                       <div className="space-y-4">
-                        {Object.entries(selectedCreateur.reseaux || {}).map(([reseau, data]: [string, any]) => (
+                        {getReseauxEntries(selectedCreateur.reseaux).map(([reseau, data]: [string, any]) => (
                           <div key={reseau} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                             <div>
                               <div className="font-medium text-gray-900">{reseau}</div>

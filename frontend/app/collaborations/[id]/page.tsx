@@ -20,7 +20,8 @@ interface Message {
 }
 
 export default function CollabDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = (params?.id || '') as string;
   const [collab, setCollab] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMsg, setNewMsg] = useState('');

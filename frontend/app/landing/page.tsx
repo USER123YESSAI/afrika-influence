@@ -9,8 +9,13 @@ import {
 import { Footer } from "@/components/layout/Footer";
 import Reveal from "@/components/ui/Reveal";
 import { createurApi, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from "@/lib/api";
+<<<<<<< Updated upstream
 import CreateursPage from "../createurs/page";
 import EntreprisesPage from "../entreprises/page";
+=======
+import { getTotalAudience } from "@/lib/utils";
+import EntreprisesContent from "@/components/entreprises/EntreprisesContent";
+>>>>>>> Stashed changes
 
 const PAYS_OPTIONS = [
   { value: '', label: 'Tous les pays' },
@@ -87,8 +92,7 @@ export default function Accueil() {
   };
 
   const totalAudience = (c: any) => {
-    if (!c.reseaux) return c.audience || 0;
-    return Object.values(c.reseaux as Record<string, any>).reduce((s: number, r: any) => s + (r?.audience || 0), 0);
+    return getTotalAudience(c.reseaux, c.audience || 0);
   };
 
   const createursAffiches = createurs.slice(0, 6);
@@ -482,7 +486,7 @@ export default function Accueil() {
             Explorez les entreprises qui font confiance à notre plateforme pour leurs campagnes d'influence.
           </p>
         </div>
-        <EntreprisesPage embedded={true} />
+        <EntreprisesContent embedded={true} />
       </section>
 
       {/* CTA FINAL — deux chemins */}

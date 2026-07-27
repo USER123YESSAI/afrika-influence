@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createurApi, formatFCFA } from '@/lib/api';
+import { getTotalAudience } from '@/lib/utils';
 import { MeshBackground } from '@/components/layout/MeshBackground';
 import { MapPin, Users, Tag, ArrowLeft, Mail, ExternalLink, Briefcase } from 'lucide-react';
 import Link from 'next/link';
@@ -65,9 +66,7 @@ export default function CreateurPublicProfile({ params }: { params: { id: string
     );
   }
 
-  const totalAudience = createur.reseaux 
-    ? Object.values(createur.reseaux as Record<string, any>).reduce((s: number, r: any) => s + (r?.audience || 0), 0)
-    : (createur.audience || 0);
+  const totalAudience = getTotalAudience(createur.reseaux, createur.audience || 0);
 
   return (
     <div className="relative min-h-screen bg-afrika-mesh text-mist pb-20">

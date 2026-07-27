@@ -41,11 +41,16 @@ export default function ReinitialisationPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+<<<<<<< Updated upstream
           <h1 className="font-display text-4xl font-bold text-brand-600">Afrika Influence Hub</h1>
+=======
+          <h1 className="font-display text-4xl font-bold text-brand-900">Afrika Influence Hub</h1>
+>>>>>>> Stashed changes
           <p className="text-gray-600 mt-2">Réinitialisez votre mot de passe</p>
         </div>
 
         <div className="bg-white rounded-3xl shadow-bento p-8 space-y-4">
+<<<<<<< Updated upstream
           <div>
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email du compte</label>
             <input type="email" value={form.email} onChange={e => setF('email', e.target.value)}
@@ -72,6 +77,40 @@ export default function ReinitialisationPage() {
 
           <p className="text-center text-sm text-gray-400 pt-2">
             <Link href="/connexion" className="text-brand-600 hover:underline font-medium">← Retour à la connexion</Link>
+=======
+          {envoye ? (
+            <div className="text-center space-y-4 py-2">
+              <div className="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center text-2xl mx-auto">📧</div>
+              <p className="text-gray-700">
+                Si un compte existe avec l'adresse <span className="font-medium">{email}</span>, un lien de réinitialisation vient de lui être envoyé.
+              </p>
+              <p className="text-sm text-gray-400">Pensez à vérifier vos spams. Le lien expire dans 30 minutes.</p>
+              <Link href="/connexion" className="btn-primary inline-flex w-full justify-center">
+                Retour à la connexion
+              </Link>
+            </div>
+          ) : (
+            <>
+              {erreur && <div className="p-3.5 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">{erreur}</div>}
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email du compte</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                  className="w-full mt-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  placeholder="vous@exemple.com" autoFocus />
+              </div>
+
+              <button onClick={handleSubmit} disabled={loading}
+                className="w-full py-3.5 bg-brand-900 hover:opacity-90 disabled:opacity-60 text-white font-semibold rounded-2xl transition-all shadow-bento hover-lift">
+                {loading ? 'Envoi…' : 'Envoyer le lien de réinitialisation'}
+              </button>
+            </>
+          )}
+
+          <p className="text-center text-sm text-gray-400 pt-2">
+            <Link href="/connexion" className="text-brand-700 hover:underline font-medium">← Retour à la connexion</Link>
+>>>>>>> Stashed changes
           </p>
         </div>
       </div>

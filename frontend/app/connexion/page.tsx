@@ -38,7 +38,7 @@ export default function ConnexionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-ink">
+    <div className="min-h-screen bg-stone-50">
       <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-8 lg:grid-cols-[1.05fr_minmax(420px,0.95fr)] lg:px-8 lg:py-10">
         <div className="lg:order-2 hidden lg:flex flex-1 items-stretch">
           <div className="w-full h-full relative rounded-3xl overflow-hidden shadow-soft">
@@ -56,7 +56,11 @@ export default function ConnexionPage() {
                
                 <h2 className="text-3xl font-display text-white leading-tight mb-3">
                   L'Afrique a du talent, <br />
+<<<<<<< Updated upstream
                   <span className="text-brand-300">faites-le rayonner.</span>
+=======
+                  <span className="text-brass-400">faites-le rayonner.</span>
+>>>>>>> Stashed changes
                 </h2>
                 <p className="text-brand-50/90 text-sm leading-relaxed mb-6 max-w-sm">
                   Reprenez le contrôle de vos campagnes et de votre communauté d'influenceurs en un clin d'œil.
@@ -69,19 +73,23 @@ export default function ConnexionPage() {
 
         <div className="flex items-center justify-center p-4 sm:p-6 lg:p-0">
           <div className="w-full max-w-sm animate-fade-in">
+<<<<<<< Updated upstream
             <Link href="/landing" className="inline-flex items-center gap-2 text-sm text-fog hover:text-cyan mb-8 transition-colors">
+=======
+            <Link href="/landing" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-700 mb-8 transition-colors">
+>>>>>>> Stashed changes
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Retour à l'accueil
             </Link>
 
-            <h1 className="font-display text-3xl text-mist mb-2">Connexion</h1>
-            <p className="text-fog mb-8">Accédez à votre espace Afrika Influence Hub.</p>
+            <h1 className="font-display text-3xl text-brand-900 mb-2">Connexion</h1>
+            <p className="text-gray-500 mb-8">Accédez à votre espace Afrika Influence Hub.</p>
 
             {erreur && <div className="mb-5 p-3.5 bg-red-400/10 border border-red-400/20 text-red-400 text-sm rounded-xl">{erreur}</div>}
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-fog uppercase tracking-wide">Email</label>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
                 <input
                   type="email"
                   value={form.email}
@@ -95,8 +103,8 @@ export default function ConnexionPage() {
 
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-fog uppercase tracking-wide">Mot de passe</label>
-                  <Link href="/reinitialiser-mdp" className="text-xs text-cyan hover:underline">Mot de passe oublié ?</Link>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Mot de passe</label>
+                  <Link href="/reinitialiser-mdp" className="text-xs text-brand-700 hover:underline">Mot de passe oublié ?</Link>
                 </div>
                 <input
                   type="password"
@@ -113,30 +121,10 @@ export default function ConnexionPage() {
               </button>
             </div>
 
-            <p className="text-center text-sm text-fog mt-6">
-              Pas encore de compte ? <Link href="/inscription" className="text-cyan hover:underline font-medium">S'inscrire</Link>
+            <p className="text-center text-sm text-gray-500 mt-6">
+              Pas encore de compte ? <Link href="/inscription" className="text-brand-700 hover:underline font-medium">S'inscrire</Link>
             </p>
 
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-6 p-4 bg-surface-2 border border-hairline rounded-2xl text-xs text-cyan">
-                <p className="font-semibold mb-2">🧪 Comptes de test</p>
-                {[
-                  { label: 'Admin',      email: 'admin@baobab.sn' },
-                  { label: 'Modérateur', email: 'moderateur@baobab.sn' },
-                  { label: 'Marque',     email: 'marque@baobab.sn' },
-                  { label: 'Créateur',   email: 'aminata@baobab.sn' },
-                ].map(c => (
-                  <button
-                    key={c.email}
-                    type="button"
-                    onClick={() => setForm({ email: c.email, password: 'password123' })}
-                    className="block w-full text-left px-2 py-1 rounded-lg hover:bg-surface transition-colors"
-                  >
-                    {c.label} — {c.email}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>

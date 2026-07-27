@@ -6,6 +6,7 @@ import { Menu, X, LayoutDashboard, User as UserIcon, LogOut } from "lucide-react
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { getImageUrl } from "@/lib/api";
+import SafeAvatar from "@/components/ui/SafeAvatar";
 
 const LIENS = [
   { href: "/createurs", label: "Créateurs" },
@@ -81,7 +82,11 @@ export function Navbar() {
               </Link>
               <Link
                 href="/inscription"
+<<<<<<< Updated upstream
                 className="rounded-full bg-brass-500 px-4 py-2 text-sm font-semibold text-brand-900 transition-colors hover:bg-brass-400"
+=======
+                className="rounded-full bg-gradient-to-r from-cyan to-brand px-4 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90"
+>>>>>>> Stashed changes
               >
                 Rejoindre la plateforme
               </Link>
@@ -92,6 +97,7 @@ export function Navbar() {
                 onClick={() => setDropdownOuvert(!dropdownOuvert)}
                 className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 pl-2 pr-4 py-1.5 transition-colors hover:bg-gray-100"
               >
+<<<<<<< Updated upstream
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white overflow-hidden">
                   {user?.photoProfil || user?.logo || user?.photo ? (
                     <img src={getImageUrl(user.photoProfil || user.logo || user.photo)} alt={user.nom} className="w-full h-full object-cover" />
@@ -100,6 +106,15 @@ export function Navbar() {
                   )}
                 </div>
                 <span className="text-sm font-medium text-gray-800">{user.nom}</span>
+=======
+                <SafeAvatar
+                  src={user?.photoProfil || user?.logo || user?.photo}
+                  name={user.nom}
+                  className="h-7 w-7 rounded-full"
+                  textClassName="text-xs font-bold text-brand-700"
+                />
+                <span className="text-sm font-medium text-mist">{user.nom}</span>
+>>>>>>> Stashed changes
               </button>
 
               {dropdownOuvert && (
@@ -160,7 +175,11 @@ export function Navbar() {
                 <Link href="/connexion" className="text-sm text-gray-600" onClick={() => setOuvert(false)}>Connexion</Link>
                 <Link
                   href="/inscription"
+<<<<<<< Updated upstream
                   className="rounded-full bg-brass-500 px-4 py-2 text-center text-sm font-semibold text-brand-900"
+=======
+                  className="rounded-full bg-gradient-to-r from-cyan to-brand px-4 py-2 text-center text-sm font-medium text-ink"
+>>>>>>> Stashed changes
                   onClick={() => setOuvert(false)}
                 >
                   Rejoindre la plateforme

@@ -32,8 +32,51 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+<<<<<<< Updated upstream
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
+=======
+// CORRECTION SÉCURITÉ : app.use(cors()) sans option accepte TOUTE origine.
+// Une variable CORS_ORIGINS existait déjà dans .env (documentée, jamais lue
+// par le code) — on la branche enfin. Plusieurs origines séparées par des
+// virgules sont acceptées (utile en dev : plusieurs ports Next.js locaux).
+// Si la variable est absente, on retombe sur localhost:3000 en dev pour ne
+// jamais bloquer le travail normal, et sur une liste vide en production
+// (donc CORS fermé par défaut plutôt qu'ouvert par défaut : en sécurité, le
+// choix par défaut le plus sûr est toujours "refuser" et non "autoriser").
+const originsAutorisees = (process.env.CORS_ORIGINS || (isProd ? '' : 'http://localhost:3000'))
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin(origin, callback) {
+    // origin est undefined pour les requêtes sans origine (curl, Postman,
+    // requêtes serveur-à-serveur, callback PayTech) — on les laisse passer,
+    // CORS ne protège que le navigateur, pas les appels serveur.
+    if (!origin || originsAutorisees.includes(origin)) return callback(null, true);
+    return callback(new Error('Origine non autorisée par CORS.'));
+  },
+  credentials: true,
+}));
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "unsafe-none" },
+  contentSecurityPolicy: false,
+}));
+
+// CORRECTION SÉCURITÉ : sans "trust proxy", req.ip et X-Forwarded-For ne sont
+// pas fiables derrière un reverse proxy (nginx en prod) — un client peut fixer
+// lui-même son X-Forwarded-For pour usurper une IP et contourner le rate-limit
+// anti brute-force ou fausser les logs d'audit. "1" = on ne fait confiance
+// qu'au premier proxy immédiatement devant l'app (le reverse proxy lui-même),
+// pas à la chaîne complète — évite qu'un client falsifie sa propre IP.
+if (isProd) {
+  app.set('trust proxy', 1);
+}
+
+>>>>>>> Stashed changes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Rate limit global : désactivé en développement pour éviter les blocages

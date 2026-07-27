@@ -1,8 +1,15 @@
 'use client';
 
+<<<<<<< Updated upstream
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createurApi, NICHES_DISPONIBLES, RESEAUX, formatFCFA } from '@/lib/api';
+=======
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { createurApi, NICHES_DISPONIBLES, RESEAUX } from '@/lib/api';
+import { getTotalAudience } from '@/lib/utils';
+>>>>>>> Stashed changes
 import Link from 'next/link';
 import { Search, MapPin, Tag, Share2, Star } from 'lucide-react';
 
@@ -27,7 +34,12 @@ const getImageUrl = (url: string) => {
   return `${BASE}${url}`;
 };
 
+<<<<<<< Updated upstream
 export default function CreateursPage({ embedded = false }: { embedded?: boolean }) {
+=======
+function CreateursContent() {
+  const embedded = false;
+>>>>>>> Stashed changes
   const searchParams = useSearchParams();
   const [createurs, setCreateurs] = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
@@ -52,8 +64,7 @@ export default function CreateursPage({ embedded = false }: { embedded?: boolean
   }, [pays, niche, reseau, search]);
 
   const totalAudience = (c: any) => {
-    if (!c.reseaux) return c.audience || 0;
-    return Object.values(c.reseaux as Record<string, any>).reduce((s: number, r: any) => s + (r?.audience || 0), 0);
+    return getTotalAudience(c.reseaux, c.audience || 0);
   };
 
   return (
@@ -199,5 +210,13 @@ export default function CreateursPage({ embedded = false }: { embedded?: boolean
         )}
       </div>
     </div>
+  );
+}
+
+export default function CreateursPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-afrika-mesh flex items-center justify-center text-mist">Chargement...</div>}>
+      <CreateursContent />
+    </Suspense>
   );
 }

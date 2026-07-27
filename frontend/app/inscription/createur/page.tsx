@@ -79,8 +79,13 @@ export default function InscriptionCreateurPage() {
             <label className="flex items-start gap-3 cursor-pointer mt-4">
               <input
                 type="checkbox"
+<<<<<<< Updated upstream
                 checked={acceptTerms}
                 onChange={e => setAcceptTerms(e.target.checked)}
+=======
+                checked={draft.acceptTerms}
+                onChange={e => set('acceptTerms', e.target.checked)}
+>>>>>>> Stashed changes
                 className="mt-1 h-5 w-5 rounded border-gray-200 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-gray-500 leading-relaxed">

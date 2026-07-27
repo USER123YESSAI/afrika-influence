@@ -9,6 +9,11 @@ interface User {
   nom: string;
   role: string;
   statut: string;
+  photoProfil?: string;
+  logo?: string;
+  photo?: string;
+  profilComplet?: boolean;
+  [key: string]: any;
 }
 
 interface AuthContextType {
@@ -41,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Optimistic load from localStorage to reduce UI flicker
     const storedUser = getUser();
-    if (storedUser) setUser(storedUser);
+    if (storedUser) setUser(storedUser as User);
 
     // Validate token with backend (prevents stale localStorage causing wrong redirects)
     (async () => {
